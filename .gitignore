@@ -1,0 +1,5 @@
+# Node.js dependencies
+node_modules/
+
+# Variables de entorno (tu .env con JWT_SECRET, contraseñas, etc.)
+.env

@@ -1,0 +1,26 @@
+<!-- header.html -->
+<header class="main-header">
+  <div class="logo">
+    <a href="/index.html">Rasty</a>
+  </div>
+
+  <nav class="nav-links" id="navLinks">
+    <a href="#" id="loginBtn">Iniciar sesión</a>
+    <a href="/register.html">Crear cuenta</a>
+  </nav>
+</header>
+
+<!-- MODAL LOGIN -->
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" id="closeModal">&times;</span>
+    <h2>Iniciar sesión</h2>
+
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
+      <input type="password" id="loginPassword" placeholder="Contraseña" required>
+      <button type="submit">Entrar</button>
+      <p id="loginError" class="error-message"></p>
+    </form>
+  </div>
+</div>

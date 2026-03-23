@@ -1,0 +1,22 @@
+#albums-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.album {
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 150px;
+  text-align: center;
+}
+
+
+.album .tracks ol {
+  padding-left: 20px;
+  text-align: left;
+  font-size: 0.9em;
+}
+.album .tracks li {
+  margin-bottom: 3px;
+}

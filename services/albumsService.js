@@ -88,22 +88,21 @@ async function searchAndSaveAlbum(title, artist) {
     );
   }
 
-  // 4️⃣ Guardar canciones en tabla songs
-  if (tracks.length > 0) {
-    const tracksToInsert = tracks.map(track => ({
-      album_id: savedAlbum.id,
-      position: track.position,
-      title: track.title,
-      length: track.length,
-      created_at: new Date().toISOString()
-    }));
+  if (tracks.length > 0 && existing.length === 0) {  // <--- aquí agregamos existing.length === 0
+  const tracksToInsert = tracks.map(track => ({
+    album_id: savedAlbum.id,
+    position: track.position,
+    title: track.title,
+    length: track.length,
+    created_at: new Date().toISOString()
+  }));
 
-    const { error: tracksError } = await supabase
-      .from('songs')
-      .insert(tracksToInsert);
+  const { error: tracksError } = await supabase
+    .from('songs')
+    .insert(tracksToInsert);
 
-    if (tracksError) console.error("Error guardando canciones:", tracksError);
-  }
+  if (tracksError) console.error("Error guardando canciones:", tracksError);
+}
 
   return { message: existing.length > 0 ? "Álbum ya existe" : "Álbum guardado", album: savedAlbum, tracks };
 }

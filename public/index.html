@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Rasty - Música</title>
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/header.css">
+</head>
+<body>
+
+<div id="header-container"></div>
+  <h1>Rasty - Música</h1>
+
+
+  <section id="albums-section">
+    <h2>Buscar álbum</h2>
+    <input type="text" id="album-title" placeholder="Título del álbum">
+    <input type="text" id="album-artist" placeholder="Artista (opcional)">
+    <button id="search-btn">Buscar</button>
+
+    <div id="albums-results"></div>
+  </section>
+
+  <!-- Mis escuchas -->
+<section id="listens-section">
+  <h2>Mis Escuchas</h2>
+  <ul id="listens-list">
+    <!-- Se llenará dinámicamente -->
+  </ul>
+</section>
+
+<!-- Todos los álbumes -->
+<section id="albums-section">
+  <h2>Todos los Álbumes</h2>
+  <ul id="albums-list">
+    <!-- Se llenará dinámicamente -->
+  </ul>
+</section>
+
+  <script src="/js/index.js"></script>
+  <script src="/js/header.js"></script>
+</body>
+</html>

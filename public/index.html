@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Rasty - Música</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <h1>Rasty - Música</h1>
+
+  <section id="register-section">
+  <h2>Registro</h2>
+  <input type="email" id="reg-email" placeholder="Email">
+  <input type="password" id="reg-password" placeholder="Contraseña">
+  <button id="register-btn">Registrarse</button>
+  <p id="register-msg"></p>
+</section>
+
+  <section id="login-section">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button id="login-btn">Entrar</button>
+    <p id="login-msg"></p>
+  </section>
+
+  <section id="albums-section">
+    <h2>Buscar álbum</h2>
+    <input type="text" id="album-title" placeholder="Título del álbum">
+    <input type="text" id="album-artist" placeholder="Artista (opcional)">
+    <button id="search-btn">Buscar</button>
+
+    <div id="albums-results"></div>
+  </section>
+
+  <!-- Mis escuchas -->
+<section id="listens-section">
+  <h2>Mis Escuchas</h2>
+  <ul id="listens-list">
+    <!-- Se llenará dinámicamente -->
+  </ul>
+</section>
+
+<!-- Todos los álbumes -->
+<section id="albums-section">
+  <h2>Todos los Álbumes</h2>
+  <ul id="albums-list">
+    <!-- Se llenará dinámicamente -->
+  </ul>
+</section>
+
+  <script src="index.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-// main.js (o tu script global)
+// main.js
 document.addEventListener("DOMContentLoaded", async () => {
   const headerContainer = document.getElementById("header-container");
 
@@ -8,28 +8,42 @@ document.addEventListener("DOMContentLoaded", async () => {
     const headerHTML = await response.text();
     headerContainer.innerHTML = headerHTML;
 
-    // 🔑 Usuario y token desde localStorage
-    let user = JSON.parse(localStorage.getItem("user"));
-    let token = localStorage.getItem("token");
-
     const navLinks = document.getElementById("navLinks");
     const loginModal = document.getElementById("loginModal");
     const loginForm = document.getElementById("loginForm");
 
     // Función para actualizar links según login/logout
-    const renderHeaderLinks = () => {
-      if (user && token) {
-        navLinks.innerHTML = `
-          <span style="color:white;">Hola, ${user.email}</span>
-          <a href="#" id="logoutBtn">Cerrar sesión</a>
-        `;
-      } else {
-        navLinks.innerHTML = `
-          <a href="#" id="loginBtn">Iniciar sesión</a>
-          <a href="/register.html">Crear cuenta</a>
-        `;
-      }
-    };
+   const renderHeaderLinks = () => {
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+  const userEmail = localStorage.getItem("userEmail");
+
+  // Logo siempre a la izquierda
+  let leftHTML = `<span class="logo-text">Rasty</span>`;
+
+  // Centro: Mis escuchas solo si logueado + Buscar siempre
+  let centerHTML = '';
+  if (userId && token) {
+    centerHTML += `<a href="/listensUser.html?user_id=${userId}" id="myListensBtn">Mis escuchas</a>`;
+  }
+  centerHTML += `<a href="/searchAlbums.html" id="searchBtn">Buscar</a>`;
+
+  // Derecha: Usuario y logout solo si logueado
+  let rightHTML = '';
+  if (userId && token) {
+    rightHTML += `<span>Hola, ${userEmail}</span>`;
+    rightHTML += `<a href="#" id="logoutBtn" class="logout-link">Cerrar sesión</a>`;
+  } else {
+    rightHTML += `<a href="#" id="loginBtn">Iniciar sesión</a>`;
+    rightHTML += `<a href="/register.html">Crear cuenta</a>`;
+  }
+
+  navLinks.innerHTML = `
+    <div class="header-left">${leftHTML}</div>
+    <div class="header-center">${centerHTML}</div>
+    <div class="header-right">${rightHTML}</div>
+  `;
+};
 
     renderHeaderLinks();
 
@@ -49,11 +63,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // Logout
       if (e.target.id === "logoutBtn") {
-        localStorage.removeItem("user");
+        localStorage.removeItem("userId");
         localStorage.removeItem("token");
-        user = null;
-        token = null;
+        localStorage.removeItem("userEmail");
+
         renderHeaderLinks();
+
+        // Limpiar lista de escuchas si existe
         const listensList = document.getElementById("listens-list");
         if (listensList) listensList.innerHTML = "";
       }
@@ -79,16 +95,17 @@ document.addEventListener("DOMContentLoaded", async () => {
           const data = await res.json();
 
           if (res.ok) {
-            token = data.token;
-            user = data.user;
-
-            localStorage.setItem("token", token);
-            localStorage.setItem("user", JSON.stringify(user));
+            // Guardar en localStorage
+            localStorage.setItem("token", data.session.access_token);
+            localStorage.setItem("userId", data.user.id);
+            localStorage.setItem("userEmail", data.user.email);
 
             loginModal.style.display = "none";
-            renderHeaderLinks();      // Actualizamos header dinámicamente
+
+            renderHeaderLinks(); // Actualiza header dinámicamente
+
             if (typeof fetchUserListens === "function") {
-              fetchUserListens();      // Actualizamos escuchas sin recargar
+              fetchUserListens(); // Actualiza escuchas sin recargar
             }
           } else {
             errorText.textContent = data.error || "Error al iniciar sesión";

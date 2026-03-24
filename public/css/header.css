@@ -1,3 +1,4 @@
+/* ======================= Header ======================= */
 .main-header {
   display: flex;
   justify-content: space-between;
@@ -8,18 +9,67 @@
   box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
-.logo a {
-  text-decoration: none;
-  color: white;
+/* Logo / nombre de la página */
+.logo-text {
   font-size: 26px;
   font-weight: bold;
+  color: white;
+  text-decoration: none;
 }
 
+/* Nav links flex layout con 3 secciones */
 .nav-links {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
   gap: 20px;
 }
 
+/* Secciones izquierda, centro y derecha */
+.header-left {
+  flex: 1;
+  text-align: left;
+}
+
+.header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.header-center a {
+  font-weight: bold;
+  color: #1db954;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.header-center a:hover {
+  opacity: 0.8;
+}
+
+.header-right {
+  flex: 1;
+  text-align: right;
+}
+
+.header-right span {
+  margin-right: 10px;
+  color: white;
+}
+
+.header-right a.logout-link {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.header-right a.logout-link:hover {
+  opacity: 0.8;
+}
+
+/* ======================= Links generales ======================= */
 .nav-links a {
   text-decoration: none;
   color: white;
@@ -37,9 +87,7 @@
   font-weight: bold;
 }
 
-
-
-/* MODAL */
+/* ======================= MODAL ======================= */
 .modal {
   display: none;
   position: fixed;
@@ -95,6 +143,7 @@
   cursor: pointer;
 }
 
+/* ======================= Animaciones ======================= */
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }

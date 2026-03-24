@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar escucha</title>
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/createListen.css">
+</head>
+<body>
+  <div id="header-container"></div>
+
+  <main class="listen-card">
+    <div class="album-info">
+      <img id="album-cover" src="" alt="Portada del álbum">
+      <h2 id="album-title"></h2>
+      <p id="album-artist"></p>
+    </div>
+
+    <form id="listenForm">
+      <!-- album_id será UUID -->
+      <input type="hidden" name="album_id" id="albumId">
+      <input type="hidden" name="rating" id="ratingValue">
+      <input type="hidden" name="liked" id="likedValue" value="false">
+
+      <div class="form-group">
+        <label>Puntuación:</label>
+        <div class="star-rating">
+          <span data-value="0.5">&#9733;</span>
+          <span data-value="1">&#9733;</span>
+          <span data-value="1.5">&#9733;</span>
+          <span data-value="2">&#9733;</span>
+          <span data-value="2.5">&#9733;</span>
+          <span data-value="3">&#9733;</span>
+          <span data-value="3.5">&#9733;</span>
+          <span data-value="4">&#9733;</span>
+          <span data-value="4.5">&#9733;</span>
+          <span data-value="5">&#9733;</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Me gusta:</label>
+        <span id="heart" class="heart">&#10084;</span>
+      </div>
+
+      <div class="form-group">
+        <label for="review">Reseña:</label>
+        <textarea id="review" name="review" rows="4"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="listen_date">Fecha de escucha:</label>
+        <input type="date" id="listen_date" name="listen_date">
+      </div>
+
+      <button type="submit">Registrar escucha</button>
+    </form>
+
+    <div id="message"></div>
+  </main>
+
+  <script src="/js/header.js"></script>
+  <script src="/js/createListen.js"></script>
+</body>
+</html>

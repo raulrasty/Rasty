@@ -1,0 +1,75 @@
+.listen-card {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background-color: #fff;
+  font-family: sans-serif;
+}
+
+.album-info {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.album-info img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.form-group {
+  margin: 0.8rem 0;
+}
+
+.star-rating {
+  display: flex;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.star-rating span {
+  color: #ccc;
+  margin-right: 4px;
+}
+
+.star-rating span.filled {
+  color: gold;
+}
+
+.heart {
+  font-size: 2rem;
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.2s;
+}
+
+.heart.liked {
+  color: red;
+}
+
+button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem;
+  background-color: #4CAF50;
+  color: #fff;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+#message p.success {
+  color: green;
+}
+
+#message p.error {
+  color: red;
+}

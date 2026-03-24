@@ -1,31 +1,19 @@
 const supabase = require('../config/supabaseClient');
 const albumsService = require('./albumsService'); // para crear álbum si no existe
 
-async function createListen(userId, { albumTitle, albumArtist, rating = null, liked = false, review = null, listen_date = null }) {
-  // 1️⃣ Asegurarse de que el álbum exista
-  let album;
-  try {
-    const result = await albumsService.searchAndSaveAlbum(albumTitle, albumArtist);
-    album = result.album; // tomamos solo el objeto album
-  } catch (err) {
-    throw new Error("No se pudo obtener o crear el álbum: " + err.message);
-  }
-
-  // 2️⃣ Si no se pasó listen_date, usar la fecha de hoy
+async function createListen(userId, { albumId, rating = null, liked = false, review = null, listen_date = null }) {
+  // Fecha por defecto
   const dateToUse = listen_date ? new Date(listen_date) : new Date();
 
-  // 3️⃣ Validar que no sea futura
-  const now = new Date();
-  if (dateToUse > now) {
-    throw new Error("La fecha de escucha no puede ser futura");
-  }
+  // Validar que no sea futura
+  if (dateToUse > new Date()) throw new Error("La fecha de escucha no puede ser futura");
 
-  // 4️⃣ Crear registro en listens
+  // Insertar escucha directamente usando albumId
   const { data, error } = await supabase
     .from('listens')
     .insert([{
       user_id: userId,
-      album_id: album.id,
+      album_id: albumId,
       rating,
       liked,
       review,

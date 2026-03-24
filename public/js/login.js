@@ -30,11 +30,9 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
     }
 
     // ✅ Guardar token correctamente
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("userId", data.user.id);
-    localStorage.setItem("userEmail", data.user.email)
-
-    console.log("TOKEN GUARDADO:", localStorage.getItem("token"));
+   localStorage.setItem("token", data.session.access_token);
+localStorage.setItem("userId", data.user.id);
+localStorage.setItem("userEmail", data.user.email);
 
     // Redirigir
     window.location.href = "index.html";

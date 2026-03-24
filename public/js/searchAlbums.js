@@ -1,4 +1,5 @@
-const isLoggedIn = !!localStorage.getItem('token');
+const session = JSON.parse(localStorage.getItem('session'));
+const isLoggedIn = !!session?.access_token;
 
 const form = document.getElementById('search-form');
 const albumsContainer = document.getElementById('albums');

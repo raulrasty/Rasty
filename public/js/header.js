@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           if (res.ok) {
             // Guardar en localStorage
-            localStorage.setItem("token", data.token);
+            localStorage.setItem("token", data.session.access_token);
             localStorage.setItem("userId", data.user.id);
             localStorage.setItem("userEmail", data.user.email);
 

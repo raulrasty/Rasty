@@ -17,6 +17,8 @@ const listensRoutes = require('./routes/listensRoutes');
 app.use('/listens', listensRoutes);
 const songsRoutes = require('./routes/songsRoutes');
 app.use('/songs', songsRoutes);
+const albumInfoRoutes = require('./routes/albumInfoRoutes'); 
+app.use('/albumInfo', albumInfoRoutes);
 
 // Ruta de prueba simple
 app.get('/', (req, res) => {

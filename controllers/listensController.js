@@ -1,17 +1,16 @@
 const listensService = require('../services/listensService');
 
 async function addListen(req, res) {
-  const { title, artist, rating, liked, review, listen_date } = req.body;
+  const { album_id, rating, liked, review, listen_date } = req.body;
   const userId = req.user.id; // viene del middleware
 
-  if (!userId || !title) {
-    return res.status(400).json({ error: "Faltan parámetros obligatorios (usuario o título del álbum)" });
+  if (!userId || !album_id) {
+    return res.status(400).json({ error: "Faltan parámetros obligatorios (usuario o album_id)" });
   }
 
   try {
     const listen = await listensService.createListen(userId, {
-      albumTitle: title,
-      albumArtist: artist,
+      albumId: album_id, // ⚡ ahora usamos albumId
       rating,
       liked,
       review,

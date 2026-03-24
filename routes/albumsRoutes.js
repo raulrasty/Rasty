@@ -8,6 +8,6 @@ router.get('/', albumsController.getAlbums);
 
 
 // Buscar y guardar álbum desde MusicBrainz
-router.get('/search-mb', albumsController.searchAndSaveAlbum);
+router.get('/search-mb', albumsController.searchAndSaveAlbums);
 
 module.exports = router;

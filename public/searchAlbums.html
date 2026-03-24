@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Búsqueda de Álbumes</title>
+  <link rel="stylesheet" href="css/searchAlbums.css">
+    <link rel="stylesheet" href="css/header.css">
+</head>
+<body>
+    <div id="header-container"></div>
+  <h1>Buscar Álbumes</h1>
+
+  <form id="search-form">
+    <input type="text" id="artist" placeholder="Artista" required>
+    <input type="text" id="title" placeholder="Título (opcional)">
+    <button type="submit">Buscar</button>
+  </form>
+
+  <div id="albums" class="albums"></div>
+
+  <script src="js/searchAlbums.js"></script>
+    <script src="/js/header.js"></script>
+</body>
+</html>

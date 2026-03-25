@@ -1,31 +1,32 @@
-// controllers/usersController.js
-const usersService = require('../services/usersService');
 
-// --------------------
+const usersService = require("../services/usersService");
+const supabase = require("../config/supabaseClient");
+
+
 // REGISTER
-// --------------------
+
 async function register(req, res) {
-  const { email, password, username } = req.body; // quitar avatar_url, bio, etc.
+  const { email, password, username } = req.body; 
 
   if (!email || !password || !username) {
-    return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
   try {
-    const result = await usersService.register(email, password, username); // ✅ pasa username directo
+    const result = await usersService.register(email, password, username); 
     res.status(201).json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 }
-// --------------------
+
 // LOGIN
-// --------------------
+
 async function login(req, res) {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ error: 'Faltan datos' });
+    return res.status(400).json({ error: "Faltan datos" });
   }
 
   try {
@@ -36,25 +37,79 @@ async function login(req, res) {
   }
 }
 
-// --------------------
-// GET USER PROFILE BY ID
-// --------------------
-async function getUserById(req, res) {
-  const { id } = req.params;
+//Buscar usuarios
+async function searchUsersController(req, res) {
+  const { username } = req.query;
+ 
+  if (!username || username.trim() === "") {
+    return res.status(400).json({ error: "Debes introducir un nombre de usuario" });
+  }
+ 
+  try {
+    const users = await usersService.searchUsersService(username.trim());
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+
+
+//Obetener usuario por id
+
+async function getUserByIdController(req, res) {
+  const { user_id } = req.params;
 
   try {
-    const user = await usersService.getUserById(id);
+    const user = await usersService.getUserByIdService(user_id);
     res.json(user);
   } catch (err) {
     res.status(404).json({ error: err.message });
   }
 }
 
-// --------------------
-// EXPORT
-// --------------------
+//Actualizar info del usuario
+
+async function updateUserController(req, res) {
+  try {
+    const userId = req.userId; // 
+    const updates = { ...req.body };
+ 
+
+    if (req.file) {
+      const fileName = `${userId}-${Date.now()}`; 
+ 
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: true
+        });
+ 
+      if (uploadError) throw uploadError;
+ 
+     
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+ 
+      updates.avatar_url = urlData.publicUrl;
+    }
+ 
+    const updatedUser = await usersService.updateUserService(userId, updates);
+    res.json(updatedUser);
+ 
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
 module.exports = {
   register,
   login,
-  getUserById
+  getUserByIdController,
+  updateUserController,
+  searchUsersController
 };

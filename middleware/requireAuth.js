@@ -8,9 +8,13 @@ async function requireAuth(req, res, next) {
 
   const { data, error } = await supabase.auth.getUser(token);
 
+   console.log("DATA:", data); // 👈 añade esto
+  console.log("ERROR:", error)
+
   if (error || !data.user) return res.status(401).json({ error: 'Token inválido' });
 
   req.user = data.user;
+  req.userId = data.user.id;
   next();
 }
 

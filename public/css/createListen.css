@@ -1,75 +1,141 @@
+/* ============================================
+   CREATELISTEN.CSS
+   ============================================ */
+@import 'global.css';
+
 .listen-card {
-  max-width: 400px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  background-color: #fff;
-  font-family: sans-serif;
+  max-width: 560px;
+  margin: 60px auto;
+  padding: 0 20px;
 }
 
+/* Info álbum arriba */
 .album-info {
-  text-align: center;
-  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 28px;
 }
 
 .album-info img {
-  width: 200px;
-  height: 200px;
+  width: 72px;
+  height: 72px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.album-info h2 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.album-info p {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* Formulario */
+form {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .form-group {
-  margin: 0.8rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-group textarea,
+.form-group input[type="date"] {
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition);
+  resize: vertical;
+}
+
+.form-group textarea:focus,
+.form-group input[type="date"]:focus {
+  border-color: var(--accent);
+}
+
+/* Estrellas */
 .star-rating {
   display: flex;
-  font-size: 2rem;
-  cursor: pointer;
+  gap: 2px;
 }
 
 .star-rating span {
-  color: #ccc;
-  margin-right: 4px;
+  font-size: 1.6rem;
+  color: var(--border);
+  cursor: pointer;
+  transition: color var(--transition), transform 0.1s;
+  line-height: 1;
 }
 
+.star-rating span:hover,
 .star-rating span.filled {
-  color: gold;
+  color: #f5a623;
 }
 
+.star-rating span:hover { transform: scale(1.15); }
+
+/* Corazón */
 .heart {
-  font-size: 2rem;
+  font-size: 1.6rem;
+  color: var(--border);
   cursor: pointer;
-  color: #ccc;
-  transition: color 0.2s;
+  transition: color var(--transition), transform 0.15s;
+  line-height: 1;
 }
 
-.heart.liked {
-  color: red;
-}
+.heart.liked { color: #e05252; }
+.heart:hover { transform: scale(1.2); }
 
-button {
-  display: block;
-  width: 100%;
-  padding: 0.6rem;
-  background-color: #4CAF50;
-  color: #fff;
-  font-size: 1rem;
+/* Botón submit */
+button[type="submit"] {
+  padding: 12px;
+  background: var(--accent);
+  color: #000;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  transition: background var(--transition), transform 0.1s;
 }
 
-button:hover {
-  background-color: #45a049;
+button[type="submit"]:hover  { background: var(--accent-dark); }
+button[type="submit"]:active { transform: scale(0.98); }
+
+/* Mensaje */
+#message {
+  margin-top: 14px;
+  font-size: 0.9rem;
 }
 
-#message p.success {
-  color: green;
-}
-
-#message p.error {
-  color: red;
-}
+#message .error { color: var(--red); }

@@ -1,150 +1,162 @@
-/* ======================= Header ======================= */
+ader · CSS
+Copiar
+
+/* ============================================
+   HEADER.CSS
+   ============================================ */
+ 
 .main-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 18px 40px;
-  background: #111;
-  color: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
 }
-
-/* Logo / nombre de la página */
-.logo-text {
-  font-size: 26px;
-  font-weight: bold;
-  color: white;
-  text-decoration: none;
-}
-
-/* Nav links flex layout con 3 secciones */
+ 
 .nav-links {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 20px;
+  height: 100%;
 }
-
-/* Secciones izquierda, centro y derecha */
-.header-left {
-  flex: 1;
-  text-align: left;
-}
-
-.header-center {
-  flex: 1;
-  text-align: center;
-}
-
-.header-center a {
-  font-weight: bold;
-  color: #1db954;
-  text-decoration: none;
-  margin: 0 10px;
-}
-
-.header-center a:hover {
-  opacity: 0.8;
-}
-
+ 
+.header-left,
+.header-center,
 .header-right {
-  flex: 1;
-  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
-
+ 
+.header-left  { flex: 1; }
+.header-center { flex: 2; justify-content: center; }
+.header-right  { flex: 1; justify-content: flex-end; }
+ 
+/* Logo */
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+ 
+/* Nav links */
+.header-center a,
+.header-right a {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color var(--transition);
+  white-space: nowrap;
+}
+ 
+.header-center a:hover,
+.header-right a:hover {
+  color: var(--text);
+}
+ 
 .header-right span {
-  margin-right: 10px;
-  color: white;
+  font-size: 0.8rem;
+  color: var(--text-dim);
 }
-
-.header-right a.logout-link {
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-  margin-left: 5px;
+ 
+.logout-link {
+  color: var(--red) !important;
 }
-
-.header-right a.logout-link:hover {
-  opacity: 0.8;
+ 
+.logout-link:hover {
+  color: #ff6b6b !important;
 }
-
-/* ======================= Links generales ======================= */
-.nav-links a {
-  text-decoration: none;
-  color: white;
-  transition: 0.3s;
-}
-
-.nav-links a:hover {
-  opacity: 0.7;
-}
-
-.btn-register {
-  background: #1db954;
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-weight: bold;
-}
-
-/* ======================= MODAL ======================= */
+ 
+/* ---- Modal ---- */
 .modal {
   display: none;
   position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
   z-index: 999;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.6);
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
-
+ 
+.modal[style*="flex"] {
+  display: flex;
+}
+ 
 .modal-content {
-  background: white;
-  padding: 30px;
-  width: 350px;
-  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px;
+  width: 100%;
+  max-width: 400px;
   position: relative;
-  animation: fadeIn 0.3s ease;
 }
-
+ 
 .modal-content h2 {
-  margin-bottom: 15px;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 24px;
 }
-
+ 
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+ 
 .modal-content input {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
+  padding: 11px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition);
 }
-
-.modal-content button {
-  width: 100%;
-  padding: 10px;
-  background: #1db954;
+ 
+.modal-content input:focus {
+  border-color: var(--accent);
+}
+ 
+.modal-content button[type="submit"] {
+  padding: 11px;
+  background: var(--accent);
+  color: #000;
   border: none;
-  color: white;
-  font-weight: bold;
-  border-radius: 5px;
-  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background var(--transition);
 }
-
-.modal-content button:hover {
-  background: #17a74a;
+ 
+.modal-content button[type="submit"]:hover {
+  background: var(--accent-dark);
 }
-
+ 
 .close-btn {
   position: absolute;
-  right: 15px;
-  top: 10px;
-  font-size: 20px;
+  top: 14px;
+  right: 18px;
+  font-size: 1.4rem;
+  color: var(--text-muted);
   cursor: pointer;
+  line-height: 1;
+  transition: color var(--transition);
 }
-
-/* ======================= Animaciones ======================= */
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+ 
+.close-btn:hover {
+  color: var(--text);
+}
+ 
+.error-message {
+  color: var(--red);
+  font-size: 0.85rem;
+  min-height: 18px;
 }

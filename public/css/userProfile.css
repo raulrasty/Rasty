@@ -1,0 +1,66 @@
+/* ============================================
+   USERPROFILE.CSS
+   ============================================ */
+@import 'global.css';
+
+.profile-container {
+  max-width: 680px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+.profile-info {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.profile-info img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.profile-info h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.profile-info #bio {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  max-width: 420px;
+}
+
+.profile-info #location,
+.profile-info #birth_date {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.edit-btn {
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background var(--transition), color var(--transition);
+}
+
+.edit-btn:hover {
+  background: var(--accent);
+  color: #000;
+}

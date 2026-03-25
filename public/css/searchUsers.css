@@ -1,0 +1,90 @@
+/* ============================================
+   SEARCHUSERS.CSS
+   ============================================ */
+@import 'global.css';
+
+.search-container {
+  max-width: 700px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+.search-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 30px;
+}
+
+.search-form { margin-bottom: 40px; }
+
+.input-wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.input-wrapper input {
+  flex: 1;
+  padding: 11px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.input-wrapper input:focus { border-color: var(--accent); }
+
+.btn-search {
+  padding: 11px 24px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background var(--transition), transform 0.1s;
+}
+
+.btn-search:hover  { background: var(--accent-dark); }
+.btn-search:active { transform: scale(0.97); }
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+  text-decoration: none;
+  color: inherit;
+}
+
+.user-card:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+.user-card img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.user-username {
+  font-size: 0.95rem;
+  font-weight: 600;
+}

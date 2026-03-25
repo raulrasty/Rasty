@@ -24,9 +24,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Centro: Mis escuchas solo si logueado + Buscar siempre
   let centerHTML = '';
   if (userId && token) {
+    centerHTML += `<a href="/userProfile.html?user_id=${userId}" id="myProfileBtn">Mi perfil</a>`;
     centerHTML += `<a href="/listensUser.html?user_id=${userId}" id="myListensBtn">Mis escuchas</a>`;
   }
-  centerHTML += `<a href="/searchAlbums.html" id="searchBtn">Buscar</a>`;
+  centerHTML += `<a href="/searchAlbums.html" id="searchBtn">Albums</a>`;
+  centerHTML += `<a href="/searchUsers.html" id="searchBtn">Usuarios</a>`;
 
   // Derecha: Usuario y logout solo si logueado
   let rightHTML = '';

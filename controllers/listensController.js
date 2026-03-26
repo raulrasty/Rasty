@@ -1,7 +1,9 @@
 const listensService = require('../services/listensService');
 
+
+//Funcion añadir una escucha
 async function addListen(req, res) {
-  console.log("req.user:", req.user); // temporal para depurar
+  console.log("req.user:", req.user); 
   
   const { album_id, rating, liked, review, listen_date } = req.body;
   const userId = req.user?.id;
@@ -26,6 +28,7 @@ async function addListen(req, res) {
   }
 }
 
+//Funcion obtener las escuchas de un usuario
 async function getUserListens(req, res) {
   const { user_id } = req.params;
 

@@ -1,7 +1,9 @@
 require('dotenv').config();
 const supabase = require('../config/supabaseClient');
 const userAgentMB = process.env.MUSICBRAINZ_USER_AGENT;
- 
+
+
+//Para poder filtrar en la api y que me devuelva solo los albumes
 const TITLE_BLACKLIST = [
   'sampler', 'demo', 'session', 'sessions', 'radio', 'promo',
   'bootleg', 'interview', 'live', 'acoustic', 'unplugged',
@@ -16,19 +18,22 @@ function normalize(str) {
     .replace(/[^a-z0-9\s]/g, '')       // elimina símbolos raros
     .trim();
 }
- 
+
+//Para obtener todos los albumes de mi base de datos
 async function getAllAlbums() {
   const { data, error } = await supabase.from('albums').select('*');
   if (error) throw new Error(error.message);
   return data;
 }
- 
+
+//Para crear un album en la base de datos
 async function createAlbum(albumData) {
   const { data, error } = await supabase.from('albums').insert([albumData]).select();
   if (error) throw new Error(error.message);
   return data[0];
 }
  
+//Para obtener las canciones de un album
 async function getTracksFromDB(albumId) {
   const { data, error } = await supabase
     .from('songs')
@@ -42,23 +47,26 @@ async function getTracksFromDB(albumId) {
   return data || [];
 }
  
-// Devuelve la mejor URL de portada disponible para un release-group
-// Intenta primero el release-group (más fiable), luego la release concreta
+
+//Para obtener la portada del album
 async function getCoverUrl(rgId, releaseId) {
-  // 1. Intentar portada del release-group directamente
+
   const rgCoverUrl = `https://coverartarchive.org/release-group/${rgId}/front`;
   try {
     const res = await fetch(rgCoverUrl, { method: 'HEAD', headers: { "User-Agent": userAgentMB } });
     if (res.ok || res.status === 307 || res.redirected) return rgCoverUrl;
   } catch (_) {}
  
-  // 2. Fallback: portada de la release concreta
+
   if (releaseId && releaseId !== rgId) {
     return `https://coverartarchive.org/release/${releaseId}/front`;
   }
  
-  return rgCoverUrl; // devolver igualmente y dejar que el onerror del frontend lo maneje
+  return rgCoverUrl; 
 }
+
+
+//Para buscar albumes, y tras la bsuqueda si ese album no está en mi base de datos que se guarde, y además que guarde las canciones de ese album
  
 async function searchAndSaveAlbums(title, artist) {
   if (!artist) throw new Error("Debes proporcionar un artista");
@@ -67,7 +75,7 @@ async function searchAndSaveAlbums(title, artist) {
     ? `releasegroup:"${title}" AND artist:"${artist}"`
     : `artist:"${artist}"`;
 
-  // PAGINACIÓN PARA TRAER TODOS LOS RELEASE-GROUPS
+  // PAGINACIÓN 
   let allReleaseGroups = [];
   let offset = 0;
   const limit = 100;
@@ -96,7 +104,7 @@ async function searchAndSaveAlbums(title, artist) {
     throw new Error("No se encontraron álbumes");
   }
 
-  // FILTRADO COMO ANTES, PERO SOBRE allReleaseGroups
+  // FILTRADO PARA QUE SOLO ME TRAIGA ALBUMES LP
   const normalizedArtist = normalize(artist);
   const filtered = allReleaseGroups.filter(rg => {
     if (rg['primary-type'] !== 'Album') return false;
@@ -134,7 +142,7 @@ async function searchAndSaveAlbums(title, artist) {
       .eq('musicbrainz_id', rgId);
     if (existingError) throw new Error(existingError.message);
 
-    // Si no encuentra, buscar por título + artista (álbumes del sistema antiguo)
+    // Si no encuentra, buscar por título + artista 
     if (existing.length === 0) {
       const artistCredit = rg['artist-credit'][0].name;
       const { data: existingByTitle, error: titleError } = await supabase

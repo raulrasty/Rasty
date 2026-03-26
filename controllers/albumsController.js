@@ -1,6 +1,7 @@
 require('dotenv').config();
 const albumsService = require('../services/albumsService');
- 
+
+//Función para obtener todos los albumes
 async function getAlbums(req, res) {
   try {
     const albums = await albumsService.getAllAlbums();
@@ -10,6 +11,8 @@ async function getAlbums(req, res) {
   }
 }
  
+
+///Función de buscar y guardar album en la bbdd
 async function searchAndSaveAlbums(req, res) {
   const { title, artist } = req.query;
  
@@ -22,7 +25,7 @@ async function searchAndSaveAlbums(req, res) {
     }
  
     const results = await albumsService.searchAndSaveAlbums(title, artist);
-    // ✅  Devolvemos el array directamente para que el frontend pueda hacer Array.isArray()
+
     res.json(results);
   } catch (err) {
     console.error(err);

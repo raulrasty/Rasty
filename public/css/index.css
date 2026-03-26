@@ -1,7 +1,5 @@
-/* ============================================
-   INDEX.CSS
-   ============================================ */
-@import 'global.css';
+
+
 
 main, body > * { padding: 0 32px; }
 
@@ -13,7 +11,7 @@ h1 {
   color: var(--text);
 }
 
-/* ---- Secciones ---- */
+/*  Secciones */
 section {
   margin-bottom: 52px;
 }
@@ -30,7 +28,7 @@ section h2 {
   border-bottom: 1px solid var(--border);
 }
 
-/* ---- Búsqueda ---- */
+/* Búsqueda */
 #search-albums-section {
   display: flex;
   flex-wrap: wrap;
@@ -69,7 +67,7 @@ section h2 {
 
 #search-btn:hover { background: var(--accent-dark); }
 
-/* ---- Resultados búsqueda ---- */
+/* Resultados búsqueda  */
 #albums-results {
   width: 100%;
   margin-top: 20px;
@@ -111,7 +109,7 @@ section h2 {
   list-style: decimal;
 }
 
-/* ---- Lista escuchas ---- */
+/* Lista escuchas */
 #listens-list {
   display: flex;
   flex-direction: column;
@@ -127,7 +125,7 @@ section h2 {
   color: var(--text-muted);
 }
 
-/* ---- Lista álbumes ---- */
+/* Lista álbumes  */
 #albums-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

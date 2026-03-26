@@ -1,19 +1,21 @@
-// services/songsService.js
+
 const supabase = require('../config/supabaseClient');
+
+//Obtener las canciones de un album
 
 async function getSongsByAlbum(albumId) {
   try {
     const { data, error } = await supabase
-      .from('songs')          // nombre de la tabla
-      .select('position, title, length')  // columnas que quieres
-      .eq('album_id', albumId) // filtro por album
-      .order('position', { ascending: true }); // ordenar por posición
+      .from('songs')          
+      .select('position, title, length')  
+      .eq('album_id', albumId) 
+      .order('position', { ascending: true }); 
 
     if (error) {
       throw error;
     }
 
-    return data; // devuelve un array de canciones
+    return data;
   } catch (err) {
     console.error('Error en SongsService:', err);
     throw err;

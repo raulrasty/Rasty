@@ -1,5 +1,6 @@
 const albumInfoService = require("../services/albumInfoService");
 
+//Función de conseguir la info de un album
 async function getAlbum(req, res) {
   try {
     const { id } = req.params;

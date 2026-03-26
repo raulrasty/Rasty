@@ -1,27 +1,32 @@
-const session = JSON.parse(localStorage.getItem('session'));
-const isLoggedIn = !!session?.access_token;
 
 const form = document.getElementById('search-form');
 const albumsContainer = document.getElementById('albums');
 
+
+//Evento principal:buscar albumes
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const artist = document.getElementById('artist').value.trim();
   const title = document.getElementById('title').value.trim();
-  albumsContainer.innerHTML = '<p>Cargando resultados...</p>';
+  albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
 
+
+  //parametros de busqueda
   try {
     const query = new URLSearchParams({ artist });
     if (title) query.append('title', title);
 
+    //petición al back
     const res = await fetch(`http://localhost:3000/albums/search-mb?${query}`);
     const results = await res.json();
 
+    //validad resultados
     if (!Array.isArray(results) || results.length === 0) {
-      albumsContainer.innerHTML = '<p>No se encontraron álbumes.</p>';
+      albumsContainer.innerHTML = '<p class="state-msg">No se encontraron álbumes.</p>';
       return;
     }
 
+    //renderizado de los albumes
     albumsContainer.innerHTML = '';
     results.forEach(({ album }) => {
       const card = document.createElement('div');
@@ -31,22 +36,22 @@ form.addEventListener('submit', async (e) => {
         <h4>${album.title}</h4>
         <p>${album.artist}</p>
         <button onclick="viewAlbum('${album.id}')">Ver álbum</button>
-        ${isLoggedIn ? `<button onclick="createListen('${album.id}')">Crear Escucha</button>` : ''}
+        ${isLoggedIn() ? `<button onclick="goCreateListen('${album.id}')">Crear Escucha</button>` : ''}
       `;
       albumsContainer.appendChild(card);
     });
   } catch (err) {
     console.error(err);
-    albumsContainer.innerHTML = '<p>Error buscando álbumes.</p>';
+    albumsContainer.innerHTML = '<p class="state-msg">Error buscando álbumes.</p>';
   }
 });
 
+//funcion para ir a la página de la info album
 function viewAlbum(albumId) {
-  // Redirige a la página de detalle con query param
   window.location.href = `/albumInfo.html?id=${albumId}`;
 }
 
-function createListen(albumId) {
-  // Redirige a la página de registro de escucha con album_id
+//funcion para ir a la página de crear una escucha del album
+function goCreateListen(albumId) {
   window.location.href = `/createListen.html?album_id=${albumId}`;
 }

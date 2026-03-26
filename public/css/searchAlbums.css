@@ -1,7 +1,5 @@
-/* ============================================
-   SEARCHALBUMS.CSS
-   ============================================ */
-@import 'global.css';
+
+
 
 body > h1 {
   font-family: var(--font-display);
@@ -46,7 +44,7 @@ body > h1 {
 #search-form button:hover  { background: var(--accent-dark); }
 #search-form button:active { transform: scale(0.97); }
 
-/* ---- Grid de álbumes ---- */
+/*  Grid de álbumes  */
 .albums {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

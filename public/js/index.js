@@ -1,3 +1,7 @@
+
+////Esto hay que cambiarlo entero, fue donde se hiceron pruebas inciales
+
+
 const API_URL = "http://localhost:3000";
 let token = localStorage.getItem("token");
 let userId = localStorage.getItem("userId");

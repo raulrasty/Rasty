@@ -1,4 +1,4 @@
-//* Devuelve los datos de sesión del localStorage
+//Devuelve los datos de sesión del localStorage
 function getSession() {
   return {
     token:     localStorage.getItem("token"),

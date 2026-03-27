@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Importar rutas
+// Rutas importadas
 const usersRoutes = require('./routes/usersRoutes');
 app.use('/users', usersRoutes);
 const albumsRoutes = require('./routes/albumsRoutes');
@@ -20,7 +20,7 @@ app.use('/songs', songsRoutes);
 const albumInfoRoutes = require('./routes/albumInfoRoutes'); 
 app.use('/albumInfo', albumInfoRoutes);
 
-// Ruta de prueba simple
+
 app.get('/', (req, res) => {
   res.send('¡Servidor funcionando!');
 });

@@ -1,12 +1,12 @@
 
-////Esto hay que cambiarlo entero, fue donde se hiceron pruebas inciales
+////Esto tengo que cambiarlo entero, fue donde hice las pruebas inciales, para probar las primeras cosas que creé
 
 
 const API_URL = "http://localhost:3000";
 let token = localStorage.getItem("token");
 let userId = localStorage.getItem("userId");
 
-// ====================== CONTROL DE SECCIONES PRIVADAS ======================
+//  CONTROL DE SECCIONES PRIVADAS 
 function toggleUserSections() {
   const listensSection = document.getElementById("listens-section");
   const addListenButtons = document.querySelectorAll(".add-listen-btn");
@@ -20,7 +20,7 @@ function toggleUserSections() {
   }
 }
 
-// ====================== BUSCAR ÁLBUM ======================
+// BUSCAR ÁLBUM
 document.getElementById("search-btn").addEventListener("click", async () => {
   const title = document.getElementById("album-title").value;
   const artist = document.getElementById("album-artist").value;
@@ -94,7 +94,7 @@ document.getElementById("search-btn").addEventListener("click", async () => {
   }
 });
 
-// ====================== MIS ESCUCHAS ======================
+//  MIS ESCUCHAS 
 async function fetchUserListens() {
   if (!token || !userId) return;
 
@@ -123,7 +123,7 @@ async function fetchUserListens() {
   }
 }
 
-// ====================== TODOS LOS ÁLBUMES ======================
+// TODOS LOS ÁLBUMES 
 async function fetchAllAlbums() {
   try {
     const res = await fetch(`${API_URL}/albums`);
@@ -178,7 +178,7 @@ async function fetchAllAlbums() {
   }
 }
 
-// ====================== INICIAL ======================
+// INICIAR
 window.addEventListener("DOMContentLoaded", () => {
   fetchAllAlbums();
   toggleUserSections();

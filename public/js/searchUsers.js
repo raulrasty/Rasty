@@ -1,9 +1,11 @@
+
 const API_URL = "http://localhost:3000/users";
  
 const form = document.getElementById("searchForm");
 const searchInput = document.getElementById("searchInput");
 const resultsContainer = document.getElementById("results");
  
+//Envio del formulario
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
  
@@ -11,7 +13,8 @@ form.addEventListener("submit", async (e) => {
   if (!query) return;
  
   resultsContainer.innerHTML = '<p class="state-msg">Buscando...</p>';
- 
+  
+  // Petición a la API para buscar usuarios por username
   try {
     const res = await fetch(`${API_URL}/search?username=${encodeURIComponent(query)}`);
     if (!res.ok) throw new Error("Error en la búsqueda");
@@ -31,6 +34,9 @@ form.addEventListener("submit", async (e) => {
   }
 });
  
+
+
+//funcion para mostrar los resultados
 function renderResults(users) {
   resultsContainer.innerHTML = "";
  

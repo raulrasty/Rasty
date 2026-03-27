@@ -1,5 +1,7 @@
 const supabase = require('../config/supabaseClient');
 
+//Obtener la info de un album concreto
+
 async function getAlbumById(albumId) {
   const { data, error } = await supabase
     .from('albums')

@@ -1,24 +1,24 @@
+
 const API_URL = "http://localhost:3000/users";
 
-const token = localStorage.getItem("token");
-const userId = localStorage.getItem("userId");
-
-if (token && userId) {
-  window.location.href = "index.html";
+// Si ya hay sesión, redirigir al inicio
+if (isLoggedIn()) {
+  window.location.href = "/index.html";
 }
 
+//evento principal de login
 document.getElementById("login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  //obtener los datos del formulario
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
+  //petición al back para hacer el login
   try {
     const res = await fetch(`${API_URL}/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
     });
 
@@ -29,13 +29,11 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
       return;
     }
 
-    // ✅ Guardar token correctamente
-   localStorage.setItem("token", data.session.access_token);
-localStorage.setItem("userId", data.user.id);
-localStorage.setItem("userEmail", data.user.email);
+    //Guardar los datos
+    saveSession(data); 
 
     // Redirigir
-    window.location.href = "index.html";
+    window.location.href = "/index.html";
 
   } catch (err) {
     document.getElementById("error").textContent = "Error al conectar con el servidor";

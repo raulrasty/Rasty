@@ -3,11 +3,11 @@ const router = express.Router();
 
 const albumsController = require('../controllers/albumsController');
 
-// Obtener todos los álbumes
+//ruta para obtener todos los albumes
 router.get('/', albumsController.getAlbums);
 
 
-// Buscar y guardar álbum desde MusicBrainz
+//ruta para buscar y guardar un album desde  MusicBrainz
 router.get('/search-mb', albumsController.searchAndSaveAlbums);
 
 module.exports = router;

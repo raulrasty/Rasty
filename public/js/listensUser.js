@@ -1,11 +1,11 @@
-// Supongamos que el profileUserId viene de la URL:
-// /profile.html?user_id=5
+
 const params = new URLSearchParams(window.location.search);
+
+// ID del usuario cuyo perfil estamos visitando
 const profileUserId = params.get('user_id');
 
-// loggedInUserId lo obtenemos del token decoded o del backend
-const loggedInUserId = localStorage.getItem('user_id'); // ejemplo simple
 
+//Función para obtener las escuchas del usuario
 async function fetchListens() {
   try {
     const res = await fetch(`http://localhost:3000/listens/${profileUserId}`);
@@ -13,16 +13,17 @@ async function fetchListens() {
     displayListens(listens);
   } catch (err) {
     console.error(err);
-    document.getElementById('listens-container').innerHTML = "<p>Error cargando escuchas</p>";
+    document.getElementById('listens-container').innerHTML = '<p class="state-msg">Error cargando escuchas</p>';
   }
 }
 
+//Función para mostrar las escuchas
 function displayListens(listens) {
   const container = document.getElementById('listens-container');
   container.innerHTML = '';
 
   if (!listens.length) {
-    container.innerHTML = '<p>No hay escuchas registradas</p>';
+    container.innerHTML = '<p class="state-msg">No hay escuchas registradas</p>';
     return;
   }
 
@@ -39,26 +40,25 @@ function displayListens(listens) {
     info.className = 'listen-info';
     info.innerHTML = `
       <h2>${l.album.title} - ${l.album.artist}</h2>
-      <p><strong>Fecha:</strong> ${new Date(l.listen_date).toLocaleDateString()}</p>
+      <p><strong>Fecha:</strong> ${new Date(l.listen_date).toLocaleDateString('es-ES')}</p>
       ${l.rating ? `<p class="rating">⭐ ${l.rating}/5</p>` : ''}
       ${l.liked ? `<p class="liked">💚 Te gusta</p>` : ''}
       ${l.review ? `<p><em>"${l.review}"</em></p>` : ''}
     `;
 
-    // 🔹 Botón "Ver Álbum"
+    //botón para ir a ver la info del album
     const btnAlbum = document.createElement('button');
     btnAlbum.textContent = 'Ver Álbum';
     btnAlbum.className = 'btn-album';
-    btnAlbum.onclick = () => {
-      window.location.href = `/albumInfo.html?id=${l.album.id}`;
-    };
+    btnAlbum.onclick = () => window.location.href = `/albumInfo.html?id=${l.album.id}`;
     info.appendChild(btnAlbum);
 
-    // Botones de editar y eliminar (solo si es tu perfil)
-    if (profileUserId == loggedInUserId) {
+
+ //Botones de editar y eliminar solo si es el perfil del usuario logueado
+    if (isOwnProfile(profileUserId)) {
       const btnEdit = document.createElement('button');
       btnEdit.textContent = 'Editar';
-      btnEdit.onclick = () => editListen(l.id);
+      btnEdit.onclick = () => window.location.href = `/createListen.html?listen_id=${l.id}`;
 
       const btnDelete = document.createElement('button');
       btnDelete.textContent = 'Eliminar';
@@ -73,22 +73,16 @@ function displayListens(listens) {
     container.appendChild(card);
   });
 }
-
-// Funciones de ejemplo para editar/eliminar
-function editListen(listenId) {
-  alert(`Editar escucha ${listenId}`);
-}
-
+//función para ir a la página de editar una escucha
 async function deleteListen(listenId, cardElement) {
   if (!confirm('¿Seguro que quieres eliminar esta escucha?')) return;
+  const { token } = getSession();
 
-  const token = localStorage.getItem('token');
   const res = await fetch(`http://localhost:3000/listens/${listenId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
+    headers: { 'Authorization': `Bearer ${token}` }
   });
+
   if (res.ok) {
     cardElement.remove();
   } else {
@@ -96,5 +90,4 @@ async function deleteListen(listenId, cardElement) {
   }
 }
 
-// Cargar escuchas al inicio
 fetchListens();

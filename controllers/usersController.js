@@ -60,11 +60,13 @@ async function searchUsersController(req, res) {
 
 async function getUserByIdController(req, res) {
   const { user_id } = req.params;
+  console.log("Buscando usuario con ID:", user_id);
 
   try {
     const user = await usersService.getUserByIdService(user_id);
     res.json(user);
   } catch (err) {
+    console.error("Error en getUserById:", err.message);
     res.status(404).json({ error: err.message });
   }
 }

@@ -56,16 +56,15 @@ async function searchUsersService(username) {
 async function getUserByIdService(user_id) {
   const { data: user, error } = await supabase
     .from("users")
-    .select('*') 
+    .select('*')
     .eq("id", user_id)
-    .single();
+    .maybeSingle();
 
   if (error) throw new Error(error.message);
   if (!user) throw new Error("Usuario no encontrado");
 
   return user;
 }
-
 //ACTUALIZAR EL USUARIO
 async function updateUserService(user_id, updates) {
   const { data, error } = await supabase

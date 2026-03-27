@@ -1,9 +1,4 @@
-ader · CSS
-Copiar
 
-/* ============================================
-   HEADER.CSS
-   ============================================ */
  
 .main-header {
   position: sticky;
@@ -71,7 +66,7 @@ Copiar
   color: #ff6b6b !important;
 }
  
-/* ---- Modal ---- */
+/* Modal */
 .modal {
   display: none;
   position: fixed;

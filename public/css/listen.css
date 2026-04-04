@@ -107,12 +107,13 @@ form {
   font-size: 1.6rem;
   color: var(--border);
   cursor: pointer;
-  transition: color var(--transition), transform 0.15s;
+  transition: color var(--transition);
   line-height: 1;
+  display: inline-block;
 }
 
 .heart.liked { color: #e05252; }
-.heart:hover { transform: scale(1.2); }
+
 
 /* Botón submit */
 button[type="submit"] {

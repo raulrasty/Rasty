@@ -1,5 +1,3 @@
-
-
 // Redirige si no hay sesión
 if (!requireLogin()) throw new Error("No autenticado");
 
@@ -23,7 +21,6 @@ document.getElementById("albumId").value = albumId;
 // Establecer fecha actual por defecto
 document.getElementById("listen_date").valueAsDate = new Date();
 
-
 //Función para cargar la info del album
 async function loadAlbumInfo() {
   try {
@@ -32,9 +29,12 @@ async function loadAlbumInfo() {
 
     const album = await res.json();
     document.getElementById("album-cover").src =
-      album.cover_url?.trim() || "https://via.placeholder.com/200?text=Sin+portada";
-    document.getElementById("album-title").textContent = album.title || "Título no disponible";
-    document.getElementById("album-artist").textContent = album.artist || "Artista no disponible";
+      album.cover_url?.trim() ||
+      "https://via.placeholder.com/200?text=Sin+portada";
+    document.getElementById("album-title").textContent =
+      album.title || "Título no disponible";
+    document.getElementById("album-artist").textContent =
+      album.artist || "Artista no disponible";
   } catch (err) {
     console.error(err);
     messageDiv.innerHTML = `<p class="error">No se pudo cargar la información del álbum: ${err.message}</p>`;
@@ -50,7 +50,7 @@ const stars = document.querySelectorAll(".star-rating span");
 const ratingInput = document.getElementById("ratingValue");
 
 // Evento click para cada estrella
-stars.forEach(star => {
+stars.forEach((star) => {
   star.addEventListener("click", () => {
     const value = parseFloat(star.dataset.value);
     ratingInput.value = value;
@@ -60,12 +60,12 @@ stars.forEach(star => {
 
 // Función que pinta estrellas activas
 function updateStars(value) {
-  stars.forEach(star => {
+  stars.forEach((star) => {
     star.classList.toggle("filled", parseFloat(star.dataset.value) <= value);
   });
 }
 
-// Sistema de Me gusta/Corazón 
+// Sistema de Me gusta/Corazón
 
 // Icono corazón
 const heart = document.getElementById("heart");
@@ -90,17 +90,16 @@ form.addEventListener("submit", async (e) => {
   const formData = new FormData(form);
   const body = Object.fromEntries(formData.entries());
 
-    // Convertir tipos correctamente
+  // Convertir tipos correctamente
   body.rating = body.rating ? parseFloat(body.rating) : null;
   body.liked = body.liked === "true";
 
   // Petición POST para crear escucha
   try {
-    const res = await fetch("http://localhost:3000/listens", {
+    const res = await authFetch("http://localhost:3000/listens", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
     });

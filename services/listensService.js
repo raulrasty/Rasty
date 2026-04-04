@@ -39,4 +39,53 @@ async function getListensByUser(user_id) {
   return data;
 }
 
-module.exports = { createListen, getListensByUser };
+
+// Eliminar una escucha propia
+async function deleteListen(listenId, userId) {
+  // Verificar que la escucha pertenece al usuario
+  const { data: listen, error: findError } = await supabase
+    .from('listens')
+    .select('*')
+    .eq('id', listenId)
+    .eq('user_id', userId)
+    .single();
+
+  if (findError || !listen) throw new Error("Escucha no encontrada o no tienes permiso");
+
+  const { error } = await supabase
+    .from('listens')
+    .delete()
+    .eq('id', listenId);
+
+  if (error) throw new Error(error.message);
+  return { message: "Escucha eliminada correctamente" };
+}
+
+// Editar una escucha propia
+async function updateListen(listenId, userId, { rating, liked, review, listen_date }) {
+  // Verificar que la escucha pertenece al usuario
+  const { data: listen, error: findError } = await supabase
+    .from('listens')
+    .select('*')
+    .eq('id', listenId)
+    .eq('user_id', userId)
+    .single();
+
+  if (findError || !listen) throw new Error("Escucha no encontrada o no tienes permiso");
+
+  // Validar fecha 
+  if (listen_date && new Date(listen_date) > new Date()) {
+    throw new Error("La fecha de escucha no puede ser futura");
+  }
+
+  const { data, error } = await supabase
+    .from('listens')
+    .update({ rating, liked, review, listen_date })
+    .eq('id', listenId)
+    .select();
+
+  if (error) throw new Error(error.message);
+  return data[0];
+}
+
+module.exports = { createListen, getListensByUser, deleteListen, updateListen };

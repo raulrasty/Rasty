@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Registrar escucha</title>
+  <title>Editar escucha</title>
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/listen.css">
@@ -17,9 +17,8 @@
       <p id="album-artist"></p>
     </div>
 
-    <form id="listenForm">
-      
-      <input type="hidden" name="album_id" id="albumId">
+    <form id="editListenForm">
+
       <input type="hidden" name="rating" id="ratingValue">
       <input type="hidden" name="liked" id="likedValue" value="false">
 
@@ -54,7 +53,7 @@
         <input type="date" id="listen_date" name="listen_date">
       </div>
 
-      <button type="submit">Registrar escucha</button>
+      <button type="submit">Guardar cambios</button>
     </form>
 
     <div id="message"></div>
@@ -62,6 +61,6 @@
 
   <script src="/js/header.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/createListen.js"></script>
+  <script src="/js/editListen.js"></script>
 </body>
 </html>

@@ -58,7 +58,7 @@ function displayListens(listens) {
     if (isOwnProfile(profileUserId)) {
       const btnEdit = document.createElement('button');
       btnEdit.textContent = 'Editar';
-      btnEdit.onclick = () => window.location.href = `/createListen.html?listen_id=${l.id}`;
+      btnEdit.onclick = () => window.location.href = `/editListen.html?listen_id=${l.id}`;
 
       const btnDelete = document.createElement('button');
       btnDelete.textContent = 'Eliminar';
@@ -78,10 +78,9 @@ async function deleteListen(listenId, cardElement) {
   if (!confirm('¿Seguro que quieres eliminar esta escucha?')) return;
   const { token } = getSession();
 
-  const res = await fetch(`http://localhost:3000/listens/${listenId}`, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
+  const res = await authFetch(`http://localhost:3000/listens/${listenId}`, {
+  method: 'DELETE'
+});
 
   if (res.ok) {
     cardElement.remove();

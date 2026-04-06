@@ -45,6 +45,8 @@ async function loadSongsForSelection() {
     const data = await res.json();
     const songs = data.songs || [];
 
+    console.log("Canciones cargadas:", songs);
+
     const list = document.getElementById("favorite-songs-list");
     list.innerHTML = "";
 

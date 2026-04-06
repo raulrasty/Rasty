@@ -7,7 +7,7 @@ async function getSongsByAlbum(albumId) {
   try {
     const { data, error } = await supabase
       .from('songs')          
-      .select('position, title, length')  
+      .select('id, position, title, length') 
       .eq('album_id', albumId) 
       .order('position', { ascending: true }); 
 

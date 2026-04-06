@@ -19,7 +19,10 @@ const songsRoutes = require('./routes/songsRoutes');
 app.use('/songs', songsRoutes);
 const albumInfoRoutes = require('./routes/albumInfoRoutes'); 
 app.use('/albumInfo', albumInfoRoutes);
-
+const followsRoutes = require('./routes/followsRoutes');
+app.use('/follows', followsRoutes);
+const favoriteSongsRoutes = require('./routes/favoriteSongsRoutes');
+app.use('/favorite-songs', favoriteSongsRoutes);
 
 app.get('/', (req, res) => {
   res.send('¡Servidor funcionando!');

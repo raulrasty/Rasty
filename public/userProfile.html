@@ -1,50 +1,93 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Perfil de Usuario</title>
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/header.css" />
+    <link rel="stylesheet" href="css/userProfile.css" />
+  </head>
+  <body>
+    <div id="header-container"></div>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Perfil de Usuario</title>
-  <link rel="stylesheet" href="css/global.css">
-  <link rel="stylesheet" href="css/header.css">
-  <link rel="stylesheet" href="css/userProfile.css">
-</head>
-
-<body>
-
-  <div id="header-container"></div>
-
-  <main class="profile-container">
-
-    <div class="profile-info">
-      <img id="avatar" src="" alt="Avatar">
-
-      <h2 id="username">Cargando...</h2>
-      <p id="bio">Sin biografía</p>
-      <p id="location"></p>
-      <p id="birth_date"></p>
-
-      <!-- Contadores de seguidores y seguidos -->
-      <div class="follow-stats">
-        <span><strong id="followers-count">0</strong> seguidores</span>
-        <span><strong id="following-count">0</strong> siguiendo</span>
+    <main class="profile-container">
+      <!-- Cabecera del perfil -->
+      <div class="profile-header">
+        <div class="profile-header-top">
+          <img id="avatar" src="" alt="Avatar" />
+          <h2 id="username">Cargando...</h2>
+        </div>
+        <p id="bio"></p>
+        <div class="profile-header-meta">
+          <span id="location"></span>
+          <span id="birth_date"></span>
+        </div>
+        <div class="profile-actions">
+          <button id="followBtn" class="follow-btn hidden"></button>
+          <button id="editProfileBtn" class="edit-btn hidden">
+            Editar perfil
+          </button>
+        </div>
       </div>
 
-      <!-- Botón seguir/dejar de seguir (solo si no es tu perfil) -->
-      <button id="followBtn" class="follow-btn hidden"></button>
+      <!-- Barra de navegación del perfil -->
+      <div class="profile-nav">
+        <span id="albums-nav" class="profile-nav-item">
+          <strong id="albums-count">0</strong> Álbumes
+        </span>
+        <span id="listens-nav" class="profile-nav-item">
+          <strong id="listens-count">0</strong> Escuchas
+        </span>
+        <span id="followers-nav" class="profile-nav-item">
+          <strong id="followers-count">0</strong> Seguidores
+        </span>
+        <span id="following-nav" class="profile-nav-item">
+          <strong id="following-count">0</strong> Siguiendo
+        </span>
+      </div>
 
-      <!-- Botón editar (solo si es tu perfil) -->
-      <button id="editProfileBtn" class="edit-btn hidden">Editar perfil</button>
+      <!-- Álbumes favoritos -->
+      <div class="profile-section">
+        <div class="section-header">
+          <h3>Álbumes favoritos</h3>
+          <button id="editFavAlbumsBtn" class="edit-fav-btn hidden">
+            Editar
+          </button>
+        </div>
+        <div id="favorite-albums-grid" class="favorite-albums-grid"></div>
+      </div>
+      <!-- Medias de Puntuaciones -->
+      <div class="profile-section">
+        <h3>Mis puntuaciones</h3>
+        <div id="user-rating-chart" class="user-rating-chart"></div>
+        <p id="user-rating-average" class="user-rating-average"></p>
+      </div>
 
-      <!-- Botón ver escuchas (siempre visible) -->
-      <button id="listensBtn" class="listens-btn">Ver escuchas</button>
+      <!-- Últimas escuchas -->
+      <div class="profile-section">
+        <h3>Últimas escuchas</h3>
+        <div id="recent-listens" class="recent-listens"></div>
+      </div>
+    </main>
+
+    <!-- Modal para editar álbumes favoritos -->
+    <div id="favAlbumsModal" class="profile-modal hidden">
+      <div class="modal-content">
+        <h3>Tus álbumes favoritos</h3>
+        <p class="fav-hint">
+          Añade álbumes desde <a href="/searchAlbums.html">la búsqueda</a> o
+          desde la página de cada álbum.
+        </p>
+        <div id="favAlbumSelected" class="fav-album-selected"></div>
+        <div class="modal-actions">
+          <button id="saveFavAlbums" class="save-fav-btn">Guardar</button>
+          <button id="closeFavModal" class="close-fav-btn">Cancelar</button>
+        </div>
+      </div>
     </div>
 
-  </main>
-
-  <script src="/js/header.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/userProfile.js"></script>
-
-</body>
-
+    <script src="/js/header.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/userProfile.js"></script>
+  </body>
 </html>

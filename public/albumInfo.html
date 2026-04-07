@@ -13,13 +13,15 @@
   <div class="album-container">
     <div class="album-card">
 
-      <!-- Parte superior: info + canciones -->
       <div class="album-top">
         <div class="album-info">
           <img id="album-cover" src="" alt="Portada del álbum" />
           <h1 id="album-title">Cargando...</h1>
           <h2 id="album-artist"></h2>
           <p id="album-year"></p>
+
+          <!-- Botón favorito (solo si logueado) -->
+          <button id="fav-album-btn" class="fav-album-btn hidden">⭐ Añadir a favoritos</button>
 
           <!-- Tu rating (solo si logueado) -->
           <div id="user-rating-section" class="user-rating-section hidden">
@@ -55,7 +57,6 @@
           <h3>Canciones</h3>
           <ul id="songs-container"></ul>
 
-          <!-- Botón guardar favoritas (solo si logueado) -->
           <div id="favorite-songs-section" class="favorite-songs-section hidden">
             <p id="favorites-message"></p>
             <button id="save-favorites-btn">Guardar favoritas</button>
@@ -63,16 +64,13 @@
         </div>
       </div>
 
-      <!-- Secciones a ancho completo -->
       <div class="album-bottom">
 
-        <!-- Favoritas y ratings de seguidos -->
         <div id="following-section" class="following-section hidden">
           <h3>Tus seguidos</h3>
           <div id="following-list"></div>
         </div>
 
-        <!-- Comunidad: gráfica + favoritas -->
         <div class="community-section">
           <h3>Comunidad</h3>
           <div class="community-inner">
@@ -93,6 +91,7 @@
 
   <script src="/js/header.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/favAlbumSelector.js"></script>
   <script src="js/albumInfo.js"></script>
 </body>
 </html>

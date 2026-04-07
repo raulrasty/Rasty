@@ -69,5 +69,17 @@ async function updateListen(req, res) {
   }
 }
 
+async function getUserAlbums(req, res) {
+  const { user_id } = req.params;
 
-module.exports = { addListen, getUserListens, deleteListen, updateListen };
+  try {
+    const albums = await listensService.getAlbumsByUser(user_id);
+    res.json(albums);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { addListen, getUserListens, deleteListen, updateListen, getUserAlbums };
+

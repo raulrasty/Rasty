@@ -25,6 +25,10 @@ const favoriteSongsRoutes = require('./routes/favoriteSongsRoutes');
 app.use('/favorite-songs', favoriteSongsRoutes);
 const albumRatingsRoutes = require('./routes/albumRatingsRoutes');
 app.use('/album-ratings', albumRatingsRoutes);
+const favoriteAlbumsRoutes = require('./routes/favoriteAlbumsRoutes');
+app.use('/favorite-albums', favoriteAlbumsRoutes);
+const userRatingRoutes = require('./routes/userRatingRoutes');
+app.use('/user-ratings', userRatingRoutes);
 
 app.get('/', (req, res) => {
   res.send('¡Servidor funcionando!');

@@ -6,6 +6,9 @@ const requireAuth = require('../middleware/requireAuth');
 //ruta para registrar una escucha
 router.post('/', requireAuth, listensController.addListen);
 
+//Álbumes únicos de un usuario
+router.get('/albums/:user_id', listensController.getUserAlbums);
+
 //ruta para obtener las escuchas de un usuario
 router.get('/:user_id', listensController.getUserListens);
 

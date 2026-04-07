@@ -19,6 +19,15 @@ function renderAlbums(results) {
       <button onclick="viewAlbum('${album.id}')">Ver álbum</button>
       ${isLoggedIn() ? `<button onclick="goCreateListen('${album.id}')">Crear Escucha</button>` : ''}
     `;
+
+    if (isLoggedIn()) {
+      const favBtn = document.createElement('button');
+      favBtn.textContent = '⭐ Favorito';
+      favBtn.className = 'fav-album-btn';
+      favBtn.addEventListener('click', () => openFavSlotSelector(album));
+      card.appendChild(favBtn);
+    }
+
     albumsContainer.appendChild(card);
   });
 }
@@ -45,7 +54,7 @@ function renderCandidates(candidates, title) {
   });
 }
 
-// Búsqueda por ID del artista una vez el usuario ha elegido
+// Búsqueda por ID del artista
 async function searchByArtistId(artistId, artistName, title) {
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
 
@@ -77,7 +86,6 @@ form.addEventListener('submit', async (e) => {
     const res = await fetch(`http://localhost:3000/albums/search-mb?${query}`);
     const data = await res.json();
 
-    // Si hay varios artistas con el mismo nombre, mostrar candidatos
     if (data.disambiguation) {
       renderCandidates(data.candidates, title);
       return;
@@ -90,12 +98,10 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-// Función para ir a la página de info del álbum
 function viewAlbum(albumId) {
   window.location.href = `/albumInfo.html?id=${albumId}`;
 }
 
-// Función para ir a la página de crear una escucha
 function goCreateListen(albumId) {
   window.location.href = `/createListen.html?album_id=${albumId}`;
 }

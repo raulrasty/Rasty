@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
- 
+
 :root {
   --bg:          #0a0a0a;
   --bg-card:     #141414;
@@ -18,13 +18,13 @@
   --font-display: 'Syne', sans-serif;
   --font-body:    'Inter', sans-serif;
 }
- 
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
- 
+
 html, body {
   background-color: var(--bg);
   color: var(--text);
@@ -33,43 +33,41 @@ html, body {
   line-height: 1.6;
   min-height: 100vh;
 }
- 
+
 a {
   color: inherit;
   text-decoration: none;
 }
- 
+
 button {
   cursor: pointer;
   font-family: var(--font-body);
 }
- 
+
 input, textarea, select {
   font-family: var(--font-body);
 }
- 
+
 img {
   display: block;
   max-width: 100%;
 }
- 
+
 ul {
   list-style: none;
 }
- 
-/* Utilidades compartidas  */
+
 .hidden {
   display: none !important;
 }
- 
+
 .state-msg {
   text-align: center;
   color: var(--text-muted);
   font-size: 0.95rem;
   margin-top: 24px;
 }
- 
-/* Inputs */
+
 .input-base {
   width: 100%;
   padding: 11px 16px;
@@ -81,12 +79,11 @@ ul {
   outline: none;
   transition: border-color var(--transition);
 }
- 
+
 .input-base:focus {
   border-color: var(--accent);
 }
- 
-/* Botón primario  */
+
 .btn-primary {
   padding: 11px 26px;
   background: var(--accent);
@@ -97,11 +94,10 @@ ul {
   font-weight: 600;
   transition: background var(--transition), transform 0.1s;
 }
- 
+
 .btn-primary:hover  { background: var(--accent-dark); }
 .btn-primary:active { transform: scale(0.97); }
- 
-/*  Botón secundario  */
+
 .btn-secondary {
   padding: 8px 18px;
   background: transparent;
@@ -112,12 +108,128 @@ ul {
   font-weight: 500;
   transition: border-color var(--transition), color var(--transition);
 }
- 
+
 .btn-secondary:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
- 
-/*  Mensajes  */
+
 .msg-success { color: var(--accent); font-size: 0.9rem; margin-top: 12px; }
 .msg-error   { color: var(--red);    font-size: 0.9rem; margin-top: 12px; }
+
+/* 
+POPUP SELECTOR ÁLBUMES FAVORITOS
+   */
+
+.fav-slot-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.fav-slot-popup {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  max-width: 480px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fav-slot-popup h4 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.fav-slot-album-name {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.fav-slot-grid {
+  display: flex;
+  gap: 8px;
+}
+
+.fav-slot-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.fav-slot-item:hover {
+  border-color: var(--accent);
+}
+
+.fav-slot-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.fav-slot-empty {
+  width: 60px;
+  height: 60px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--text-dim);
+}
+
+.fav-slot-cancel {
+  padding: 8px 20px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  align-self: flex-end;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.fav-slot-cancel:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.fav-album-btn {
+  padding: 7px 12px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+  width: 100%;
+}
+
+.fav-album-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

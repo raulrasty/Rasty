@@ -12,7 +12,7 @@ function formatDuration(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
 async function loadAlbum() {
@@ -33,34 +33,37 @@ async function loadAlbum() {
   try {
     const resAlbum = await fetch(`${API_URL_ALBUM}/${currentAlbumId}`);
     const album = await resAlbum.json();
-    if (!resAlbum.ok) throw new Error(album.error || "Error al cargar el álbum");
+    if (!resAlbum.ok)
+      throw new Error(album.error || "Error al cargar el álbum");
 
-    coverImg.src = album.cover_url?.trim() || 'images/fallback.jpg';
+    coverImg.src = album.cover_url?.trim() || "images/fallback.jpg";
     titleEl.innerText = album.title || "Título no disponible";
     artistEl.innerText = album.artist || "Artista no disponible";
-    yearEl.innerText = album.release_year ? `Año de lanzamiento: ${album.release_year}` : '';
+    yearEl.innerText = album.release_year
+      ? `Año de lanzamiento: ${album.release_year}`
+      : "";
 
     const resSongs = await fetch(`${API_URL_SONGS}/${currentAlbumId}`);
     const songsData = await resSongs.json();
     albumSongs = songsData.songs || [];
 
-    songsContainer.innerHTML = '';
+    songsContainer.innerHTML = "";
     if (albumSongs.length > 0) {
-      albumSongs.forEach(song => {
-        const li = document.createElement('li');
-        li.className = 'song-item';
+      albumSongs.forEach((song) => {
+        const li = document.createElement("li");
+        li.className = "song-item";
         li.dataset.songId = song.id;
         li.innerText = `${song.position}. ${song.title} (${formatDuration(song.length)})`;
 
         if (isLoggedIn()) {
-          li.classList.add('clickable');
-          li.addEventListener('click', () => toggleFavoriteSong(song.id, li));
+          li.classList.add("clickable");
+          li.addEventListener("click", () => toggleFavoriteSong(song.id, li));
         }
 
         songsContainer.appendChild(li);
       });
     } else {
-      songsContainer.innerHTML = '<li>No hay canciones disponibles</li>';
+      songsContainer.innerHTML = "<li>No hay canciones disponibles</li>";
     }
 
     // Cargar datos de comunidad
@@ -72,54 +75,70 @@ async function loadAlbum() {
       await loadUserRating(currentAlbumId);
       await loadFollowingData(currentAlbumId);
 
-      document.getElementById("favorite-songs-section").classList.remove("hidden");
+      document
+        .getElementById("favorite-songs-section")
+        .classList.remove("hidden");
       document.getElementById("user-rating-section").classList.remove("hidden");
       document.getElementById("following-section").classList.remove("hidden");
 
-      // Guardar favoritas
-      document.getElementById("save-favorites-btn").addEventListener("click", async () => {
-        const favMsg = document.getElementById("favorites-message");
-        try {
-          await authFetch(`${API_URL_FAVORITES}/album/${currentAlbumId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ songIds: selectedSongIds }),
-          });
-          favMsg.textContent = "Favoritas guardadas";
-          favMsg.style.color = "var(--accent)";
-          await loadCommunityData(currentAlbumId);
-        } catch (err) {
-          favMsg.textContent = "Error al guardar";
-          favMsg.style.color = "var(--red)";
-        }
+      // Botón favorito
+      const favBtn = document.getElementById("fav-album-btn");
+      favBtn.classList.remove("hidden");
+      favBtn.addEventListener("click", () => {
+        openFavSlotSelector({
+          id: currentAlbumId,
+          title: titleEl.innerText,
+          cover_url: coverImg.src,
+        });
       });
+
+      // Guardar canciones favoritas
+      document
+        .getElementById("save-favorites-btn")
+        .addEventListener("click", async () => {
+          const favMsg = document.getElementById("favorites-message");
+          try {
+            await authFetch(`${API_URL_FAVORITES}/album/${currentAlbumId}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ songIds: selectedSongIds }),
+            });
+            favMsg.textContent = "Favoritas guardadas";
+            favMsg.style.color = "var(--accent)";
+            await loadCommunityData(currentAlbumId);
+          } catch (err) {
+            favMsg.textContent = "Error al guardar";
+            favMsg.style.color = "var(--red)";
+          }
+        });
 
       // Guardar rating
-      document.getElementById("save-rating-btn").addEventListener("click", async () => {
-        const ratingMsg = document.getElementById("rating-message");
-        if (!currentUserRating) {
-          ratingMsg.textContent = "Selecciona una puntuación";
-          ratingMsg.style.color = "var(--red)";
-          return;
-        }
-        try {
-          await authFetch(`${API_URL_RATINGS}/${currentAlbumId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ rating: currentUserRating }),
-          });
-          ratingMsg.textContent = "Puntuación guardada";
-          ratingMsg.style.color = "var(--accent)";
-          await loadCommunityData(currentAlbumId);
-        } catch (err) {
-          ratingMsg.textContent = "Error al guardar";
-          ratingMsg.style.color = "var(--red)";
-        }
-      });
+      document
+        .getElementById("save-rating-btn")
+        .addEventListener("click", async () => {
+          const ratingMsg = document.getElementById("rating-message");
+          if (!currentUserRating) {
+            ratingMsg.textContent = "Selecciona una puntuación";
+            ratingMsg.style.color = "var(--red)";
+            return;
+          }
+          try {
+            await authFetch(`${API_URL_RATINGS}/${currentAlbumId}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ rating: currentUserRating }),
+            });
+            ratingMsg.textContent = "Puntuación guardada";
+            ratingMsg.style.color = "var(--accent)";
+            await loadCommunityData(currentAlbumId);
+          } catch (err) {
+            ratingMsg.textContent = "Error al guardar";
+            ratingMsg.style.color = "var(--red)";
+          }
+        });
     }
-
   } catch (error) {
-    console.error('Error cargando álbum:', error);
+    console.error("Error cargando álbum:", error);
     titleEl.innerText = "Error";
   }
 }
@@ -134,20 +153,22 @@ async function loadUserRating(albumId) {
   } catch (_) {}
 
   // Eventos de estrellas
-  document.querySelectorAll("#album-star-rating .half, #album-star-rating .full").forEach(span => {
-    span.addEventListener("click", (e) => {
-      e.stopPropagation();
-      currentUserRating = parseFloat(span.dataset.value);
-      updateAlbumStars(currentUserRating);
+  document
+    .querySelectorAll("#album-star-rating .half, #album-star-rating .full")
+    .forEach((span) => {
+      span.addEventListener("click", (e) => {
+        e.stopPropagation();
+        currentUserRating = parseFloat(span.dataset.value);
+        updateAlbumStars(currentUserRating);
+      });
     });
-  });
 }
 
 function updateAlbumStars(value) {
-  document.querySelectorAll("#album-star-rating .half").forEach(half => {
+  document.querySelectorAll("#album-star-rating .half").forEach((half) => {
     half.classList.toggle("filled", parseFloat(half.dataset.value) <= value);
   });
-  document.querySelectorAll("#album-star-rating .full").forEach(full => {
+  document.querySelectorAll("#album-star-rating .full").forEach((full) => {
     full.classList.toggle("filled", parseFloat(full.dataset.value) <= value);
   });
 }
@@ -157,13 +178,16 @@ async function loadUserFavorites(albumId) {
   try {
     const res = await authFetch(`${API_URL_FAVORITES}/album/${albumId}`);
     const currentFavorites = await res.json();
-    selectedSongIds = currentFavorites.map(f => f.song_id);
+    selectedSongIds = currentFavorites.map((f) => f.song_id);
   } catch (_) {
     selectedSongIds = [];
   }
 
-  document.querySelectorAll('.song-item').forEach(li => {
-    li.classList.toggle('selected', selectedSongIds.includes(li.dataset.songId));
+  document.querySelectorAll(".song-item").forEach((li) => {
+    li.classList.toggle(
+      "selected",
+      selectedSongIds.includes(li.dataset.songId),
+    );
   });
 }
 
@@ -171,7 +195,7 @@ async function loadUserFavorites(albumId) {
 function toggleFavoriteSong(songId, element) {
   const favMsg = document.getElementById("favorites-message");
   if (selectedSongIds.includes(songId)) {
-    selectedSongIds = selectedSongIds.filter(id => id !== songId);
+    selectedSongIds = selectedSongIds.filter((id) => id !== songId);
     element.classList.remove("selected");
   } else {
     if (selectedSongIds.length >= 3) {
@@ -191,7 +215,7 @@ async function loadCommunityData(albumId) {
     const [avgRes, distRes, favsRes] = await Promise.all([
       fetch(`${API_URL_RATINGS}/${albumId}/average`),
       fetch(`${API_URL_RATINGS}/${albumId}/distribution`),
-      fetch(`${API_URL_FAVORITES}/album/${albumId}/top`)
+      fetch(`${API_URL_FAVORITES}/album/${albumId}/top`),
     ]);
 
     const { average } = await avgRes.json();
@@ -219,7 +243,6 @@ async function loadCommunityData(albumId) {
         list.appendChild(li);
       });
     }
-
   } catch (err) {
     console.error("Error cargando datos comunidad:", err);
   }
@@ -235,7 +258,7 @@ function renderRatingChart(distribution, total) {
   const labels = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
   const max = Math.max(...Object.values(distribution));
 
-  labels.forEach(val => {
+  labels.forEach((val) => {
     const count = distribution[val] || 0;
     const pct = max > 0 ? (count / max) * 100 : 0;
 
@@ -257,7 +280,7 @@ async function loadFollowingData(albumId) {
   try {
     const [favsRes, ratingsRes] = await Promise.all([
       authFetch(`${API_URL_FAVORITES}/album/${albumId}/following`),
-      authFetch(`${API_URL_RATINGS}/${albumId}/following`)
+      authFetch(`${API_URL_RATINGS}/${albumId}/following`),
     ]);
 
     const favsData = await favsRes.json();
@@ -283,12 +306,14 @@ async function loadFollowingData(albumId) {
 
     const users = Object.values(usersMap);
     if (!users.length) {
-      container.innerHTML = '<p class="empty-msg">Nadie a quien sigues ha interactuado con este álbum</p>';
+      container.innerHTML =
+        '<p class="empty-msg">Nadie a quien sigues ha interactuado con este álbum</p>';
       return;
     }
 
     users.forEach(({ user, songs, rating }) => {
-      const avatarSrc = user.avatar_url ||
+      const avatarSrc =
+        user.avatar_url ||
         `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=40`;
 
       const div = document.createElement("div");
@@ -299,16 +324,19 @@ async function loadFollowingData(albumId) {
           <span class="following-username">${user.username}</span>
         </a>
         <div class="following-data">
-          ${rating ? `<p class="following-rating">★ ${rating}</p>` : ''}
-          ${songs.length ? `
+          ${rating ? `<p class="following-rating">★ ${rating}</p>` : ""}
+          ${
+            songs.length
+              ? `
             <ul class="following-songs">
-              ${songs.map(s => `<li>🎵 ${s.title}</li>`).join("")}
-            </ul>` : ''}
+              ${songs.map((s) => `<li>🎵 ${s.title}</li>`).join("")}
+            </ul>`
+              : ""
+          }
         </div>
       `;
       container.appendChild(div);
     });
-
   } catch (err) {
     console.error("Error cargando datos de seguidos:", err);
   }

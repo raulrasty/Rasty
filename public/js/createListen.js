@@ -29,9 +29,7 @@ async function loadAlbumInfo() {
     document.getElementById("album-title").textContent = album.title || "Título no disponible";
     document.getElementById("album-artist").textContent = album.artist || "Artista no disponible";
 
-    // Cargar canciones para seleccionar favoritas
     await loadSongsForSelection();
-
   } catch (err) {
     console.error(err);
     messageDiv.innerHTML = `<p class="error">No se pudo cargar la información del álbum: ${err.message}</p>`;
@@ -45,21 +43,17 @@ async function loadSongsForSelection() {
     const data = await res.json();
     const songs = data.songs || [];
 
-    console.log("Canciones cargadas:", songs);
-
     const list = document.getElementById("favorite-songs-list");
     list.innerHTML = "";
 
-    songs.forEach(song => {
+    songs.forEach((song) => {
       const li = document.createElement("li");
       li.className = "favorite-song-item";
       li.dataset.songId = song.id;
       li.textContent = `${song.position}. ${song.title}`;
-
       li.addEventListener("click", () => toggleFavoriteSong(song.id, li));
       list.appendChild(li);
     });
-
   } catch (err) {
     console.error("Error cargando canciones:", err);
   }
@@ -68,7 +62,7 @@ async function loadSongsForSelection() {
 // Seleccionar/deseleccionar canción favorita
 function toggleFavoriteSong(songId, element) {
   if (selectedSongIds.includes(songId)) {
-    selectedSongIds = selectedSongIds.filter(id => id !== songId);
+    selectedSongIds = selectedSongIds.filter((id) => id !== songId);
     element.classList.remove("selected");
   } else {
     if (selectedSongIds.length >= 3) {
@@ -84,20 +78,24 @@ function toggleFavoriteSong(songId, element) {
 loadAlbumInfo();
 
 // Sistema de estrellas
-const stars = document.querySelectorAll(".star-rating span");
 const ratingInput = document.getElementById("ratingValue");
 
-stars.forEach((star) => {
-  star.addEventListener("click", () => {
-    const value = parseFloat(star.dataset.value);
+// Click en media estrella o estrella entera
+document.querySelectorAll(".star .half, .star .full").forEach(span => {
+  span.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const value = parseFloat(span.dataset.value);
     ratingInput.value = value;
     updateStars(value);
   });
 });
 
 function updateStars(value) {
-  stars.forEach((star) => {
-    star.classList.toggle("filled", parseFloat(star.dataset.value) <= value);
+  document.querySelectorAll(".star .half").forEach(half => {
+    half.classList.toggle("filled", parseFloat(half.dataset.value) <= value);
+  });
+  document.querySelectorAll(".star .full").forEach(full => {
+    full.classList.toggle("filled", parseFloat(full.dataset.value) <= value);
   });
 }
 
@@ -123,7 +121,6 @@ form.addEventListener("submit", async (e) => {
   body.liked = body.liked === "true";
 
   try {
-    // Crear el listen
     const res = await authFetch("http://localhost:3000/listens", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -137,9 +134,14 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    // Si hay canciones favoritas seleccionadas, guardarlas
     if (selectedSongIds.length > 0) {
       await authFetch(`http://localhost:3000/favorite-songs/listen/${data.listen.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ songIds: selectedSongIds }),
+      });
+
+      await authFetch(`http://localhost:3000/favorite-songs/album/${albumId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ songIds: selectedSongIds }),
@@ -147,7 +149,6 @@ form.addEventListener("submit", async (e) => {
     }
 
     window.location.href = `/listensUser.html?user_id=${userId}`;
-
   } catch (err) {
     console.error(err);
     messageDiv.innerHTML = `<p class="error">Error al registrar escucha</p>`;

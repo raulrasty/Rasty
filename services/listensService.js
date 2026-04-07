@@ -6,10 +6,19 @@ const albumsService = require('./albumsService');
 //Crear la escucha de un album
 async function createListen(userId, { albumId, rating = null, liked = false, review = null, listen_date = null }) {
 
-  const dateToUse = listen_date ? new Date(listen_date) : new Date();
+  let dateToUse;
+  if (listen_date) {
+    // Combinar la fecha elegida con la hora actual
+    const chosenDate = new Date(listen_date);
+    const now = new Date();
+    chosenDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+    dateToUse = chosenDate;
+  } else {
+    dateToUse = new Date();
+  }
+
   if (dateToUse > new Date()) throw new Error("La fecha de escucha no puede ser futura");
 
-  // Insertar escucha directamente usando albumId
   const { data, error } = await supabase
     .from('listens')
     .insert([{
@@ -73,14 +82,18 @@ async function updateListen(listenId, userId, { rating, liked, review, listen_da
 
   if (findError || !listen) throw new Error("Escucha no encontrada o no tienes permiso");
 
-  // Validar fecha 
+  // Validar fecha si se proporciona
   if (listen_date && new Date(listen_date) > new Date()) {
     throw new Error("La fecha de escucha no puede ser futura");
   }
 
+  // ✅ Solo actualizar listen_date si el usuario la cambió
+  const updates = { rating, liked, review };
+  if (listen_date) updates.listen_date = listen_date;
+
   const { data, error } = await supabase
     .from('listens')
-    .update({ rating, liked, review, listen_date })
+    .update(updates)
     .eq('id', listenId)
     .select();
 

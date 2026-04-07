@@ -1,73 +1,85 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Registrar escucha</title>
-  <link rel="stylesheet" href="css/global.css">
-  <link rel="stylesheet" href="css/header.css">
-  <link rel="stylesheet" href="css/listen.css">
-</head>
-<body>
-  <div id="header-container"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar escucha</title>
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/header.css" />
+    <link rel="stylesheet" href="css/listen.css" />
+  </head>
+  <body>
+    <div id="header-container"></div>
 
-  <main class="listen-card">
-    <div class="album-info">
-      <img id="album-cover" src="" alt="Portada del álbum">
-      <h2 id="album-title"></h2>
-      <p id="album-artist"></p>
-    </div>
+    <main class="listen-card">
+      <div class="album-info">
+        <img id="album-cover" src="" alt="Portada del álbum" />
+        <h2 id="album-title"></h2>
+        <p id="album-artist"></p>
+      </div>
 
-    <form id="listenForm">
-      
-      <input type="hidden" name="album_id" id="albumId">
-      <input type="hidden" name="rating" id="ratingValue">
-      <input type="hidden" name="liked" id="likedValue" value="false">
+      <form id="listenForm">
+        <input type="hidden" name="album_id" id="albumId" />
+        <input type="hidden" name="rating" id="ratingValue" />
+        <input type="hidden" name="liked" id="likedValue" value="false" />
 
-      <div class="form-group">
-        <label>Puntuación:</label>
-        <div class="star-rating">
-          <span data-value="0.5">&#9733;</span>
-          <span data-value="1">&#9733;</span>
-          <span data-value="1.5">&#9733;</span>
-          <span data-value="2">&#9733;</span>
-          <span data-value="2.5">&#9733;</span>
-          <span data-value="3">&#9733;</span>
-          <span data-value="3.5">&#9733;</span>
-          <span data-value="4">&#9733;</span>
-          <span data-value="4.5">&#9733;</span>
-          <span data-value="5">&#9733;</span>
+        <div class="form-group">
+          <label>Puntuación:</label>
+          <div class="star-rating">
+            <span class="star" data-value="1">
+              <span class="half" data-value="0.5">★</span>
+              <span class="full" data-value="1">★</span>
+            </span>
+            <span class="star" data-value="2">
+              <span class="half" data-value="1.5">★</span>
+              <span class="full" data-value="2">★</span>
+            </span>
+            <span class="star" data-value="3">
+              <span class="half" data-value="2.5">★</span>
+              <span class="full" data-value="3">★</span>
+            </span>
+            <span class="star" data-value="4">
+              <span class="half" data-value="3.5">★</span>
+              <span class="full" data-value="4">★</span>
+            </span>
+            <span class="star" data-value="5">
+              <span class="half" data-value="4.5">★</span>
+              <span class="full" data-value="5">★</span>
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label>Me gusta:</label>
-        <span id="heart" class="heart">&#10084;</span>
-      </div>
+        <div class="form-group">
+          <label>Me gusta:</label>
+          <span id="heart" class="heart">&#10084;</span>
+        </div>
 
-      <div class="form-group">
-        <label for="review">Reseña:</label>
-        <textarea id="review" name="review" rows="4"></textarea>
-      </div>
+        <div class="form-group">
+          <label for="review">Reseña:</label>
+          <textarea id="review" name="review" rows="4"></textarea>
+        </div>
 
-      <div class="form-group">
-        <label for="listen_date">Fecha de escucha:</label>
-        <input type="date" id="listen_date" name="listen_date">
-      </div>
+        <div class="form-group">
+          <label for="listen_date">Fecha de escucha:</label>
+          <input type="date" id="listen_date" name="listen_date" />
+        </div>
 
-      <!-- Canciones favoritas -->
-      <div class="form-group">
-        <label>Canciones favoritas <span class="label-hint">(máximo 3)</span></label>
-        <ul id="favorite-songs-list" class="favorite-songs-list"></ul>
-      </div>
+        <!-- Canciones favoritas -->
+        <div class="form-group">
+          <label
+            >Canciones favoritas
+            <span class="label-hint">(máximo 3)</span></label
+          >
+          <ul id="favorite-songs-list" class="favorite-songs-list"></ul>
+        </div>
 
-      <button type="submit">Registrar escucha</button>
-    </form>
+        <button type="submit">Registrar escucha</button>
+      </form>
 
-    <div id="message"></div>
-  </main>
+      <div id="message"></div>
+    </main>
 
-  <script src="/js/header.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/createListen.js"></script>
-</body>
+    <script src="/js/header.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/createListen.js"></script>
+  </body>
 </html>

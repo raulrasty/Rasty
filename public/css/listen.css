@@ -84,23 +84,44 @@ form {
 /* Estrellas */
 .star-rating {
   display: flex;
-  gap: 2px;
+  gap: 4px;
 }
 
-.star-rating span {
+.star {
+  position: relative;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.star .half,
+.star .full {
+  position: absolute;
+  top: 0;
   font-size: 1.6rem;
   color: var(--border);
-  cursor: pointer;
-  transition: color var(--transition), transform 0.1s;
   line-height: 1;
+  transition: color var(--transition);
+  overflow: hidden;
 }
 
-.star-rating span:hover,
-.star-rating span.filled {
+.star .half {
+  left: 0;
+  width: 43%;
+  z-index: 2; 
+}
+
+.star .full {
+  left: 0;
+  width: 100%;
+  z-index: 1; 
+}
+
+.star .half.filled,
+.star .full.filled {
   color: #f5a623;
 }
-
-.star-rating span:hover { transform: scale(1.15); }
 
 /* Corazón */
 .heart {

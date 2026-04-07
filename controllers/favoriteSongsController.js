@@ -53,9 +53,36 @@ async function getAlbumFavoriteSongs(req, res) {
   }
 }
 
+// Obtener las 3 canciones más elegidas por la comunidad
+async function getTopAlbumSongsByUsers(req, res) {
+  const { albumId } = req.params;
+
+  try {
+    const songs = await favoriteSongsService.getTopAlbumSongsByUsers(albumId);
+    res.json(songs);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+
+async function getFollowingFavoritesByAlbum(req, res) {
+  const { albumId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const data = await favoriteSongsService.getFollowingFavoritesByAlbum(albumId, userId);
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
 module.exports = {
   saveListenFavoriteSongs,
   getListenFavoriteSongs,
   saveAlbumFavoriteSongs,
-  getAlbumFavoriteSongs
+  getAlbumFavoriteSongs,
+  getTopAlbumSongsByUsers,
+  getFollowingFavoritesByAlbum 
 };

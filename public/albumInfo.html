@@ -12,26 +12,82 @@
 
   <div class="album-container">
     <div class="album-card">
-      <div class="album-info">
-        <img id="album-cover" src="" alt="Portada del álbum" />
-        <h1 id="album-title">Cargando...</h1>
-        <h2 id="album-artist"></h2>
-        <p id="album-year"></p>
+
+      <!-- Parte superior: info + canciones -->
+      <div class="album-top">
+        <div class="album-info">
+          <img id="album-cover" src="" alt="Portada del álbum" />
+          <h1 id="album-title">Cargando...</h1>
+          <h2 id="album-artist"></h2>
+          <p id="album-year"></p>
+
+          <!-- Tu rating (solo si logueado) -->
+          <div id="user-rating-section" class="user-rating-section hidden">
+            <p class="rating-label">Tu puntuación</p>
+            <div class="star-rating" id="album-star-rating">
+              <span class="star" data-value="1">
+                <span class="half" data-value="0.5">★</span>
+                <span class="full" data-value="1">★</span>
+              </span>
+              <span class="star" data-value="2">
+                <span class="half" data-value="1.5">★</span>
+                <span class="full" data-value="2">★</span>
+              </span>
+              <span class="star" data-value="3">
+                <span class="half" data-value="2.5">★</span>
+                <span class="full" data-value="3">★</span>
+              </span>
+              <span class="star" data-value="4">
+                <span class="half" data-value="3.5">★</span>
+                <span class="full" data-value="4">★</span>
+              </span>
+              <span class="star" data-value="5">
+                <span class="half" data-value="4.5">★</span>
+                <span class="full" data-value="5">★</span>
+              </span>
+            </div>
+            <button id="save-rating-btn">Guardar puntuación</button>
+            <p id="rating-message"></p>
+          </div>
+        </div>
+
+        <div class="songs-list">
+          <h3>Canciones</h3>
+          <ul id="songs-container"></ul>
+
+          <!-- Botón guardar favoritas (solo si logueado) -->
+          <div id="favorite-songs-section" class="favorite-songs-section hidden">
+            <p id="favorites-message"></p>
+            <button id="save-favorites-btn">Guardar favoritas</button>
+          </div>
+        </div>
       </div>
 
-      <div class="songs-list">
-        <h3>Canciones</h3>
-        <ul id="songs-container"></ul>
-      </div>
+      <!-- Secciones a ancho completo -->
+      <div class="album-bottom">
 
-      <!-- Canciones favoritas del álbum (solo si estás logueado) -->
-      <div id="favorite-songs-section" class="favorite-songs-section hidden">
-        <h3>Tus canciones favoritas <span class="label-hint">(máximo 3)</span></h3>
-        <ul id="album-favorite-songs-list" class="favorite-songs-list"></ul>
-        <button id="save-favorites-btn">Guardar favoritas</button>
-        <p id="favorites-message"></p>
-      </div>
+        <!-- Favoritas y ratings de seguidos -->
+        <div id="following-section" class="following-section hidden">
+          <h3>Tus seguidos</h3>
+          <div id="following-list"></div>
+        </div>
 
+        <!-- Comunidad: gráfica + favoritas -->
+        <div class="community-section">
+          <h3>Comunidad</h3>
+          <div class="community-inner">
+            <div class="community-rating">
+              <p id="community-average"></p>
+              <div id="rating-chart" class="rating-chart"></div>
+            </div>
+            <div class="community-songs">
+              <p class="community-songs-label">Canciones favoritas</p>
+              <ul id="community-favorites-list"></ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 

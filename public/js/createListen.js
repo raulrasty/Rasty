@@ -14,7 +14,6 @@ if (!albumId) {
 document.getElementById("albumId").value = albumId;
 document.getElementById("listen_date").valueAsDate = new Date();
 
-// Canciones favoritas seleccionadas
 let selectedSongIds = [];
 
 // Cargar info del álbum y canciones
@@ -80,7 +79,6 @@ loadAlbumInfo();
 // Sistema de estrellas
 const ratingInput = document.getElementById("ratingValue");
 
-// Click en media estrella o estrella entera
 document.querySelectorAll(".star .half, .star .full").forEach(span => {
   span.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -134,6 +132,7 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
+    // Guardar canciones favoritas del listen
     if (selectedSongIds.length > 0) {
       await authFetch(`http://localhost:3000/favorite-songs/listen/${data.listen.id}`, {
         method: "POST",
@@ -141,10 +140,20 @@ form.addEventListener("submit", async (e) => {
         body: JSON.stringify({ songIds: selectedSongIds }),
       });
 
+      // Actualizar album favorite songs
       await authFetch(`http://localhost:3000/favorite-songs/album/${albumId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ songIds: selectedSongIds }),
+      });
+    }
+
+    // Actualizar album rating si hay puntuación
+    if (body.rating) {
+      await authFetch(`http://localhost:3000/album-ratings/${albumId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating: body.rating }),
       });
     }
 

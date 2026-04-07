@@ -173,12 +173,14 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
+    // Actualizar canciones favoritas del listen
     await authFetch(`http://localhost:3000/favorite-songs/listen/${listenId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ songIds: selectedSongIds }),
     });
 
+    // Comprobar si es el listen más reciente
     const allListensRes = await authFetch(`http://localhost:3000/listens/user/${userId}`);
     const allListens = await allListensRes.json();
     const albumListens = allListens
@@ -186,11 +188,21 @@ form.addEventListener("submit", async (e) => {
       .sort((a, b) => new Date(b.listen_date) - new Date(a.listen_date));
 
     if (albumListens[0]?.id === listenId) {
+      // Actualizar album favorite songs
       await authFetch(`http://localhost:3000/favorite-songs/album/${currentAlbumId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ songIds: selectedSongIds }),
       });
+
+      // Actualizar album rating si hay puntuación
+      if (body.rating) {
+        await authFetch(`http://localhost:3000/album-ratings/${currentAlbumId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rating: body.rating }),
+        });
+      }
     }
 
     window.location.href = `/listensUser.html?user_id=${userId}`;

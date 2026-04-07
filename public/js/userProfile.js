@@ -35,6 +35,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       await loadFollowButton();
     }
 
+    // Botón ver escuchas (siempre visible)
+    document.getElementById("listensBtn").addEventListener("click", () => {
+      window.location.href = `/listensUser.html?user_id=${profileUserId}`;
+    });
+
   } catch (err) {
     console.error(err);
     displayError("Error cargando el usuario. Comprueba que el servidor está corriendo.");
@@ -92,7 +97,6 @@ async function loadFollowButton() {
         await authFetch(`${FOLLOWS_URL}/${profileUserId}`, { method: "POST" });
       }
 
-      // Actualizar botón y contadores
       updateFollowButton(followBtn, !isCurrentlyFollowing);
       await loadFollowStats();
     });

@@ -130,10 +130,29 @@ async function getAlbumsByUser(userId) {
   // Ordenar por año de lanzamiento de más reciente a más antiguo
   return unique.sort((a, b) => (b.release_year || 0) - (a.release_year || 0));
 }
+
+
+async function getListensByUserPaginated(user_id, page = 1, limit = 20) {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  const { data, error, count } = await supabase
+    .from("listens")
+    .select(`*, album:album_id(*)`, { count: 'exact' })
+    .eq("user_id", user_id)
+    .order("listen_date", { ascending: false })
+    .order("id", { ascending: false })
+    .range(from, to);
+
+  if (error) throw new Error(error.message);
+  return { listens: data, total: count, page, limit };
+}
+
 module.exports = {
   createListen,
   getListensByUser,
   deleteListen,
   updateListen,
   getAlbumsByUser,
+  getListensByUserPaginated
 };

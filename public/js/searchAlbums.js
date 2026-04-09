@@ -9,50 +9,101 @@ function renderAlbums(results) {
   }
 
   albumsContainer.innerHTML = '';
+  albumsContainer.className = 'albums';
+
   results.forEach(({ album }) => {
     const card = document.createElement('div');
     card.className = 'album-card';
-    card.innerHTML = `
-      <img src="${album.cover_url}" alt="${album.title}" onerror="this.src='https://via.placeholder.com/200?text=Sin+portada'">
-      <h4>${album.title}</h4>
-      <p>${album.artist}</p>
-      <button onclick="viewAlbum('${album.id}')">Ver álbum</button>
-      ${isLoggedIn() ? `<button onclick="goCreateListen('${album.id}')">Crear Escucha</button>` : ''}
-    `;
+
+    const img = document.createElement('img');
+    img.src = album.cover_url || 'https://via.placeholder.com/200?text=Sin+portada';
+    img.alt = album.title;
+    img.onerror = () => img.src = 'https://via.placeholder.com/200?text=Sin+portada';
+
+    const title = document.createElement('h4');
+    title.textContent = album.title;
+
+    const artist = document.createElement('p');
+    artist.textContent = album.artist;
+
+    const spacer = document.createElement('div');
+    spacer.className = 'album-card-spacer';
+
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'album-card-buttons';
+
+    const btnVer = document.createElement('button');
+    btnVer.textContent = 'Ver álbum';
+    btnVer.className = 'btn-ver-album';
+    btnVer.addEventListener('click', () => viewAlbum(album.id));
+    btnGroup.appendChild(btnVer);
 
     if (isLoggedIn()) {
+      const btnListen = document.createElement('button');
+      btnListen.textContent = 'Crear escucha';
+      btnListen.className = 'btn-crear-escucha';
+      btnListen.addEventListener('click', () => goCreateListen(album.id));
+      btnGroup.appendChild(btnListen);
+
       const favBtn = document.createElement('button');
       favBtn.textContent = '⭐ Favorito';
       favBtn.className = 'fav-album-btn';
       favBtn.addEventListener('click', () => openFavSlotSelector(album));
-      card.appendChild(favBtn);
+      btnGroup.appendChild(favBtn);
     }
 
+    card.appendChild(img);
+    card.appendChild(title);
+    card.appendChild(artist);
+    card.appendChild(spacer);
+    card.appendChild(btnGroup);
     albumsContainer.appendChild(card);
   });
 }
-
+// Convertir código de país a emoji de bandera
+function countryToFlag(countryCode) {
+  if (!countryCode || countryCode.length !== 2) return '';
+  const flag = countryCode
+    .toUpperCase()
+    .split('')
+    .map(c => String.fromCodePoint(0x1F1A5 + c.charCodeAt(0)))
+    .join('');
+  console.log('Flag para', countryCode, ':', flag);
+  return flag;
+}
 // Función para mostrar candidatos cuando hay varios artistas con el mismo nombre
 function renderCandidates(candidates, title) {
+  albumsContainer.className = 'candidates-container';
   albumsContainer.innerHTML = `
-    <p class="state-msg">Se encontraron varios artistas con ese nombre. ¿Cuál buscas?</p>
+    <p class="candidates-title">Se encontraron varios artistas con ese nombre. ¿Cuál buscas?</p>
     <div id="candidates-list"></div>
   `;
 
   const candidatesList = document.getElementById('candidates-list');
 
   candidates.forEach(candidate => {
+    console.log('País:', candidate.country);
     const btn = document.createElement('button');
     btn.className = 'candidate-btn';
+
+    const flag = candidate.country
+      ? `<img src="https://flagcdn.com/24x18/${candidate.country.toLowerCase()}.png" alt="${candidate.country}" class="candidate-flag-img">`
+      : '';
+
     btn.innerHTML = `
-      <strong>${candidate.name}</strong>
-      ${candidate.disambiguation ? `<span> — ${candidate.disambiguation}</span>` : ''}
-      ${candidate.country ? `<span> (${candidate.country})</span>` : ''}
+      ${flag}
+      <div>
+        <strong>${candidate.name}</strong>
+        ${candidate.disambiguation ? `<span> — ${candidate.disambiguation}</span>` : ''}
+        ${candidate.country ? `<span> (${candidate.country})</span>` : ''}
+      </div>
     `;
+
     btn.addEventListener('click', () => searchByArtistId(candidate.id, candidate.name, title));
     candidatesList.appendChild(btn);
   });
 }
+
 
 // Búsqueda por ID del artista
 async function searchByArtistId(artistId, artistName, title) {

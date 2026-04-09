@@ -25,6 +25,8 @@ function setLoading(loading) {
   document.getElementById(id)?.addEventListener("input", clearErrors);
 });
 
+document.getElementById("acceptPrivacy")?.addEventListener("change", clearErrors);
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   clearErrors();
@@ -33,6 +35,7 @@ form.addEventListener("submit", async (e) => {
   const email = form.email.value.trim();
   const password = form.password.value;
   const passwordConfirm = form.passwordConfirm.value;
+  const acceptPrivacy = document.getElementById("acceptPrivacy").checked;
 
   let hasErrors = false;
 
@@ -70,6 +73,12 @@ form.addEventListener("submit", async (e) => {
     hasErrors = true;
   } else if (password !== passwordConfirm) {
     setFieldError("passwordConfirm", "Las contraseñas no coinciden");
+    hasErrors = true;
+  }
+
+  // Validar política de privacidad
+  if (!acceptPrivacy) {
+    setFieldError("acceptPrivacy", "Debes aceptar la política de privacidad");
     hasErrors = true;
   }
 

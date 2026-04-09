@@ -21,4 +21,7 @@ router.delete('/:id', requireAuth, listensController.deleteListen);
 // Editar una escucha (requiere auth)
 router.put('/:id', requireAuth, listensController.updateListen);
 
+//Obtener escuchas de un usuario con paginación
+router.get('/paginated/:user_id', listensController.getUserListensPaginated);
+
 module.exports = router;

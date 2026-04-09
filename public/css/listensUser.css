@@ -2,7 +2,7 @@
 
 #listens-container {
   max-width: 760px;
-  margin: 60px auto;
+  margin: 0 auto;
   padding: 0 20px;
   display: flex;
   flex-direction: column;
@@ -97,7 +97,7 @@
   font-style: italic;
 }
 
-/* Canciones favoritas — bloque independiente entre info y botones */
+/* Canciones favoritas */
 .listen-favorites {
   flex-shrink: 0;
   font-size: 0.82rem;
@@ -123,7 +123,7 @@
   color: var(--text-muted);
 }
 
-/* Botones a la derecha */
+/* Botones */
 .listen-actions {
   display: flex;
   flex-direction: column;
@@ -157,4 +157,86 @@
 .btn-delete:hover {
   border-color: var(--red) !important;
   color: var(--red) !important;
+}
+
+/* Paginación */
+.pagination {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pagination-top {
+  margin-top: 40px;
+}
+
+.pagination-bottom {
+  margin-bottom: 60px;
+}
+
+.pagination-btn {
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-page {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+
+.pagination-page:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pagination-page.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.pagination-dots {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  padding: 0 4px;
+}
+
+.pagination-info {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 0 8px;
 }

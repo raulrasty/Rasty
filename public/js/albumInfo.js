@@ -7,12 +7,60 @@ let albumSongs = [];
 let selectedSongIds = [];
 let currentAlbumId = null;
 let currentUserRating = null;
+let currentAudio = null;
+let currentPlayBtn = null;
 
 function formatDuration(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
   return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+// Buscar preview en iTunes
+async function getItunesPreview(songTitle, artistName) {
+  try {
+    const query = encodeURIComponent(`${songTitle} ${artistName}`);
+    const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
+    const data = await res.json();
+    return data.results?.[0]?.previewUrl || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// Reproducir/pausar preview
+function togglePreview(previewUrl, btn) {
+  // Si hay otro audio reproduciéndose, pararlo
+  if (currentAudio && currentPlayBtn && currentPlayBtn !== btn) {
+    currentAudio.pause();
+    currentAudio = null;
+    currentPlayBtn.textContent = "▶";
+    currentPlayBtn.classList.remove("playing");
+  }
+
+  if (currentAudio && currentPlayBtn === btn) {
+    currentAudio.pause();
+    currentAudio = null;
+    currentPlayBtn = null;
+    btn.textContent = "▶";
+    btn.classList.remove("playing");
+    return;
+  }
+
+  const audio = new Audio(previewUrl);
+  audio.play();
+  currentAudio = audio;
+  currentPlayBtn = btn;
+  btn.textContent = "⏸";
+  btn.classList.add("playing");
+
+  audio.addEventListener("ended", () => {
+    btn.textContent = "▶";
+    btn.classList.remove("playing");
+    currentAudio = null;
+    currentPlayBtn = null;
+  });
 }
 
 async function loadAlbum() {
@@ -49,11 +97,30 @@ async function loadAlbum() {
 
     songsContainer.innerHTML = "";
     if (albumSongs.length > 0) {
-      albumSongs.forEach((song) => {
+      for (const song of albumSongs) {
         const li = document.createElement("li");
         li.className = "song-item";
         li.dataset.songId = song.id;
-        li.innerText = `${song.position}. ${song.title} (${formatDuration(song.length)})`;
+
+        // Texto de la canción
+        const songText = document.createElement("span");
+        songText.className = "song-text";
+        songText.textContent = `${song.position}. ${song.title} (${formatDuration(song.length)})`;
+        li.appendChild(songText);
+
+        // Buscar preview en iTunes
+        const previewUrl = await getItunesPreview(song.title, album.artist);
+        if (previewUrl) {
+          const playBtn = document.createElement("button");
+          playBtn.className = "preview-btn";
+          playBtn.textContent = "▶";
+          playBtn.title = "Escuchar preview";
+          playBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            togglePreview(previewUrl, playBtn);
+          });
+          li.appendChild(playBtn);
+        }
 
         if (isLoggedIn()) {
           li.classList.add("clickable");
@@ -61,15 +128,13 @@ async function loadAlbum() {
         }
 
         songsContainer.appendChild(li);
-      });
+      }
     } else {
       songsContainer.innerHTML = "<li>No hay canciones disponibles</li>";
     }
 
-    // Cargar datos de comunidad
     await loadCommunityData(currentAlbumId);
 
-    // Si está logueado
     if (isLoggedIn()) {
       await loadUserFavorites(currentAlbumId);
       await loadUserRating(currentAlbumId);
@@ -79,7 +144,6 @@ async function loadAlbum() {
       document.getElementById("user-rating-section").classList.remove("hidden");
       document.getElementById("following-section").classList.remove("hidden");
 
-      // Botón favorito
       const favBtn = document.getElementById("fav-album-btn");
       favBtn.classList.remove("hidden");
       favBtn.addEventListener("click", () => {
@@ -90,12 +154,10 @@ async function loadAlbum() {
         });
       });
 
-      // Botón crear escucha
       const createListenBtn = document.getElementById("create-listen-btn");
       createListenBtn.classList.remove("hidden");
       createListenBtn.href = `/createListen.html?album_id=${currentAlbumId}`;
 
-      // Guardar canciones favoritas
       document.getElementById("save-favorites-btn").addEventListener("click", async () => {
         const favMsg = document.getElementById("favorites-message");
         try {
@@ -113,7 +175,6 @@ async function loadAlbum() {
         }
       });
 
-      // Guardar rating
       document.getElementById("save-rating-btn").addEventListener("click", async () => {
         const ratingMsg = document.getElementById("rating-message");
         if (!currentUserRating) {
@@ -142,7 +203,6 @@ async function loadAlbum() {
   }
 }
 
-// Cargar rating del usuario
 async function loadUserRating(albumId) {
   try {
     const res = await authFetch(`${API_URL_RATINGS}/${albumId}/my-rating`);
@@ -169,7 +229,6 @@ function updateAlbumStars(value) {
   });
 }
 
-// Cargar favoritas del usuario
 async function loadUserFavorites(albumId) {
   try {
     const res = await authFetch(`${API_URL_FAVORITES}/album/${albumId}`);
@@ -184,7 +243,6 @@ async function loadUserFavorites(albumId) {
   });
 }
 
-// Seleccionar/deseleccionar canción favorita
 function toggleFavoriteSong(songId, element) {
   const favMsg = document.getElementById("favorites-message");
   if (selectedSongIds.includes(songId)) {
@@ -202,7 +260,6 @@ function toggleFavoriteSong(songId, element) {
   }
 }
 
-// Cargar datos de la comunidad
 async function loadCommunityData(albumId) {
   try {
     const [avgRes, distRes, favsRes] = await Promise.all([
@@ -238,7 +295,6 @@ async function loadCommunityData(albumId) {
   }
 }
 
-// Renderizar gráfica de distribución
 function renderRatingChart(distribution, total) {
   const chart = document.getElementById("rating-chart");
   chart.innerHTML = "";
@@ -265,7 +321,6 @@ function renderRatingChart(distribution, total) {
   });
 }
 
-// Cargar datos de seguidos
 async function loadFollowingData(albumId) {
   try {
     const [favsRes, ratingsRes] = await Promise.all([

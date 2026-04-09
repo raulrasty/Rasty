@@ -1,6 +1,3 @@
-
-
-
 body > h1 {
   font-family: var(--font-display);
   font-size: 2rem;
@@ -44,7 +41,7 @@ body > h1 {
 #search-form button:hover  { background: var(--accent-dark); }
 #search-form button:active { transform: scale(0.97); }
 
-/*  Grid de álbumes  */
+/* Grid de álbumes */
 .albums {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -80,36 +77,136 @@ body > h1 {
   font-weight: 600;
   line-height: 1.3;
   margin-top: 4px;
+  /* Forzar 2 líneas para que todas las tarjetas tengan la misma altura de título */
+  min-height: 2.6em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .album-card p {
   font-size: 0.82rem;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.album-card button {
+/* Spacer para empujar los botones al fondo */
+.album-card-spacer {
+  flex: 1;
+}
+
+.album-card-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.album-card-buttons button {
+  width: 100%;
   padding: 7px 12px;
   border: none;
   border-radius: var(--radius-sm);
   font-size: 0.82rem;
   font-weight: 600;
-  transition: background var(--transition);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  cursor: pointer;
 }
 
-.album-card button:first-of-type {
+.btn-ver-album {
   background: var(--bg-hover);
   color: var(--text);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border) !important;
 }
 
-.album-card button:first-of-type:hover {
-  border-color: var(--accent);
+.btn-ver-album:hover {
+  border-color: var(--accent) !important;
   color: var(--accent);
 }
 
-.album-card button:last-of-type {
+.btn-crear-escucha {
   background: var(--accent);
   color: #000;
 }
 
-.album-card button:last-of-type:hover { background: var(--accent-dark); }
+.btn-crear-escucha:hover {
+  background: var(--accent-dark);
+}
+
+.fav-album-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border) !important;
+}
+
+.fav-album-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent);
+}
+
+/* Candidatos de artistas */
+.candidates-container {
+  margin: 0 32px;
+}
+
+.candidates-title {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+#candidates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 560px;
+}
+
+.candidate-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  text-align: left;
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.candidate-btn:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.candidate-btn strong {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.candidate-btn span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.candidate-flag {
+  font-size: 1.2rem;
+}
+
+.candidate-flag-img {
+  width: 24px;
+  height: 18px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+#candidates-list {
+  margin-bottom: 60px;
+}

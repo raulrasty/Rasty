@@ -81,5 +81,21 @@ async function getUserAlbums(req, res) {
   }
 }
 
-module.exports = { addListen, getUserListens, deleteListen, updateListen, getUserAlbums };
+async function getUserListensPaginated(req, res) {
+  const { user_id } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+
+  try {
+    const result = await listensService.getListensByUserPaginated(user_id, page, limit);
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { addListen, getUserListens, deleteListen, updateListen, getUserAlbums, getUserListensPaginated };
+
+
 

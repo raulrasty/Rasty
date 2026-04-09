@@ -182,3 +182,24 @@ button[type="submit"]:active { transform: scale(0.98); }
   color: #000;
   font-weight: 600;
 }
+
+button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.songs-empty {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.label-hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}

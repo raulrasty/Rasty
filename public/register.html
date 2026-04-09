@@ -1,44 +1,95 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Usuario</title>
-  <link rel="stylesheet" href="css/global.css">
-  <link rel="stylesheet" href="css/register.css">
-</head>
-<body>
-  <div class="container">
-    <h2>Crear cuenta</h2>
-    <form id="registerForm">
-      <div class="form-group">
-        <label for="name">Nombre Usuario</label>
-        <input type="text" id="username" name="username" required>
-      </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro de Usuario</title>
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/register.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h2>Crear cuenta</h2>
+      <form id="registerForm" novalidate>
+        <div class="form-group">
+          <label for="username">Nombre de usuario</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Mínimo 3 caracteres"
+            required
+          />
+          <p class="field-error" id="usernameError"></p>
+        </div>
 
-      <div class="form-group">
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" name="email" required>
-      </div>
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="tu@email.com"
+            required
+          />
+          <p class="field-error" id="emailError"></p>
+        </div>
 
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password" required>
-      </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <div class="input-password-wrap">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Ej: Rasty2024"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="password"
+            >
+              👁
+            </button>
+          </div>
+          <p class="field-hint">
+            Mínimo 6 caracteres, una mayúscula, una minúscula y un número
+          </p>
+          <p class="field-error" id="passwordError"></p>
+        </div>
 
-      <div class="form-group">
-        <label for="passwordConfirm">Confirmar contraseña</label>
-        <input type="password" id="passwordConfirm" name="passwordConfirm" required>
-      </div>
+        <div class="form-group">
+          <label for="passwordConfirm">Confirmar contraseña</label>
+          <div class="input-password-wrap">
+            <input
+              type="password"
+              id="passwordConfirm"
+              name="passwordConfirm"
+              placeholder="Repite la contraseña"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="passwordConfirm"
+            >
+              👁
+            </button>
+          </div>
+          <p class="field-error" id="passwordConfirmError"></p>
+        </div>
 
-      <button type="submit">Registrarse</button>
+        <button type="submit" id="submitBtn">Registrarse</button>
 
-      <p class="message">¿Ya tienes cuenta? <a href="login.html">Iniciar sesión</a></p>
+        <p class="message">
+          ¿Ya tienes cuenta? <a href="login.html">Iniciar sesión</a>
+        </p>
 
-      <div id="errorMessage" class="error-message"></div>
-    </form>
-  </div>
-
-  <script src="js/register.js"></script>
-</body>
+        <p id="errorMessage" class="error-message"></p>
+      </form>
+    </div>
+    <script src="/js/togglePassword.js"></script>
+    <script src="js/register.js"></script>
+  </body>
 </html>

@@ -6,17 +6,19 @@ const supabase = require("../config/supabaseClient");
 // REGISTER
 
 async function register(req, res) {
-  const { email, password, username } = req.body; 
+  const { email, password, username } = req.body;
 
   if (!email || !password || !username) {
     return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
   try {
-    const result = await usersService.register(email, password, username); 
+    const result = await usersService.register(email, password, username);
     res.status(201).json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    const status = err.status || 400;
+    const message = err.message || "Error al registrar usuario";
+    res.status(status).json({ error: message });
   }
 }
 
@@ -33,7 +35,9 @@ async function login(req, res) {
     const result = await usersService.login(email, password);
     res.json(result);
   } catch (err) {
-    res.status(401).json({ error: err.message });
+    const status = err.status || 401;
+    const message = err.message || "Error al iniciar sesión";
+    res.status(status).json({ error: message });
   }
 }
 

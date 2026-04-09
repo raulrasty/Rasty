@@ -29,6 +29,8 @@ const favoriteAlbumsRoutes = require('./routes/favoriteAlbumsRoutes');
 app.use('/favorite-albums', favoriteAlbumsRoutes);
 const userRatingRoutes = require('./routes/userRatingRoutes');
 app.use('/user-ratings', userRatingRoutes);
+const communityRoutes = require('./routes/communityRoutes');
+app.use('/community', communityRoutes);
 
 app.get('/', (req, res) => {
   res.send('¡Servidor funcionando!');

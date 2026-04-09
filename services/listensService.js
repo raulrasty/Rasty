@@ -91,7 +91,7 @@ async function updateListen(
     throw new Error("La fecha de escucha no puede ser futura");
   }
 
-  // ✅ Solo actualizar listen_date si el usuario la cambió
+  // Solo actualizar listen_date si el usuario la cambió
   const updates = { rating, liked, review };
   if (listen_date) updates.listen_date = listen_date;
 

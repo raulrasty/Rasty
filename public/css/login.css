@@ -102,3 +102,13 @@ button[type="submit"]:active { transform: scale(0.98); }
 }
 
 .message a:hover { text-decoration: underline; }
+
+.form-group input.input-error {
+  border-color: var(--red);
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}

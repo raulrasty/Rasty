@@ -12,11 +12,23 @@
     <span class="close-btn" id="closeModal">&times;</span>
     <h2>Iniciar sesión</h2>
 
-    <form id="loginForm">
-      <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
-      <input type="password" id="loginPassword" placeholder="Contraseña" required>
-      <button type="submit">Entrar</button>
+    <form id="loginForm" novalidate>
+      <div class="modal-form-group">
+        <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
+        <p class="modal-field-error" id="loginEmailError"></p>
+      </div>
+      <div class="modal-form-group">
+        <div class="input-password-wrap">
+          <input type="password" id="loginPassword" placeholder="Contraseña" required>
+          <button type="button" class="toggle-password" data-target="loginPassword">👁</button>
+        </div>
+        <p class="modal-field-error" id="loginPasswordError"></p>
+      </div>
+      <button type="submit" id="loginSubmitBtn">Entrar</button>
       <p id="loginError" class="error-message"></p>
     </form>
+
   </div>
 </div>
+
+<script src="/js/togglePassword.js"></script>

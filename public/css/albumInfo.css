@@ -401,6 +401,23 @@
   font-size: 0.85rem;
 }
 
+
+.create-listen-btn {
+  padding: 7px 14px;
+  background: var(--accent);
+  color: #000;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--transition);
+  text-align: center;
+}
+
+.create-listen-btn:hover {
+  background: var(--accent-dark);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .album-top {

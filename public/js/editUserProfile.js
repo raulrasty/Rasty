@@ -1,27 +1,44 @@
 const API_URL = "http://localhost:3000/users";
+const messageEl = document.getElementById("message");
+const submitBtn = document.querySelector(".btn-submit");
+
+function showError(msg) {
+  messageEl.textContent = msg;
+  messageEl.className = "message msg-error";
+}
+
+function showSuccess(msg) {
+  messageEl.textContent = msg;
+  messageEl.className = "message msg-success";
+}
+
+function clearMessage() {
+  messageEl.textContent = "";
+  messageEl.className = "message";
+}
+
+function setLoading(loading) {
+  submitBtn.disabled = loading;
+  submitBtn.textContent = loading ? "Guardando..." : "Guardar cambios";
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Obtener datos de sesión
   if (!requireLogin()) return;
 
-  const { token, userId } = getSession();
+  const { userId } = getSession();
 
   try {
-    // Petición al backend para obtener los datos del usuario
     const res = await authFetch(`${API_URL}/${userId}`);
     if (!res.ok) throw new Error("No se pudo cargar tu perfil");
 
     const user = await res.json();
-    // Rellenar formulario con los datos recibidos
     populateForm(user);
   } catch (err) {
     console.error(err);
-    document.querySelector(".edit-profile-container").innerHTML =
-      `<p style="color:red;text-align:center;">Error cargando perfil</p>`;
+    showError("Error cargando el perfil. Inténtalo de nuevo.");
   }
 });
 
-// Funcion para rellenar formulario con los datos recibidos
 function populateForm(user) {
   document.getElementById("username").value = user.username || "";
   document.getElementById("bio").value = user.bio || "";
@@ -32,20 +49,36 @@ function populateForm(user) {
       .split("T")[0];
   }
 
-  // Mostrar avatar actual si existe
   if (user.avatar_url) {
     const preview = document.getElementById("avatarPreview");
     preview.src = user.avatar_url;
     preview.style.display = "block";
   }
 }
-//previsualización del nuevo avatar
+
+// Previsualización del avatar
 const avatarInput = document.getElementById("avatar");
 const avatarPreview = document.getElementById("avatarPreview");
 
 avatarInput.addEventListener("change", () => {
   const file = avatarInput.files[0];
   if (!file) return;
+
+  // Validar tamaño (máx 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    showError("La imagen no puede superar 2MB");
+    avatarInput.value = "";
+    return;
+  }
+
+  // Validar tipo
+  if (!file.type.startsWith("image/")) {
+    showError("El archivo debe ser una imagen");
+    avatarInput.value = "";
+    return;
+  }
+
+  clearMessage();
   const reader = new FileReader();
   reader.onload = () => {
     avatarPreview.src = reader.result;
@@ -54,42 +87,58 @@ avatarInput.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
-// Envío del formulario para actualizar el perfil
-document
-  .getElementById("editProfileForm")
-  .addEventListener("submit", async (e) => {
-    e.preventDefault();
+// Envío del formulario
+document.getElementById("editProfileForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  clearMessage();
 
-    const { token, userId } = getSession();
+  const { userId } = getSession();
 
-    // Usamos FormData para poder enviar archivo para el avatar
-    const formData = new FormData();
-    formData.append("bio", document.getElementById("bio").value);
-    formData.append("location", document.getElementById("location").value);
-    formData.append("birth_date", document.getElementById("birth_date").value);
-    if (avatarInput.files[0]) formData.append("avatar", avatarInput.files[0]);
+  const bio = document.getElementById("bio").value.trim();
+  const location = document.getElementById("location").value.trim();
+  const birth_date = document.getElementById("birth_date").value;
 
-    try {
-      // Petición PUT para actualizar usuario
-      const res = await authFetch(`${API_URL}/${userId}`, {
-        method: "PUT",
-        body: formData,
-      });
+  // Validaciones
+  if (bio.length > 300) {
+    showError("La biografía no puede superar 300 caracteres");
+    return;
+  }
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al actualizar perfil");
+  if (location.length > 100) {
+    showError("La ubicación no puede superar 100 caracteres");
+    return;
+  }
 
-      const messageEl = document.getElementById("message");
-      messageEl.textContent = "Perfil actualizado correctamente";
-      messageEl.style.color = "var(--accent)";
+  setLoading(true);
 
-      setTimeout(() => {
-        window.location.href = `/userProfile.html?user_id=${userId}`;
-      }, 1000);
-    } catch (err) {
-      console.error(err);
-      const messageEl = document.getElementById("message");
-      messageEl.textContent = "Error al actualizar perfil";
-      messageEl.style.color = "var(--red)";
+  const formData = new FormData();
+  formData.append("bio", bio);
+  formData.append("location", location);
+  formData.append("birth_date", birth_date);
+  if (avatarInput.files[0]) formData.append("avatar", avatarInput.files[0]);
+
+  try {
+    const res = await authFetch(`${API_URL}/${userId}`, {
+      method: "PUT",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      showError(data.error || "Error al actualizar el perfil");
+      return;
     }
-  });
+
+    showSuccess("¡Perfil actualizado correctamente!");
+    setTimeout(() => {
+      window.location.href = `/userProfile.html?user_id=${userId}`;
+    }, 1000);
+
+  } catch (err) {
+    console.error(err);
+    showError("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+  } finally {
+    setLoading(false);
+  }
+});

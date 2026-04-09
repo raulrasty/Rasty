@@ -1,10 +1,10 @@
-// Redirige si no hay sesión
 if (!requireLogin()) throw new Error("No autenticado");
 
 const params = new URLSearchParams(window.location.search);
 const albumId = params.get("album_id");
 const messageDiv = document.getElementById("message");
 const form = document.getElementById("listenForm");
+const submitBtn = form.querySelector("button[type='submit']");
 
 if (!albumId) {
   alert("No se ha especificado el álbum");
@@ -16,7 +16,23 @@ document.getElementById("listen_date").valueAsDate = new Date();
 
 let selectedSongIds = [];
 
-// Cargar info del álbum y canciones
+function showError(msg) {
+  messageDiv.innerHTML = `<p class="msg-error">${msg}</p>`;
+}
+
+function showSuccess(msg) {
+  messageDiv.innerHTML = `<p class="msg-success">${msg}</p>`;
+}
+
+function clearMessage() {
+  messageDiv.innerHTML = "";
+}
+
+function setLoading(loading) {
+  submitBtn.disabled = loading;
+  submitBtn.textContent = loading ? "Guardando..." : "Registrar escucha";
+}
+
 async function loadAlbumInfo() {
   try {
     const res = await fetch(`http://localhost:3000/albumInfo/${albumId}`);
@@ -31,11 +47,10 @@ async function loadAlbumInfo() {
     await loadSongsForSelection();
   } catch (err) {
     console.error(err);
-    messageDiv.innerHTML = `<p class="error">No se pudo cargar la información del álbum: ${err.message}</p>`;
+    showError(`No se pudo cargar la información del álbum: ${err.message}`);
   }
 }
 
-// Cargar lista de canciones para seleccionar favoritas
 async function loadSongsForSelection() {
   try {
     const res = await fetch(`http://localhost:3000/songs/${albumId}`);
@@ -44,6 +59,11 @@ async function loadSongsForSelection() {
 
     const list = document.getElementById("favorite-songs-list");
     list.innerHTML = "";
+
+    if (!songs.length) {
+      list.innerHTML = '<li class="songs-empty">No hay canciones disponibles</li>';
+      return;
+    }
 
     songs.forEach((song) => {
       const li = document.createElement("li");
@@ -58,19 +78,19 @@ async function loadSongsForSelection() {
   }
 }
 
-// Seleccionar/deseleccionar canción favorita
 function toggleFavoriteSong(songId, element) {
   if (selectedSongIds.includes(songId)) {
     selectedSongIds = selectedSongIds.filter((id) => id !== songId);
     element.classList.remove("selected");
+    clearMessage();
   } else {
     if (selectedSongIds.length >= 3) {
-      messageDiv.innerHTML = `<p class="error">Solo puedes elegir 3 canciones favoritas</p>`;
+      showError("Solo puedes elegir 3 canciones favoritas");
       return;
     }
     selectedSongIds.push(songId);
     element.classList.add("selected");
-    messageDiv.innerHTML = "";
+    clearMessage();
   }
 }
 
@@ -110,6 +130,7 @@ heart.addEventListener("click", () => {
 // Envío del formulario
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  clearMessage();
 
   const { userId } = getSession();
   const formData = new FormData(form);
@@ -117,6 +138,13 @@ form.addEventListener("submit", async (e) => {
 
   body.rating = body.rating ? parseFloat(body.rating) : null;
   body.liked = body.liked === "true";
+
+  if (!body.listen_date) {
+    showError("La fecha de escucha es obligatoria");
+    return;
+  }
+
+  setLoading(true);
 
   try {
     const res = await authFetch("http://localhost:3000/listens", {
@@ -128,7 +156,7 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json().catch(() => ({ error: "Error desconocido" }));
 
     if (!res.ok) {
-      messageDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+      showError(data.error || "Error al registrar la escucha");
       return;
     }
 
@@ -140,7 +168,6 @@ form.addEventListener("submit", async (e) => {
         body: JSON.stringify({ songIds: selectedSongIds }),
       });
 
-      // Actualizar album favorite songs
       await authFetch(`http://localhost:3000/favorite-songs/album/${albumId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -148,7 +175,7 @@ form.addEventListener("submit", async (e) => {
       });
     }
 
-    // Actualizar album rating si hay puntuación
+    // Actualizar album rating
     if (body.rating) {
       await authFetch(`http://localhost:3000/album-ratings/${albumId}`, {
         method: "POST",
@@ -157,9 +184,15 @@ form.addEventListener("submit", async (e) => {
       });
     }
 
-    window.location.href = `/listensUser.html?user_id=${userId}`;
+    showSuccess("¡Escucha registrada correctamente!");
+    setTimeout(() => {
+      window.location.href = `/listensUser.html?user_id=${userId}`;
+    }, 800);
+
   } catch (err) {
     console.error(err);
-    messageDiv.innerHTML = `<p class="error">Error al registrar escucha</p>`;
+    showError("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+  } finally {
+    setLoading(false);
   }
 });

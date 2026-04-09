@@ -1,186 +1,228 @@
+const COMMUNITY_URL = "http://localhost:3000/community";
 
-////Esto tengo que cambiarlo entero, fue donde hice las pruebas inciales, para probar las primeras cosas que creé
-
-
-const API_URL = "http://localhost:3000";
-let token = localStorage.getItem("token");
-let userId = localStorage.getItem("userId");
-
-//  CONTROL DE SECCIONES PRIVADAS 
-function toggleUserSections() {
-  const listensSection = document.getElementById("listens-section");
-  const addListenButtons = document.querySelectorAll(".add-listen-btn");
-
-  if (token && userId) {
-    if (listensSection) listensSection.style.display = "block";
-    addListenButtons.forEach(btn => btn.style.display = "inline-block");
-  } else {
-    if (listensSection) listensSection.style.display = "none";
-    addListenButtons.forEach(btn => btn.style.display = "none");
-  }
-}
-
-// BUSCAR ÁLBUM
-document.getElementById("search-btn").addEventListener("click", async () => {
-  const title = document.getElementById("album-title").value;
-  const artist = document.getElementById("album-artist").value;
-  const results = document.getElementById("albums-results");
-  results.innerHTML = "Buscando...";
-
-  if (!artist) return alert("Debes ingresar un artista");
+document.addEventListener("DOMContentLoaded", async () => {
+  const main = document.getElementById("main-content");
+  main.innerHTML = '<p class="state-msg">Cargando...</p>';
 
   try {
-    const res = await fetch(
-      `${API_URL}/albums/search-mb?title=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`
-    );
-    const data = await res.json();
+    const [topWeekRes, topRatedRes] = await Promise.all([
+      fetch(`${COMMUNITY_URL}/top-week`),
+      fetch(`${COMMUNITY_URL}/top-rated`)
+    ]);
 
-    // El controller devuelve el array directamente
-    if (!Array.isArray(data) || data.length === 0) {
-      results.textContent = "No se encontraron álbumes";
-      return;
+    const topWeek = await topWeekRes.json();
+    const topRated = await topRatedRes.json();
+
+    let followingActivity = [];
+    let followingTopWeek = [];
+    let followingTopRated = [];
+    let ownActivity = [];
+
+    if (isLoggedIn()) {
+      const [activityRes, followingTopRes, followingRatedRes, ownActivityRes] = await Promise.all([
+        authFetch(`${COMMUNITY_URL}/following-activity`),
+        authFetch(`${COMMUNITY_URL}/following-top-week`),
+        authFetch(`${COMMUNITY_URL}/following-top-rated`),
+        authFetch(`${COMMUNITY_URL}/own-activity`)
+      ]);
+      followingActivity = await activityRes.json();
+      followingTopWeek = await followingTopRes.json();
+      followingTopRated = await followingRatedRes.json();
+      ownActivity = await ownActivityRes.json();
     }
 
-    results.innerHTML = "";
+    renderPage(main, { topWeek, topRated, followingActivity, followingTopWeek, followingTopRated, ownActivity });
 
-    data.forEach(({ album, tracks }) => {
-      const albumDiv = document.createElement("div");
-      albumDiv.classList.add("album-result");
-
-      const tracksList =
-        tracks && tracks.length > 0
-          ? `<ul>${tracks.map(t =>
-              `<li>${t.position}. ${t.title} (${t.length ? (t.length / 1000).toFixed(1) + "s" : "-"})</li>`
-            ).join("")}</ul>`
-          : "<p>No hay canciones registradas</p>";
-
-      albumDiv.innerHTML = `
-        <h3>${album.title} – ${album.artist}${album.release_year ? ` (${album.release_year})` : ""}</h3>
-        <img src="${album.cover_url}" width="150" onerror="this.src='placeholder.png'">
-        ${tracksList}
-        <button class="add-listen-btn">Marcar como escuchado</button>
-        <hr>
-      `;
-
-      results.appendChild(albumDiv);
-
-      albumDiv.querySelector(".add-listen-btn").addEventListener("click", async () => {
-        if (!token || !userId) return alert("Debes hacer login para registrar la escucha");
-
-        try {
-          const resListen = await fetch(`${API_URL}/listens`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ title: album.title, artist: album.artist }),
-          });
-
-          const listenData = await resListen.json();
-          alert(listenData.message || "Escucha registrada!");
-          fetchUserListens();
-        } catch (err) {
-          console.error(err);
-          alert("Error al registrar la escucha");
-        }
-      });
-    });
-
-    toggleUserSections(); // mostrar/ocultar botones según si hay sesión
   } catch (err) {
     console.error(err);
-    results.textContent = "Error al buscar álbum";
+    main.innerHTML = '<p class="state-msg">Error cargando la página</p>';
   }
 });
 
-//  MIS ESCUCHAS 
-async function fetchUserListens() {
-  if (!token || !userId) return;
+function renderPage(container, { topWeek, topRated, followingActivity, followingTopWeek, followingTopRated, ownActivity }) {
+  container.innerHTML = `
+    <div class="home">
 
-  try {
-    const res = await fetch(`${API_URL}/listens/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      <!-- Hero -->
+      <div class="home-hero">
+        <h1 class="home-title">Rasty</h1>
+        <p class="home-tagline">Tu diario musical</p>
+        <p class="home-desc">Registra los álbumes que escuchas, descubre lo que escuchan tus amigos y lleva el control de tu música favorita.</p>
+        ${!isLoggedIn() ? `
+          <div class="home-cta-group">
+            <a href="/register.html" class="home-cta">Crear cuenta</a>
+            <a href="#" id="home-login-btn" class="home-cta-secondary">Iniciar sesión</a>
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- Fila 1: comunidad -->
+      <div class="home-row">
+        <div class="home-section">
+          <h2 class="home-section-title">🔥 Más escuchados esta semana</h2>
+          <div class="home-album-list" id="top-week"></div>
+        </div>
+        <div class="home-section">
+          <h2 class="home-section-title">⭐ Mejor valorados</h2>
+          <div class="home-album-list" id="top-rated"></div>
+        </div>
+      </div>
+
+      ${isLoggedIn() ? `
+      <!-- Fila 2: seguidos -->
+      <div class="home-row">
+        <div class="home-section">
+          <h2 class="home-section-title">🎵 Más escuchados entre tus seguidos</h2>
+          <div class="home-album-list" id="following-top-week"></div>
+        </div>
+        <div class="home-section">
+          <h2 class="home-section-title">⭐ Mejor valorados por tus seguidos</h2>
+          <div class="home-album-list" id="following-top-rated"></div>
+        </div>
+      </div>
+
+      <!-- Fila 3: actividad -->
+      <div class="home-row">
+        <div class="home-section">
+          <h2 class="home-section-title">👥 Última actividad de tus seguidos</h2>
+          <div id="following-activity"></div>
+        </div>
+        <div class="home-section">
+          <h2 class="home-section-title">🎧 Tu última actividad</h2>
+          <div id="own-activity"></div>
+        </div>
+      </div>
+      ` : ''}
+
+    </div>
+  `;
+
+  renderAlbumList('top-week', topWeek, true, false);
+  renderAlbumList('top-rated', topRated, false, true);
+
+  if (isLoggedIn()) {
+    renderAlbumList('following-top-week', followingTopWeek, true, false);
+    renderAlbumList('following-top-rated', followingTopRated, false, true);
+    renderFollowingActivity('following-activity', followingActivity);
+    renderOwnActivity('own-activity', ownActivity);
+  } else {
+    document.getElementById("home-login-btn")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById("loginModal").style.display = "flex";
     });
-
-    if (!res.ok) {
-      console.error("Error al obtener escuchas:", await res.text());
-      return;
-    }
-
-    const listens = await res.json();
-    const listensList = document.getElementById("listens-list");
-    if (!listensList) return;
-
-    listensList.innerHTML = "";
-    listens.forEach(l => {
-      const li = document.createElement("li");
-      li.textContent = `${l.album.title} — escuchado el ${new Date(l.listen_date).toLocaleDateString()}${l.rating ? " — Rating: " + l.rating : ""}`;
-      listensList.appendChild(li);
-    });
-  } catch (err) {
-    console.error("Error al traer escuchas:", err);
   }
 }
 
-// TODOS LOS ÁLBUMES 
-async function fetchAllAlbums() {
-  try {
-    const res = await fetch(`${API_URL}/albums`);
-    const albums = await res.json();
+function renderAlbumList(containerId, albums, showCount = false, showRating = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
 
-    const albumsList = document.getElementById("albums-list");
-    albumsList.innerHTML = "";
-
-    for (const a of albums) {
-      const albumDiv = document.createElement("div");
-      albumDiv.classList.add("album");
-
-      let tracksHtml = "";
-      try {
-        const resSongs = await fetch(`${API_URL}/songs/${a.id}`);
-        if (resSongs.ok) {
-          const dataSongs = await resSongs.json();
-          const songs = dataSongs.songs;
-
-          if (songs && songs.length > 0) {
-            tracksHtml = "<ol>";
-            songs.forEach(track => {
-              tracksHtml += `<li>${track.position}. ${track.title} (${track.length ? (track.length / 1000).toFixed(1) + "s" : "-"})</li>`;
-            });
-            tracksHtml += "</ol>";
-          } else {
-            tracksHtml = "<p>No hay canciones registradas</p>";
-          }
-        } else {
-          tracksHtml = "<p>Error al obtener canciones</p>";
-        }
-      } catch (err) {
-        console.error("Error al traer canciones del álbum", a.id, err);
-        tracksHtml = "<p>Error al obtener canciones</p>";
-      }
-
-      albumDiv.innerHTML = `
-        <img src="${a.cover_url}" alt="Portada de ${a.title}" width="120">
-        <h3>${a.title}</h3>
-        <p>${a.artist}</p>
-        <p>${a.release_year || "Año desconocido"}</p>
-        <div class="tracks">${tracksHtml}</div>
-        <button class="add-listen-btn">Marcar como escuchado</button>
-      `;
-
-      albumsList.appendChild(albumDiv);
-    }
-
-    toggleUserSections();
-  } catch (err) {
-    console.error("Error al traer álbumes:", err);
+  if (!albums.length) {
+    container.innerHTML = '<p class="empty-msg">No hay datos aún</p>';
+    return;
   }
+
+  albums.forEach((item, i) => {
+    const album = item.album;
+    const card = document.createElement("a");
+    card.className = "home-album-card";
+    card.href = `/albumInfo.html?id=${album.id}`;
+    card.innerHTML = `
+      <span class="home-album-pos">${i + 1}</span>
+      <img src="${album.cover_url || 'https://via.placeholder.com/48'}"
+           alt="${album.title}"
+           onerror="this.src='https://via.placeholder.com/48'">
+      <div class="home-album-info">
+        <p class="home-album-title">${album.title}</p>
+        <p class="home-album-artist">${album.artist}</p>
+      </div>
+      ${showCount ? `<span class="home-album-stat">${item.count} escuchas</span>` : ''}
+      ${showRating ? `<span class="home-album-stat">★ ${item.average}</span>` : ''}
+    `;
+    container.appendChild(card);
+  });
 }
 
-// INICIAR
-window.addEventListener("DOMContentLoaded", () => {
-  fetchAllAlbums();
-  toggleUserSections();
-  if (token && userId) fetchUserListens();
-});
+function renderFollowingActivity(containerId, listens) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!listens.length) {
+    container.innerHTML = `
+      <p class="empty-msg">Nadie a quien sigues ha registrado escuchas aún.</p>
+      <a href="/searchUsers.html" class="feed-empty-link">Buscar usuarios</a>
+    `;
+    return;
+  }
+
+  listens.forEach(l => {
+    const card = document.createElement("div");
+    card.className = "activity-card";
+
+    const avatarSrc = l.user.avatar_url ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(l.user.username || "U")}&background=1db954&color=000&size=40`;
+
+    card.innerHTML = `
+      <a href="/userProfile.html?user_id=${l.user.id}" class="activity-user">
+        <img src="${avatarSrc}" alt="${l.user.username}" class="activity-avatar">
+        <span class="activity-username">${l.user.username}</span>
+      </a>
+      <a href="/albumInfo.html?id=${l.album.id}" class="activity-album">
+        <img src="${l.album.cover_url || 'https://via.placeholder.com/48'}"
+             alt="${l.album.title}"
+             onerror="this.src='https://via.placeholder.com/48'"
+             class="activity-cover">
+        <div class="activity-info">
+          <p class="activity-title">${l.album.title}</p>
+          <p class="activity-artist">${l.album.artist}</p>
+          ${l.rating ? `<p class="activity-rating">★ ${l.rating}</p>` : ''}
+          ${l.review ? `<p class="activity-review">"${l.review}"</p>` : ''}
+        </div>
+      </a>
+      ${l.favoriteSongs?.length ? `
+        <ul class="activity-fav-songs">
+          ${l.favoriteSongs.map(s => `<li>🎵 ${s.title}</li>`).join('')}
+        </ul>` : ''}
+      <p class="activity-date">${new Date(l.listen_date).toLocaleDateString('es-ES')}</p>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function renderOwnActivity(containerId, listens) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!listens.length) {
+    container.innerHTML = '<p class="empty-msg">Aún no has registrado ninguna escucha.</p>';
+    return;
+  }
+
+  listens.forEach(l => {
+    const card = document.createElement("div");
+    card.className = "activity-card";
+
+    card.innerHTML = `
+      <a href="/albumInfo.html?id=${l.album.id}" class="activity-album">
+        <img src="${l.album.cover_url || 'https://via.placeholder.com/48'}"
+             alt="${l.album.title}"
+             onerror="this.src='https://via.placeholder.com/48'"
+             class="activity-cover">
+        <div class="activity-info">
+          <p class="activity-title">${l.album.title}</p>
+          <p class="activity-artist">${l.album.artist}</p>
+          ${l.rating ? `<p class="activity-rating">★ ${l.rating}</p>` : ''}
+          ${l.review ? `<p class="activity-review">"${l.review}"</p>` : ''}
+        </div>
+      </a>
+      ${l.favoriteSongs?.length ? `
+        <ul class="activity-fav-songs">
+          ${l.favoriteSongs.map(s => `<li>🎵 ${s.title}</li>`).join('')}
+        </ul>` : ''}
+      <p class="activity-date">${new Date(l.listen_date).toLocaleDateString('es-ES')}</p>
+    `;
+
+    container.appendChild(card);
+  });
+}

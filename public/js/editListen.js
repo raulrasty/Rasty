@@ -4,6 +4,7 @@ const params = new URLSearchParams(window.location.search);
 const listenId = params.get("listen_id");
 const messageDiv = document.getElementById("message");
 const form = document.getElementById("editListenForm");
+const submitBtn = form.querySelector("button[type='submit']");
 
 if (!listenId) {
   alert("No se ha especificado la escucha");
@@ -14,7 +15,23 @@ let selectedSongIds = [];
 let currentAlbumId = null;
 let currentListen = null;
 
-// Cargar los datos de la escucha y rellenar el formulario
+function showError(msg) {
+  messageDiv.innerHTML = `<p class="msg-error">${msg}</p>`;
+}
+
+function showSuccess(msg) {
+  messageDiv.innerHTML = `<p class="msg-success">${msg}</p>`;
+}
+
+function clearMessage() {
+  messageDiv.innerHTML = "";
+}
+
+function setLoading(loading) {
+  submitBtn.disabled = loading;
+  submitBtn.textContent = loading ? "Guardando..." : "Guardar cambios";
+}
+
 async function loadListenData() {
   const { userId } = getSession();
 
@@ -61,11 +78,10 @@ async function loadListenData() {
 
   } catch (err) {
     console.error(err);
-    messageDiv.innerHTML = `<p class="error">Error cargando la escucha: ${err.message}</p>`;
+    showError(`Error cargando la escucha: ${err.message}`);
   }
 }
 
-// Cargar lista de canciones para seleccionar favoritas
 async function loadSongsForSelection(albumId) {
   try {
     const res = await fetch(`http://localhost:3000/songs/${albumId}`);
@@ -74,6 +90,11 @@ async function loadSongsForSelection(albumId) {
 
     const list = document.getElementById("favorite-songs-list");
     list.innerHTML = "";
+
+    if (!songs.length) {
+      list.innerHTML = '<li class="songs-empty">No hay canciones disponibles</li>';
+      return;
+    }
 
     songs.forEach(song => {
       const li = document.createElement("li");
@@ -94,19 +115,19 @@ async function loadSongsForSelection(albumId) {
   }
 }
 
-// Seleccionar/deseleccionar canción favorita
 function toggleFavoriteSong(songId, element) {
   if (selectedSongIds.includes(songId)) {
     selectedSongIds = selectedSongIds.filter(id => id !== songId);
     element.classList.remove("selected");
+    clearMessage();
   } else {
     if (selectedSongIds.length >= 3) {
-      messageDiv.innerHTML = `<p class="error">Solo puedes elegir 3 canciones favoritas</p>`;
+      showError("Solo puedes elegir 3 canciones favoritas");
       return;
     }
     selectedSongIds.push(songId);
     element.classList.add("selected");
-    messageDiv.innerHTML = "";
+    clearMessage();
   }
 }
 
@@ -146,6 +167,7 @@ heart.addEventListener("click", () => {
 // Envío del formulario
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  clearMessage();
 
   const { userId } = getSession();
 
@@ -159,6 +181,8 @@ form.addEventListener("submit", async (e) => {
     listen_date: newDate !== originalDate ? newDate : null,
   };
 
+  setLoading(true);
+
   try {
     const res = await authFetch(`http://localhost:3000/listens/${listenId}`, {
       method: "PUT",
@@ -169,7 +193,7 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json().catch(() => ({ error: "Error desconocido" }));
 
     if (!res.ok) {
-      messageDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+      showError(data.error || "Error al actualizar la escucha");
       return;
     }
 
@@ -188,14 +212,12 @@ form.addEventListener("submit", async (e) => {
       .sort((a, b) => new Date(b.listen_date) - new Date(a.listen_date));
 
     if (albumListens[0]?.id === listenId) {
-      // Actualizar album favorite songs
       await authFetch(`http://localhost:3000/favorite-songs/album/${currentAlbumId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ songIds: selectedSongIds }),
       });
 
-      // Actualizar album rating si hay puntuación
       if (body.rating) {
         await authFetch(`http://localhost:3000/album-ratings/${currentAlbumId}`, {
           method: "POST",
@@ -205,10 +227,15 @@ form.addEventListener("submit", async (e) => {
       }
     }
 
-    window.location.href = `/listensUser.html?user_id=${userId}`;
+    showSuccess("¡Escucha actualizada correctamente!");
+    setTimeout(() => {
+      window.location.href = `/listensUser.html?user_id=${userId}`;
+    }, 800);
 
   } catch (err) {
     console.error(err);
-    messageDiv.innerHTML = `<p class="error">Error al actualizar la escucha</p>`;
+    showError("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+  } finally {
+    setLoading(false);
   }
 });

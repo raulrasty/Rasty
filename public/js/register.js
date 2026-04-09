@@ -1,38 +1,82 @@
 const form = document.getElementById("registerForm");
 const errorMessage = document.getElementById("errorMessage");
+const submitBtn = document.getElementById("submitBtn");
 
-//envío del formulario
+function setFieldError(fieldId, message) {
+  const input = document.getElementById(fieldId);
+  const errorEl = document.getElementById(`${fieldId}Error`);
+  if (input) input.classList.add("input-error");
+  if (errorEl) errorEl.textContent = message;
+}
+
+function clearErrors() {
+  errorMessage.textContent = "";
+  document.querySelectorAll(".input-error").forEach(el => el.classList.remove("input-error"));
+  document.querySelectorAll(".field-error").forEach(el => el.textContent = "");
+}
+
+function setLoading(loading) {
+  submitBtn.disabled = loading;
+  submitBtn.textContent = loading ? "Registrando..." : "Registrarse";
+}
+
+// Limpiar errores al escribir
+["username", "email", "password", "passwordConfirm"].forEach(id => {
+  document.getElementById(id)?.addEventListener("input", clearErrors);
+});
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  clearErrors();
 
-  //obtener los datos
   const username = form.username.value.trim();
   const email = form.email.value.trim();
   const password = form.password.value;
   const passwordConfirm = form.passwordConfirm.value;
 
-  //validaciones
-  if (username.length < 3) {
-    errorMessage.textContent =
-      "El nombre de usuario debe tener al menos 3 caracteres";
-    return;
+  let hasErrors = false;
+
+  // Validar username
+  if (!username) {
+    setFieldError("username", "El nombre de usuario es obligatorio");
+    hasErrors = true;
+  } else if (username.length < 3) {
+    setFieldError("username", "El nombre de usuario debe tener al menos 3 caracteres");
+    hasErrors = true;
+  } else if (username.length > 20) {
+    setFieldError("username", "El nombre de usuario no puede superar 20 caracteres");
+    hasErrors = true;
   }
 
+  // Validar email
+  if (!email) {
+    setFieldError("email", "El correo electrónico es obligatorio");
+    hasErrors = true;
+  }
+
+  // Validar contraseña
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-
-  if (password !== passwordConfirm) {
-    errorMessage.textContent = "Las contraseñas no coinciden";
-    return;
+  if (!password) {
+    setFieldError("password", "La contraseña es obligatoria");
+    hasErrors = true;
+  } else if (!passwordRegex.test(password)) {
+    setFieldError("password", "Mínimo 6 caracteres, una mayúscula, una minúscula y un número");
+    hasErrors = true;
   }
 
-  if (!passwordRegex.test(password)) {
-    errorMessage.textContent =
-      "La contraseña debe tener mínimo 6 caracteres, al menos una mayúscula, una minúscula y un número";
-    return;
+  // Validar confirmación
+  if (!passwordConfirm) {
+    setFieldError("passwordConfirm", "Confirma tu contraseña");
+    hasErrors = true;
+  } else if (password !== passwordConfirm) {
+    setFieldError("passwordConfirm", "Las contraseñas no coinciden");
+    hasErrors = true;
   }
 
+  if (hasErrors) return;
 
-  //petición al back para hacer el registro
+  setLoading(true);
+
   try {
     const res = await fetch("http://localhost:3000/users/register", {
       method: "POST",
@@ -43,13 +87,24 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (!res.ok) {
-      errorMessage.textContent = data.error || "Error al registrar usuario";
+      if (res.status === 409) {
+        if (data.error?.toLowerCase().includes("email")) {
+          setFieldError("email", "Ya existe una cuenta con ese correo");
+        } else if (data.error?.toLowerCase().includes("username")) {
+          setFieldError("username", "Ese nombre de usuario ya está en uso");
+        } else {
+          errorMessage.textContent = data.error || "Error al registrar usuario";
+        }
+      } else {
+        errorMessage.textContent = data.error || "Error al registrar usuario";
+      }
     } else {
-      alert("Usuario registrado con éxito");
       window.location.href = "/index.html";
     }
   } catch (err) {
     console.error(err);
-    errorMessage.textContent = "Error al conectar con el servidor";
+    errorMessage.textContent = "No se pudo conectar con el servidor. Inténtalo de nuevo.";
+  } finally {
+    setLoading(false);
   }
 });

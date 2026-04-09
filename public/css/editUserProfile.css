@@ -77,3 +77,9 @@
   font-size: 0.9rem;
   min-height: 20px;
 }
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}

@@ -125,6 +125,12 @@
   color: #f5a623;
 }
 
+.star .half:focus,
+.star .full:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 #save-rating-btn {
   padding: 5px 12px;
   background: var(--accent);
@@ -142,6 +148,11 @@
   background: var(--accent-dark);
 }
 
+#save-rating-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 #rating-message {
   font-size: 0.78rem;
 }
@@ -149,6 +160,7 @@
 /* Lista canciones */
 .songs-list {
   flex: 1;
+  min-width: 0;
 }
 
 .songs-list > h3 {
@@ -191,6 +203,10 @@
 
 .song-text {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .song-item.clickable {
@@ -234,6 +250,11 @@
   color: var(--accent);
 }
 
+.preview-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .preview-btn.playing {
   background: var(--accent);
   border-color: var(--accent);
@@ -262,6 +283,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 #favorites-message {
@@ -283,6 +305,11 @@
 
 #save-favorites-btn:hover {
   background: var(--accent-dark);
+}
+
+#save-favorites-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Cabeceras secciones inferiores */
@@ -476,23 +503,62 @@
   background: var(--accent-dark);
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .album-top {
-    flex-direction: column;
-  }
-  .album-info {
-    width: 100%;
-  }
-  .album-info img {
-    width: 100%;
-    height: auto;
-  }
-  .community-inner {
-    flex-direction: column;
-  }
+.create-listen-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .hidden {
   display: none;
+}
+
+/* ==================
+   RESPONSIVE
+   ================== */
+@media (max-width: 700px) {
+  .album-card {
+    padding: 20px;
+  }
+
+  .album-top {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .album-info {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .album-info img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .album-info-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .community-inner {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .following-item {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 400px) {
+  .album-container {
+    padding: 0 12px;
+  }
+
+  .album-card {
+    padding: 16px;
+  }
 }

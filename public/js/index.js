@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   } catch (err) {
     console.error(err);
-    main.innerHTML = '<p class="state-msg">Error cargando la página</p>';
+    main.innerHTML = '<p class="state-msg" role="alert">Error cargando la página</p>';
   }
 });
 
@@ -43,8 +43,7 @@ function renderPage(container, { topWeek, topRated, followingActivity, following
   container.innerHTML = `
     <div class="home">
 
-      <!-- Hero -->
-      <div class="home-hero">
+      <section class="home-hero" aria-label="Bienvenida">
         <h1 class="home-title">Rasty</h1>
         <p class="home-tagline">Tu diario musical</p>
         <p class="home-desc">Registra los álbumes que escuchas, descubre lo que escuchan tus amigos y lleva el control de tu música favorita.</p>
@@ -54,43 +53,40 @@ function renderPage(container, { topWeek, topRated, followingActivity, following
             <a href="#" id="home-login-btn" class="home-cta-secondary">Iniciar sesión</a>
           </div>
         ` : ''}
-      </div>
+      </section>
 
-      <!-- Fila 1: comunidad -->
-      <div class="home-row">
-        <div class="home-section">
+      <div class="home-row" role="region" aria-label="Álbumes de la comunidad">
+        <section class="home-section" aria-label="Más escuchados esta semana">
           <h2 class="home-section-title">🔥 Más escuchados esta semana</h2>
           <div class="home-album-list" id="top-week"></div>
-        </div>
-        <div class="home-section">
+        </section>
+        <section class="home-section" aria-label="Mejor valorados">
           <h2 class="home-section-title">⭐ Mejor valorados</h2>
           <div class="home-album-list" id="top-rated"></div>
-        </div>
+        </section>
       </div>
 
       ${isLoggedIn() ? `
-      <!-- Fila 2: seguidos -->
-      <div class="home-row">
-        <div class="home-section">
+      <div class="home-row" role="region" aria-label="Álbumes de tus seguidos">
+        <section class="home-section" aria-label="Más escuchados entre tus seguidos">
           <h2 class="home-section-title">🎵 Más escuchados entre tus seguidos</h2>
           <div class="home-album-list" id="following-top-week"></div>
-        </div>
-        <div class="home-section">
+        </section>
+        <section class="home-section" aria-label="Mejor valorados por tus seguidos">
           <h2 class="home-section-title">⭐ Mejor valorados por tus seguidos</h2>
           <div class="home-album-list" id="following-top-rated"></div>
-        </div>
+        </section>
       </div>
 
-      <!-- Fila 3: actividad -->
-      <div class="home-row">
-        <div class="home-section">
+      <div class="home-row" role="region" aria-label="Actividad reciente">
+        <section class="home-section" aria-label="Última actividad de tus seguidos">
           <h2 class="home-section-title">👥 Última actividad de tus seguidos</h2>
           <div id="following-activity"></div>
-        </div>
-        <div class="home-section">
+        </section>
+        <section class="home-section" aria-label="Tu última actividad">
           <h2 class="home-section-title">🎧 Tu última actividad</h2>
           <div id="own-activity"></div>
-        </div>
+        </section>
       </div>
       ` : ''}
 
@@ -127,17 +123,18 @@ function renderAlbumList(containerId, albums, showCount = false, showRating = fa
     const card = document.createElement("a");
     card.className = "home-album-card";
     card.href = `/albumInfo.html?id=${album.id}`;
+    card.setAttribute("aria-label", `${album.title} de ${album.artist}${showCount ? `, ${item.count} escuchas` : ''}${showRating ? `, valoración media ${item.average}` : ''}`);
     card.innerHTML = `
-      <span class="home-album-pos">${i + 1}</span>
+      <span class="home-album-pos" aria-hidden="true">${i + 1}</span>
       <img src="${album.cover_url || 'https://via.placeholder.com/48'}"
-           alt="${album.title}"
+           alt="Portada de ${album.title}"
            onerror="this.src='https://via.placeholder.com/48'">
       <div class="home-album-info">
         <p class="home-album-title">${album.title}</p>
         <p class="home-album-artist">${album.artist}</p>
       </div>
-      ${showCount ? `<span class="home-album-stat">${item.count} escuchas</span>` : ''}
-      ${showRating ? `<span class="home-album-stat">★ ${item.average}</span>` : ''}
+      ${showCount ? `<span class="home-album-stat" aria-hidden="true">${item.count} escuchas</span>` : ''}
+      ${showRating ? `<span class="home-album-stat" aria-hidden="true">★ ${item.average}</span>` : ''}
     `;
     container.appendChild(card);
   });
@@ -156,34 +153,41 @@ function renderFollowingActivity(containerId, listens) {
   }
 
   listens.forEach(l => {
-    const card = document.createElement("div");
+    const card = document.createElement("article");
     card.className = "activity-card";
+    card.setAttribute("aria-label", `${l.user.username} escuchó ${l.album.title}`);
 
     const avatarSrc = l.user.avatar_url ||
       `https://ui-avatars.com/api/?name=${encodeURIComponent(l.user.username || "U")}&background=1db954&color=000&size=40`;
 
     card.innerHTML = `
-      <a href="/userProfile.html?user_id=${l.user.id}" class="activity-user">
+      <a href="/userProfile.html?user_id=${l.user.id}" class="activity-user"
+        aria-label="Ver perfil de ${l.user.username}">
         <img src="${avatarSrc}" alt="${l.user.username}" class="activity-avatar">
         <span class="activity-username">${l.user.username}</span>
       </a>
-      <a href="/albumInfo.html?id=${l.album.id}" class="activity-album">
+      <a href="/albumInfo.html?id=${l.album.id}" class="activity-album"
+        aria-label="Ver álbum ${l.album.title} de ${l.album.artist}">
         <img src="${l.album.cover_url || 'https://via.placeholder.com/48'}"
-             alt="${l.album.title}"
+             alt="Portada de ${l.album.title}"
              onerror="this.src='https://via.placeholder.com/48'"
              class="activity-cover">
         <div class="activity-info">
           <p class="activity-title">${l.album.title}</p>
           <p class="activity-artist">${l.album.artist}</p>
-          ${l.rating ? `<p class="activity-rating">★ ${l.rating}</p>` : ''}
+          ${l.rating ? `<p class="activity-rating" aria-label="Valoración: ${l.rating} estrellas">★ ${l.rating}</p>` : ''}
           ${l.review ? `<p class="activity-review">"${l.review}"</p>` : ''}
         </div>
       </a>
       ${l.favoriteSongs?.length ? `
-        <ul class="activity-fav-songs">
+        <ul class="activity-fav-songs" aria-label="Canciones favoritas">
           ${l.favoriteSongs.map(s => `<li>🎵 ${s.title}</li>`).join('')}
         </ul>` : ''}
-      <p class="activity-date">${new Date(l.listen_date).toLocaleDateString('es-ES')}</p>
+      <p class="activity-date">
+        <time datetime="${l.listen_date}">
+          ${new Date(l.listen_date).toLocaleDateString('es-ES')}
+        </time>
+      </p>
     `;
 
     container.appendChild(card);
@@ -200,27 +204,33 @@ function renderOwnActivity(containerId, listens) {
   }
 
   listens.forEach(l => {
-    const card = document.createElement("div");
+    const card = document.createElement("article");
     card.className = "activity-card";
+    card.setAttribute("aria-label", `Escuchaste ${l.album.title}`);
 
     card.innerHTML = `
-      <a href="/albumInfo.html?id=${l.album.id}" class="activity-album">
+      <a href="/albumInfo.html?id=${l.album.id}" class="activity-album"
+        aria-label="Ver álbum ${l.album.title} de ${l.album.artist}">
         <img src="${l.album.cover_url || 'https://via.placeholder.com/48'}"
-             alt="${l.album.title}"
+             alt="Portada de ${l.album.title}"
              onerror="this.src='https://via.placeholder.com/48'"
              class="activity-cover">
         <div class="activity-info">
           <p class="activity-title">${l.album.title}</p>
           <p class="activity-artist">${l.album.artist}</p>
-          ${l.rating ? `<p class="activity-rating">★ ${l.rating}</p>` : ''}
+          ${l.rating ? `<p class="activity-rating" aria-label="Valoración: ${l.rating} estrellas">★ ${l.rating}</p>` : ''}
           ${l.review ? `<p class="activity-review">"${l.review}"</p>` : ''}
         </div>
       </a>
       ${l.favoriteSongs?.length ? `
-        <ul class="activity-fav-songs">
+        <ul class="activity-fav-songs" aria-label="Canciones favoritas">
           ${l.favoriteSongs.map(s => `<li>🎵 ${s.title}</li>`).join('')}
         </ul>` : ''}
-      <p class="activity-date">${new Date(l.listen_date).toLocaleDateString('es-ES')}</p>
+      <p class="activity-date">
+        <time datetime="${l.listen_date}">
+          ${new Date(l.listen_date).toLocaleDateString('es-ES')}
+        </time>
+      </p>
     `;
 
     container.appendChild(card);

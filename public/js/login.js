@@ -11,18 +11,23 @@ const submitBtn = form.querySelector("button[type='submit']");
 function setError(message, fieldId = null) {
   errorEl.textContent = message;
   if (fieldId) {
-    document.getElementById(fieldId)?.classList.add("input-error");
+    const input = document.getElementById(fieldId);
+    input?.classList.add("input-error");
+    const fieldError = document.getElementById(`${fieldId}Error`);
+    if (fieldError) fieldError.textContent = message;
   }
 }
 
 function clearErrors() {
   errorEl.textContent = "";
   document.querySelectorAll(".input-error").forEach(el => el.classList.remove("input-error"));
+  document.querySelectorAll(".field-error").forEach(el => el.textContent = "");
 }
 
 function setLoading(loading) {
   submitBtn.disabled = loading;
   submitBtn.textContent = loading ? "Entrando..." : "Entrar";
+  submitBtn.setAttribute("aria-busy", loading.toString());
 }
 
 form.addEventListener("submit", async (e) => {
@@ -32,7 +37,6 @@ form.addEventListener("submit", async (e) => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  // Validaciones básicas antes de llamar al backend
   if (!email) {
     setError("El email es obligatorio", "email");
     return;
@@ -55,7 +59,6 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (!res.ok) {
-      // Mensajes específicos según el código de error
       if (res.status === 401) {
         setError("Email o contraseña incorrectos");
       } else if (res.status === 404) {
@@ -76,6 +79,5 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// Limpiar error al escribir en un campo
 document.getElementById("email").addEventListener("input", clearErrors);
 document.getElementById("password").addEventListener("input", clearErrors);

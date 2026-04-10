@@ -29,14 +29,38 @@
   border-color: var(--accent);
 }
 
+.user-card:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
 .user-card img {
   width: 44px;
   height: 44px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .user-card span {
   font-weight: 600;
   font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .followers-container {
+    margin: 20px auto;
+    padding: 0 12px;
+  }
+
+  .followers-container h2 {
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+
+  .user-card {
+    padding: 12px 14px;
+  }
 }

@@ -4,6 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const banner = document.createElement("div");
   banner.id = "cookie-banner";
   banner.className = "cookie-banner";
+  banner.setAttribute("role", "dialog");
+  banner.setAttribute("aria-modal", "false");
+  banner.setAttribute("aria-label", "Aviso de cookies y privacidad");
   banner.innerHTML = `
     <div class="cookie-content">
       <p>

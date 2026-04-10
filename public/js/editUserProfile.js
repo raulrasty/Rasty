@@ -5,21 +5,25 @@ const submitBtn = document.querySelector(".btn-submit");
 function showError(msg) {
   messageEl.textContent = msg;
   messageEl.className = "message msg-error";
+  messageEl.setAttribute("role", "alert");
 }
 
 function showSuccess(msg) {
   messageEl.textContent = msg;
   messageEl.className = "message msg-success";
+  messageEl.setAttribute("role", "status");
 }
 
 function clearMessage() {
   messageEl.textContent = "";
   messageEl.className = "message";
+  messageEl.removeAttribute("role");
 }
 
 function setLoading(loading) {
   submitBtn.disabled = loading;
   submitBtn.textContent = loading ? "Guardando..." : "Guardar cambios";
+  submitBtn.setAttribute("aria-busy", loading.toString());
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -52,7 +56,8 @@ function populateForm(user) {
   if (user.avatar_url) {
     const preview = document.getElementById("avatarPreview");
     preview.src = user.avatar_url;
-    preview.style.display = "block";
+    preview.alt = `Avatar actual de ${user.username}`;
+    preview.classList.remove("hidden");
   }
 }
 
@@ -64,14 +69,12 @@ avatarInput.addEventListener("change", () => {
   const file = avatarInput.files[0];
   if (!file) return;
 
-  // Validar tamaño (máx 2MB)
   if (file.size > 2 * 1024 * 1024) {
     showError("La imagen no puede superar 2MB");
     avatarInput.value = "";
     return;
   }
 
-  // Validar tipo
   if (!file.type.startsWith("image/")) {
     showError("El archivo debe ser una imagen");
     avatarInput.value = "";
@@ -82,7 +85,8 @@ avatarInput.addEventListener("change", () => {
   const reader = new FileReader();
   reader.onload = () => {
     avatarPreview.src = reader.result;
-    avatarPreview.style.display = "block";
+    avatarPreview.alt = "Vista previa del nuevo avatar";
+    avatarPreview.classList.remove("hidden");
   };
   reader.readAsDataURL(file);
 });
@@ -98,7 +102,6 @@ document.getElementById("editProfileForm").addEventListener("submit", async (e) 
   const location = document.getElementById("location").value.trim();
   const birth_date = document.getElementById("birth_date").value;
 
-  // Validaciones
   if (bio.length > 300) {
     showError("La biografía no puede superar 300 caracteres");
     return;

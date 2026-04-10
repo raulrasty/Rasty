@@ -1,7 +1,7 @@
 const params = new URLSearchParams(window.location.search);
 const profileUserId = params.get("user_id");
 
-const limit = 20;
+const limit = 15;
 let currentPage = 1;
 let totalListens = 0;
 
@@ -16,13 +16,13 @@ async function fetchListens(page = 1) {
     totalListens = total;
     currentPage = page;
 
-    displayListens(listens);
+    await displayListens(listens);
     renderPagination();
     scrollToTop();
 
   } catch (err) {
     console.error(err);
-    container.innerHTML = '<p class="state-msg">Error cargando escuchas</p>';
+    container.innerHTML = '<p class="state-msg" role="alert">Error cargando escuchas</p>';
   }
 }
 
@@ -39,7 +39,6 @@ async function displayListens(listens) {
     return;
   }
 
-  // Agrupar por mes y día
   const grouped = {};
 
   listens.forEach((l) => {
@@ -67,6 +66,7 @@ async function displayListens(listens) {
 
       const dayContainer = document.createElement("div");
       dayContainer.className = "day-container";
+      dayContainer.setAttribute("role", "list");
       container.appendChild(dayContainer);
 
       const sortedDayListens = [...dayListens].sort(
@@ -82,19 +82,21 @@ async function displayListens(listens) {
 }
 
 async function buildListenCard(l) {
-  const card = document.createElement("div");
+  const card = document.createElement("article");
   card.className = "listen-card";
+  card.setAttribute("role", "listitem");
+  card.setAttribute("aria-label", `${l.album.title} de ${l.album.artist}`);
 
   const img = document.createElement("img");
   img.className = "album-cover";
   img.src = l.album.cover_url || "https://via.placeholder.com/120";
-  img.alt = l.album.title;
+  img.alt = `Portada de ${l.album.title}`;
 
   const info = document.createElement("div");
   info.className = "listen-info";
   info.innerHTML = `
     <h2>${l.album.title} - ${l.album.artist}</h2>
-    ${l.rating ? `<p class="rating">★ ${l.rating}</p>` : ""}
+    ${l.rating ? `<p class="rating" aria-label="Valoración: ${l.rating} estrellas">★ ${l.rating}</p>` : ""}
     ${l.liked ? `<p class="liked">💚 Te gusta</p>` : ""}
     ${l.review ? `<p><em>"${l.review}"</em></p>` : ""}
   `;
@@ -109,7 +111,7 @@ async function buildListenCard(l) {
     if (favSongs.length > 0) {
       favDiv.innerHTML = `
         <p class="favorites-label">Canciones favoritas:</p>
-        <ul>
+        <ul aria-label="Canciones favoritas de esta escucha">
           ${favSongs.map((f) => `<li>♪ ${f.song.title}</li>`).join("")}
         </ul>
       `;
@@ -122,6 +124,7 @@ async function buildListenCard(l) {
   const btnAlbum = document.createElement("button");
   btnAlbum.textContent = "Ver Álbum";
   btnAlbum.className = "btn-album";
+  btnAlbum.setAttribute("aria-label", `Ver álbum ${l.album.title}`);
   btnAlbum.onclick = () => window.location.href = `/albumInfo.html?id=${l.album.id}`;
   btnGroup.appendChild(btnAlbum);
 
@@ -129,11 +132,13 @@ async function buildListenCard(l) {
     const btnEdit = document.createElement("button");
     btnEdit.textContent = "Editar";
     btnEdit.className = "btn-edit";
+    btnEdit.setAttribute("aria-label", `Editar escucha de ${l.album.title}`);
     btnEdit.onclick = () => window.location.href = `/editListen.html?listen_id=${l.id}`;
 
     const btnDelete = document.createElement("button");
     btnDelete.textContent = "Eliminar";
     btnDelete.className = "btn-delete";
+    btnDelete.setAttribute("aria-label", `Eliminar escucha de ${l.album.title}`);
     btnDelete.onclick = () => deleteListen(l.id, card);
 
     btnGroup.appendChild(btnEdit);
@@ -158,16 +163,19 @@ function renderPagination() {
   const prevBtn = document.createElement("button");
   prevBtn.className = "pagination-btn";
   prevBtn.innerHTML = "←";
+  prevBtn.setAttribute("aria-label", "Página anterior");
   prevBtn.disabled = currentPage === 1;
   prevBtn.addEventListener("click", () => fetchListens(currentPage - 1));
 
   const info = document.createElement("span");
   info.className = "pagination-info";
+  info.setAttribute("aria-live", "polite");
   info.textContent = `${currentPage} de ${totalPages}`;
 
   const nextBtn = document.createElement("button");
   nextBtn.className = "pagination-btn";
   nextBtn.innerHTML = "→";
+  nextBtn.setAttribute("aria-label", "Página siguiente");
   nextBtn.disabled = currentPage === totalPages;
   nextBtn.addEventListener("click", () => fetchListens(currentPage + 1));
 

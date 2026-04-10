@@ -64,10 +64,7 @@ body {
 }
 
 .form-group input:focus { border-color: var(--accent); }
-
-.form-group input.input-error {
-  border-color: var(--red);
-}
+.form-group input.input-error { border-color: var(--red); }
 
 .field-error {
   font-size: 0.78rem;
@@ -80,7 +77,6 @@ body {
   color: var(--text-dim);
 }
 
-/* Checkbox política de privacidad */
 .form-group .checkbox-label {
   display: flex;
   align-items: flex-start;
@@ -108,6 +104,12 @@ body {
   text-decoration: underline;
 }
 
+.form-group .checkbox-label a:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 button[type="submit"] {
   width: 100%;
   margin-top: 8px;
@@ -123,6 +125,7 @@ button[type="submit"] {
 
 button[type="submit"]:hover  { background: var(--accent-dark); }
 button[type="submit"]:active { transform: scale(0.98); }
+button[type="submit"]:focus  { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 button[type="submit"]:disabled {
   opacity: 0.6;
@@ -150,3 +153,10 @@ button[type="submit"]:disabled {
 }
 
 .message a:hover { text-decoration: underline; }
+.message a:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+@media (max-width: 480px) {
+  .container {
+    padding: 32px 20px;
+  }
+}

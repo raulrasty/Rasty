@@ -18,9 +18,9 @@ function clearErrors() {
 function setLoading(loading) {
   submitBtn.disabled = loading;
   submitBtn.textContent = loading ? "Registrando..." : "Registrarse";
+  submitBtn.setAttribute("aria-busy", loading.toString());
 }
 
-// Limpiar errores al escribir
 ["username", "email", "password", "passwordConfirm"].forEach(id => {
   document.getElementById(id)?.addEventListener("input", clearErrors);
 });
@@ -39,7 +39,6 @@ form.addEventListener("submit", async (e) => {
 
   let hasErrors = false;
 
-  // Validar username
   if (!username) {
     setFieldError("username", "El nombre de usuario es obligatorio");
     hasErrors = true;
@@ -51,13 +50,11 @@ form.addEventListener("submit", async (e) => {
     hasErrors = true;
   }
 
-  // Validar email
   if (!email) {
     setFieldError("email", "El correo electrónico es obligatorio");
     hasErrors = true;
   }
 
-  // Validar contraseña
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
   if (!password) {
     setFieldError("password", "La contraseña es obligatoria");
@@ -67,7 +64,6 @@ form.addEventListener("submit", async (e) => {
     hasErrors = true;
   }
 
-  // Validar confirmación
   if (!passwordConfirm) {
     setFieldError("passwordConfirm", "Confirma tu contraseña");
     hasErrors = true;
@@ -76,7 +72,6 @@ form.addEventListener("submit", async (e) => {
     hasErrors = true;
   }
 
-  // Validar política de privacidad
   if (!acceptPrivacy) {
     setFieldError("acceptPrivacy", "Debes aceptar la política de privacidad");
     hasErrors = true;

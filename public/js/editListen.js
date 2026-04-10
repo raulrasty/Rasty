@@ -16,11 +16,11 @@ let currentAlbumId = null;
 let currentListen = null;
 
 function showError(msg) {
-  messageDiv.innerHTML = `<p class="msg-error">${msg}</p>`;
+  messageDiv.innerHTML = `<p class="msg-error" role="alert">${msg}</p>`;
 }
 
 function showSuccess(msg) {
-  messageDiv.innerHTML = `<p class="msg-success">${msg}</p>`;
+  messageDiv.innerHTML = `<p class="msg-success" role="status">${msg}</p>`;
 }
 
 function clearMessage() {
@@ -30,6 +30,7 @@ function clearMessage() {
 function setLoading(loading) {
   submitBtn.disabled = loading;
   submitBtn.textContent = loading ? "Guardando..." : "Guardar cambios";
+  submitBtn.setAttribute("aria-busy", loading.toString());
 }
 
 async function loadListenData() {
@@ -46,8 +47,9 @@ async function loadListenData() {
 
     currentAlbumId = currentListen.album.id;
 
-    document.getElementById("album-cover").src =
-      currentListen.album.cover_url || "https://via.placeholder.com/200?text=Sin+portada";
+    const coverEl = document.getElementById("album-cover");
+    coverEl.src = currentListen.album.cover_url || "https://via.placeholder.com/200?text=Sin+portada";
+    coverEl.alt = `Portada de ${currentListen.album.title}`;
     document.getElementById("album-title").textContent = currentListen.album.title || "Título no disponible";
     document.getElementById("album-artist").textContent = currentListen.album.artist || "Artista no disponible";
 
@@ -58,7 +60,10 @@ async function loadListenData() {
 
     if (currentListen.liked) {
       document.getElementById("likedValue").value = "true";
-      document.getElementById("heart").classList.add("liked");
+      const heartEl = document.getElementById("heart");
+      heartEl.classList.add("liked");
+      heartEl.setAttribute("aria-pressed", "true");
+      heartEl.setAttribute("aria-label", "Quitar me gusta");
     }
 
     if (currentListen.review) {
@@ -101,12 +106,25 @@ async function loadSongsForSelection(albumId) {
       li.className = "favorite-song-item";
       li.dataset.songId = song.id;
       li.textContent = `${song.position}. ${song.title}`;
+      li.setAttribute("role", "button");
+      li.setAttribute("tabindex", "0");
+      li.setAttribute("aria-label", `Marcar ${song.title} como favorita`);
 
-      if (selectedSongIds.includes(song.id)) {
+      const isSelected = selectedSongIds.includes(song.id);
+      if (isSelected) {
         li.classList.add("selected");
+        li.setAttribute("aria-pressed", "true");
+      } else {
+        li.setAttribute("aria-pressed", "false");
       }
 
       li.addEventListener("click", () => toggleFavoriteSong(song.id, li));
+      li.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleFavoriteSong(song.id, li);
+        }
+      });
       list.appendChild(li);
     });
 
@@ -119,6 +137,7 @@ function toggleFavoriteSong(songId, element) {
   if (selectedSongIds.includes(songId)) {
     selectedSongIds = selectedSongIds.filter(id => id !== songId);
     element.classList.remove("selected");
+    element.setAttribute("aria-pressed", "false");
     clearMessage();
   } else {
     if (selectedSongIds.length >= 3) {
@@ -127,6 +146,7 @@ function toggleFavoriteSong(songId, element) {
     }
     selectedSongIds.push(songId);
     element.classList.add("selected");
+    element.setAttribute("aria-pressed", "true");
     clearMessage();
   }
 }
@@ -143,6 +163,14 @@ document.querySelectorAll(".star .half, .star .full").forEach(span => {
     ratingInput.value = value;
     updateStars(value);
   });
+  span.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      const value = parseFloat(span.dataset.value);
+      ratingInput.value = value;
+      updateStars(value);
+    }
+  });
 });
 
 function updateStars(value) {
@@ -158,10 +186,20 @@ function updateStars(value) {
 const heart = document.getElementById("heart");
 const likedInput = document.getElementById("likedValue");
 
-heart.addEventListener("click", () => {
+function toggleHeart() {
   const liked = likedInput.value === "true";
   likedInput.value = (!liked).toString();
   heart.classList.toggle("liked", !liked);
+  heart.setAttribute("aria-pressed", (!liked).toString());
+  heart.setAttribute("aria-label", !liked ? "Quitar me gusta" : "Marcar como me gusta");
+}
+
+heart.addEventListener("click", toggleHeart);
+heart.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    toggleHeart();
+  }
 });
 
 // Envío del formulario
@@ -197,14 +235,12 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    // Actualizar canciones favoritas del listen
     await authFetch(`http://localhost:3000/favorite-songs/listen/${listenId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ songIds: selectedSongIds }),
     });
 
-    // Comprobar si es el listen más reciente
     const allListensRes = await authFetch(`http://localhost:3000/listens/user/${userId}`);
     const allListens = await allListensRes.json();
     const albumListens = allListens

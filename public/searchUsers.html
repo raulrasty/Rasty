@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buscar Usuarios</title>
+  <title>Buscar Usuarios - Rasty</title>
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/searchUsers.css">
@@ -15,19 +15,18 @@
   <main class="search-container">
     <h1 class="search-title">Buscar Usuarios</h1>
 
-    <form id="searchForm" class="search-form">
+    <form id="searchForm" class="search-form" novalidate aria-label="Búsqueda de usuarios">
       <div class="input-wrapper">
-        <input
-          type="text"
-          id="searchInput"
+        <label for="searchInput" class="sr-only">Nombre de usuario</label>
+        <input type="text" id="searchInput"
           placeholder="Buscar por nombre de usuario..."
           autocomplete="off"
-        >
+          aria-label="Nombre de usuario a buscar">
         <button type="submit" class="btn-search">Buscar</button>
       </div>
     </form>
 
-    <div id="results" class="results"></div>
+    <div id="results" class="results" aria-live="polite" aria-label="Resultados de búsqueda"></div>
   </main>
 
   <script src="/js/header.js"></script>

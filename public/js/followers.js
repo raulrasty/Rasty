@@ -1,17 +1,17 @@
 const FOLLOWS_URL = "http://localhost:3000/follows";
 const params = new URLSearchParams(window.location.search);
 const profileUserId = params.get("user_id");
-const type = params.get("type"); // "followers" o "following"
+const type = params.get("type");
 
-// Cargar la lista según el tipo
 document.addEventListener("DOMContentLoaded", async () => {
   if (!profileUserId || !type) {
     window.location.href = "/";
     return;
   }
 
-  document.getElementById("page-title").textContent =
-    type === "followers" ? "Seguidores" : "Siguiendo";
+  const pageTitle = type === "followers" ? "Seguidores" : "Siguiendo";
+  document.getElementById("page-title").textContent = pageTitle;
+  document.title = `${pageTitle} - Rasty`;
 
   try {
     const res = await fetch(`${FOLLOWS_URL}/${type}/${profileUserId}`);
@@ -20,11 +20,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (err) {
     console.error(err);
     document.getElementById("users-list").innerHTML =
-      '<p class="state-msg">Error cargando usuarios</p>';
+      '<p class="state-msg" role="alert">Error cargando usuarios</p>';
   }
 });
 
-// Renderizar lista de usuarios
 function renderUsers(users) {
   const container = document.getElementById("users-list");
 
@@ -37,6 +36,7 @@ function renderUsers(users) {
     const card = document.createElement("a");
     card.className = "user-card";
     card.href = `/userProfile.html?user_id=${user.id}`;
+    card.setAttribute("aria-label", `Ver perfil de ${user.username}`);
 
     const avatarSrc = user.avatar_url ||
       `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=52`;

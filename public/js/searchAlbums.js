@@ -1,7 +1,6 @@
 const form = document.getElementById('search-form');
 const albumsContainer = document.getElementById('albums');
 
-// Función para renderizar los álbumes
 function renderAlbums(results) {
   if (!Array.isArray(results) || results.length === 0) {
     albumsContainer.innerHTML = '<p class="state-msg">No se encontraron álbumes.</p>';
@@ -14,10 +13,11 @@ function renderAlbums(results) {
   results.forEach(({ album }) => {
     const card = document.createElement('div');
     card.className = 'album-card';
+    card.setAttribute('role', 'article');
 
     const img = document.createElement('img');
     img.src = album.cover_url || 'https://via.placeholder.com/200?text=Sin+portada';
-    img.alt = album.title;
+    img.alt = `Portada de ${album.title}`;
     img.onerror = () => img.src = 'https://via.placeholder.com/200?text=Sin+portada';
 
     const title = document.createElement('h4');
@@ -28,6 +28,7 @@ function renderAlbums(results) {
 
     const spacer = document.createElement('div');
     spacer.className = 'album-card-spacer';
+    spacer.setAttribute('aria-hidden', 'true');
 
     const btnGroup = document.createElement('div');
     btnGroup.className = 'album-card-buttons';
@@ -35,6 +36,7 @@ function renderAlbums(results) {
     const btnVer = document.createElement('button');
     btnVer.textContent = 'Ver álbum';
     btnVer.className = 'btn-ver-album';
+    btnVer.setAttribute('aria-label', `Ver álbum ${album.title} de ${album.artist}`);
     btnVer.addEventListener('click', () => viewAlbum(album.id));
     btnGroup.appendChild(btnVer);
 
@@ -42,12 +44,14 @@ function renderAlbums(results) {
       const btnListen = document.createElement('button');
       btnListen.textContent = 'Crear escucha';
       btnListen.className = 'btn-crear-escucha';
+      btnListen.setAttribute('aria-label', `Crear escucha de ${album.title}`);
       btnListen.addEventListener('click', () => goCreateListen(album.id));
       btnGroup.appendChild(btnListen);
 
       const favBtn = document.createElement('button');
       favBtn.textContent = '⭐ Favorito';
       favBtn.className = 'fav-album-btn';
+      favBtn.setAttribute('aria-label', `Añadir ${album.title} a favoritos`);
       favBtn.addEventListener('click', () => openFavSlotSelector(album));
       btnGroup.appendChild(favBtn);
     }
@@ -60,34 +64,33 @@ function renderAlbums(results) {
     albumsContainer.appendChild(card);
   });
 }
-// Convertir código de país a emoji de bandera
+
 function countryToFlag(countryCode) {
   if (!countryCode || countryCode.length !== 2) return '';
-  const flag = countryCode
+  return countryCode
     .toUpperCase()
     .split('')
     .map(c => String.fromCodePoint(0x1F1A5 + c.charCodeAt(0)))
     .join('');
-  console.log('Flag para', countryCode, ':', flag);
-  return flag;
 }
-// Función para mostrar candidatos cuando hay varios artistas con el mismo nombre
+
 function renderCandidates(candidates, title) {
   albumsContainer.className = 'candidates-container';
   albumsContainer.innerHTML = `
     <p class="candidates-title">Se encontraron varios artistas con ese nombre. ¿Cuál buscas?</p>
-    <div id="candidates-list"></div>
+    <div id="candidates-list" role="list"></div>
   `;
 
   const candidatesList = document.getElementById('candidates-list');
 
   candidates.forEach(candidate => {
-    console.log('País:', candidate.country);
     const btn = document.createElement('button');
     btn.className = 'candidate-btn';
+    btn.setAttribute('role', 'listitem');
+    btn.setAttribute('aria-label', `${candidate.name}${candidate.disambiguation ? `, ${candidate.disambiguation}` : ''}${candidate.country ? `, ${candidate.country}` : ''}`);
 
     const flag = candidate.country
-      ? `<img src="https://flagcdn.com/24x18/${candidate.country.toLowerCase()}.png" alt="${candidate.country}" class="candidate-flag-img">`
+      ? `<img src="https://flagcdn.com/24x18/${candidate.country.toLowerCase()}.png" alt="Bandera de ${candidate.country}" class="candidate-flag-img">`
       : '';
 
     btn.innerHTML = `
@@ -104,8 +107,6 @@ function renderCandidates(candidates, title) {
   });
 }
 
-
-// Búsqueda por ID del artista
 async function searchByArtistId(artistId, artistName, title) {
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
 
@@ -119,15 +120,20 @@ async function searchByArtistId(artistId, artistName, title) {
     renderAlbums(results);
   } catch (err) {
     console.error(err);
-    albumsContainer.innerHTML = '<p class="state-msg">Error buscando álbumes.</p>';
+    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';
   }
 }
 
-// Evento principal: buscar álbumes
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const artist = document.getElementById('artist').value.trim();
   const title = document.getElementById('title').value.trim();
+
+  if (!artist) {
+    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Introduce el nombre de un artista.</p>';
+    return;
+  }
+
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
 
   try {
@@ -145,7 +151,7 @@ form.addEventListener('submit', async (e) => {
     renderAlbums(data);
   } catch (err) {
     console.error(err);
-    albumsContainer.innerHTML = '<p class="state-msg">Error buscando álbumes.</p>';
+    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';
   }
 });
 

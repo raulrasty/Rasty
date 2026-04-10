@@ -31,7 +31,7 @@
 }
 
 .profile-header-top img {
-  width: 100px; /* ✅ más grande */
+  width: 100px;
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
@@ -41,13 +41,13 @@
 
 .profile-header-top h2 {
   font-family: var(--font-display);
-  font-size: 2rem; /* ✅ más grande */
+  font-size: 2rem;
   font-weight: 700;
 }
 
 #bio {
   color: var(--text-muted);
-  font-size: 1rem; /* ✅ más grande que location/birth */
+  font-size: 1rem;
   max-width: 500px;
 }
 
@@ -59,7 +59,7 @@
 
 #location,
 #birth_date {
-  font-size: 0.82rem; /* ✅ más pequeño que bio */
+  font-size: 0.82rem;
   color: var(--text-dim);
 }
 
@@ -80,19 +80,19 @@
   border-radius: var(--radius);
   padding: 0 24px;
   display: flex;
-  justify-content: center; 
+  justify-content: center;
   gap: 0;
 }
 
 .profile-nav-item {
-  padding: 16px 32px; 
+  padding: 16px 32px;
   font-size: 0.88rem;
   color: var(--text-muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: color var(--transition), border-color var(--transition);
   font-weight: 500;
-  text-align: center; 
+  text-align: center;
 }
 
 .profile-nav-item strong {
@@ -248,7 +248,7 @@
    BOTONES
    ================== */
 .edit-btn {
-  position: absolute; /* ✅ */
+  position: absolute;
   top: 16px;
   right: 16px;
   padding: 5px 12px;
@@ -277,13 +277,8 @@
   transition: background var(--transition), transform 0.1s;
 }
 
-.follow-btn:hover {
-  background: var(--accent-dark);
-}
-
-.follow-btn:active {
-  transform: scale(0.97);
-}
+.follow-btn:hover { background: var(--accent-dark); }
+.follow-btn:active { transform: scale(0.97); }
 
 .follow-btn.following {
   background: transparent;
@@ -331,68 +326,15 @@
   font-weight: 700;
 }
 
-.fav-search-input {
-  padding: 10px 14px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color var(--transition);
-}
-
-.fav-search-input:focus {
-  border-color: var(--accent);
-}
-
-.fav-album-results {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.fav-search-result {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background var(--transition);
-}
-
-.fav-search-result:hover {
-  background: var(--bg-hover);
-}
-
-.fav-search-result img {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-}
-
-.fav-result-title {
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-
-.fav-result-artist {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
 .fav-album-selected {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .fav-selected-slot {
   flex: 1;
+  min-width: 60px;
   position: relative;
   aspect-ratio: 1;
   border: 1px solid var(--border);
@@ -441,9 +383,7 @@
   transition: background var(--transition);
 }
 
-.save-fav-btn:hover {
-  background: var(--accent-dark);
-}
+.save-fav-btn:hover { background: var(--accent-dark); }
 
 .close-fav-btn {
   padding: 8px 20px;
@@ -471,14 +411,10 @@
   text-decoration: underline;
 }
 
-
-
 /* ==================
    GRÁFICA DE RATINGS
    ================== */
-.user-rating-chart {
-  width: 100%;
-}
+.user-rating-chart { width: 100%; }
 
 .rating-chart-horizontal {
   display: flex;
@@ -531,18 +467,71 @@
   text-align: right;
 }
 
+/* ==================
+   ACCESIBILIDAD
+   ================== */
+.profile-nav button.profile-nav-item {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
 
-/* Responsive */
+.profile-nav button.profile-nav-item:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.edit-btn:focus,
+.edit-fav-btn:focus,
+.follow-btn:focus,
+.save-fav-btn:focus,
+.close-fav-btn:focus,
+.remove-fav:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.recent-listen-card:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.fav-album-slot a:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+/* ==================
+   RESPONSIVE
+   ================== */
 @media (max-width: 600px) {
+  .profile-container {
+    margin: 20px auto;
+    padding: 0 12px;
+  }
+
   .profile-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    padding: 20px;
+  }
+
+  .profile-header-top img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .profile-header-top h2 {
+    font-size: 1.4rem;
   }
 
   .profile-nav {
     overflow-x: auto;
     padding: 0 12px;
+    justify-content: flex-start;
   }
 
   .profile-nav-item {
@@ -552,6 +541,10 @@
 
   .favorite-albums-grid {
     gap: 8px;
+  }
+
+  .profile-section {
+    padding: 20px;
   }
 }
 

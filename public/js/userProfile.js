@@ -29,17 +29,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     ]);
 
     if (isOwnProfile(profileUserId)) {
-      document.getElementById("editProfileBtn").classList.remove("hidden");
-      document.getElementById("editProfileBtn").addEventListener("click", () => {
+      const editProfileBtn = document.getElementById("editProfileBtn");
+      editProfileBtn.classList.remove("hidden");
+      editProfileBtn.addEventListener("click", () => {
         window.location.href = `/editUserProfile.html?user_id=${profileUserId}`;
       });
-      document.getElementById("editFavAlbumsBtn").classList.remove("hidden");
-      document.getElementById("editFavAlbumsBtn").addEventListener("click", openFavAlbumsModal);
+
+      const editFavBtn = document.getElementById("editFavAlbumsBtn");
+      editFavBtn.classList.remove("hidden");
+      editFavBtn.addEventListener("click", openFavAlbumsModal);
     } else if (isLoggedIn()) {
       await loadFollowButton();
     }
 
-    // Navegación
+    // Navegación — ahora son botones
     document.getElementById("albums-nav").addEventListener("click", () => {
       window.location.href = `/userAlbums.html?user_id=${profileUserId}`;
     });
@@ -53,8 +56,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.location.href = `/followers.html?user_id=${profileUserId}&type=following`;
     });
 
-    // Modal eventos
     document.getElementById("closeFavModal")?.addEventListener("click", closeFavAlbumsModal);
+
+    // Cerrar modal con Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeFavAlbumsModal();
+    });
 
     document.getElementById("saveFavAlbums")?.addEventListener("click", async () => {
       try {
@@ -81,21 +88,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// Renderizar datos del usuario
 function renderUser(user) {
   document.getElementById("username").textContent = user.username || "Sin nombre";
   document.getElementById("bio").textContent = user.bio || "";
+  document.title = `${user.username} - Rasty`;
+
   const locationEl = document.getElementById("location");
   const birthDateEl = document.getElementById("birth_date");
   if (locationEl) locationEl.textContent = user.location ? `📍 ${user.location}` : "";
   if (birthDateEl) birthDateEl.textContent = user.birth_date
     ? `🎂 ${new Date(user.birth_date).toLocaleDateString("es-ES")}`
     : "";
-  document.getElementById("avatar").src = user.avatar_url ||
+
+  const avatarEl = document.getElementById("avatar");
+  avatarEl.src = user.avatar_url ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=128`;
+  avatarEl.alt = `Avatar de ${user.username}`;
 }
 
-// Cargar contadores de álbumes y escuchas
 async function loadCounts() {
   try {
     const res = await fetch(`${LISTENS_URL}/${profileUserId}`);
@@ -106,7 +116,6 @@ async function loadCounts() {
   } catch (_) {}
 }
 
-// Cargar seguidores y seguidos
 async function loadFollowStats() {
   try {
     const [followersRes, followingRes] = await Promise.all([
@@ -122,7 +131,6 @@ async function loadFollowStats() {
   }
 }
 
-// Cargar botón seguir
 async function loadFollowButton() {
   try {
     const res = await authFetch(`${FOLLOWS_URL}/is-following/${profileUserId}`);
@@ -130,6 +138,7 @@ async function loadFollowButton() {
     const followBtn = document.getElementById("followBtn");
     followBtn.classList.remove("hidden");
     updateFollowButton(followBtn, data.following);
+
     followBtn.addEventListener("click", async () => {
       const isCurrentlyFollowing = followBtn.dataset.following === "true";
       if (isCurrentlyFollowing) {
@@ -148,10 +157,10 @@ async function loadFollowButton() {
 function updateFollowButton(btn, isFollowing) {
   btn.textContent = isFollowing ? "Dejar de seguir" : "Seguir";
   btn.dataset.following = isFollowing.toString();
+  btn.setAttribute("aria-pressed", isFollowing.toString());
   btn.classList.toggle("following", isFollowing);
 }
 
-// Cargar álbumes favoritos
 async function loadFavoriteAlbums() {
   try {
     const res = await fetch(`${FAV_ALBUMS_URL}/${profileUserId}`);
@@ -166,14 +175,15 @@ async function loadFavoriteAlbums() {
 
       if (fav) {
         slot.innerHTML = `
-          <a href="/albumInfo.html?id=${fav.album.id}">
+          <a href="/albumInfo.html?id=${fav.album.id}"
+            aria-label="${fav.album.title} de ${fav.album.artist}">
             <img src="${fav.album.cover_url || 'https://via.placeholder.com/120'}"
-                 alt="${fav.album.title}"
+                 alt="Portada de ${fav.album.title}"
                  onerror="this.src='https://via.placeholder.com/120'">
           </a>
         `;
       } else {
-        slot.innerHTML = `<div class="fav-album-empty">+</div>`;
+        slot.innerHTML = `<div class="fav-album-empty" aria-label="Slot vacío">+</div>`;
       }
 
       grid.appendChild(slot);
@@ -191,7 +201,6 @@ async function loadFavoriteAlbums() {
   }
 }
 
-// Cargar últimas 5 escuchas
 async function loadRecentListens() {
   try {
     const res = await fetch(`${LISTENS_URL}/${profileUserId}`);
@@ -210,14 +219,15 @@ async function loadRecentListens() {
       const card = document.createElement("a");
       card.className = "recent-listen-card";
       card.href = `/albumInfo.html?id=${l.album.id}`;
+      card.setAttribute("aria-label", `${l.album.title} de ${l.album.artist}${l.rating ? `, valoración ${l.rating}` : ''}`);
       card.innerHTML = `
         <img src="${l.album.cover_url || 'https://via.placeholder.com/60'}"
-             alt="${l.album.title}"
+             alt="Portada de ${l.album.title}"
              onerror="this.src='https://via.placeholder.com/60'">
         <div class="recent-listen-info">
           <p class="recent-listen-title">${l.album.title}</p>
           <p class="recent-listen-artist">${l.album.artist}</p>
-          ${l.rating ? `<p class="recent-listen-rating">★ ${l.rating}</p>` : ''}
+          ${l.rating ? `<p class="recent-listen-rating" aria-label="Valoración ${l.rating}">★ ${l.rating}</p>` : ''}
         </div>
       `;
       container.appendChild(card);
@@ -246,9 +256,10 @@ async function loadUserRatingChart() {
     const labels = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
     const max = Math.max(...Object.values(distribution));
 
-    // Gráfica horizontal: 0.5 a la izquierda, 5 a la derecha
     const row = document.createElement("div");
     row.className = "rating-chart-horizontal";
+    row.setAttribute("role", "img");
+    row.setAttribute("aria-label", `Distribución de puntuaciones. Media: ${average}`);
 
     labels.forEach(val => {
       const count = distribution[val] || 0;
@@ -257,11 +268,11 @@ async function loadUserRatingChart() {
       const col = document.createElement("div");
       col.className = "rating-col";
       col.innerHTML = `
-        <div class="rating-col-bar-wrap">
+        <div class="rating-col-bar-wrap" title="${count} valoraciones con ${val} estrellas">
           <div class="rating-col-bar" style="height: ${pct}%"></div>
         </div>
-        <span class="rating-col-label">${val}</span>
-        <span class="rating-col-count">${count}</span>
+        <span class="rating-col-label" aria-hidden="true">${val}</span>
+        <span class="rating-col-count" aria-hidden="true">${count}</span>
       `;
       row.appendChild(col);
     });
@@ -273,17 +284,18 @@ async function loadUserRatingChart() {
   }
 }
 
-// Modal álbumes favoritos
 function openFavAlbumsModal() {
-  document.getElementById("favAlbumsModal").classList.remove("hidden");
+  const modal = document.getElementById("favAlbumsModal");
+  modal.classList.remove("hidden");
+  document.getElementById("closeFavModal").focus();
   renderSelectedFavAlbums();
 }
 
 function closeFavAlbumsModal() {
   document.getElementById("favAlbumsModal").classList.add("hidden");
+  document.getElementById("editFavAlbumsBtn").focus();
 }
 
-// Renderizar álbumes seleccionados en el modal
 function renderSelectedFavAlbums() {
   const container = document.getElementById("favAlbumSelected");
   container.innerHTML = "";
@@ -295,15 +307,17 @@ function renderSelectedFavAlbums() {
 
     if (fav) {
       slot.innerHTML = `
-        <img src="${fav.cover_url || 'https://via.placeholder.com/60'}" alt="${fav.title}">
-        <button class="remove-fav" data-index="${i}">✕</button>
+        <img src="${fav.cover_url || 'https://via.placeholder.com/60'}"
+          alt="Portada de ${fav.title}">
+        <button class="remove-fav" data-index="${i}"
+          aria-label="Eliminar ${fav.title} de favoritos">✕</button>
       `;
       slot.querySelector(".remove-fav").addEventListener("click", () => {
         selectedFavAlbums.splice(i, 1);
         renderSelectedFavAlbums();
       });
     } else {
-      slot.innerHTML = `<div class="fav-album-empty">+</div>`;
+      slot.innerHTML = `<div class="fav-album-empty" aria-label="Slot vacío">+</div>`;
     }
 
     container.appendChild(slot);
@@ -312,5 +326,5 @@ function renderSelectedFavAlbums() {
 
 function displayError(message) {
   const container = document.querySelector(".profile-container");
-  container.innerHTML = `<p style="color:red;text-align:center;margin-top:50px;">${message}</p>`;
+  container.innerHTML = `<p role="alert" style="color:red;text-align:center;margin-top:50px;">${message}</p>`;
 }

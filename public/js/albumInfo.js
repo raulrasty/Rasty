@@ -17,7 +17,6 @@ function formatDuration(ms) {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-// Buscar preview en iTunes
 async function getItunesPreview(songTitle, artistName) {
   try {
     const query = encodeURIComponent(`${songTitle} ${artistName}`);
@@ -29,13 +28,12 @@ async function getItunesPreview(songTitle, artistName) {
   }
 }
 
-// Reproducir/pausar preview
-function togglePreview(previewUrl, btn) {
-  // Si hay otro audio reproduciéndose, pararlo
+function togglePreview(previewUrl, btn, songTitle) {
   if (currentAudio && currentPlayBtn && currentPlayBtn !== btn) {
     currentAudio.pause();
     currentAudio = null;
     currentPlayBtn.textContent = "▶";
+    currentPlayBtn.setAttribute("aria-label", `Escuchar preview`);
     currentPlayBtn.classList.remove("playing");
   }
 
@@ -44,6 +42,7 @@ function togglePreview(previewUrl, btn) {
     currentAudio = null;
     currentPlayBtn = null;
     btn.textContent = "▶";
+    btn.setAttribute("aria-label", `Escuchar preview de ${songTitle}`);
     btn.classList.remove("playing");
     return;
   }
@@ -53,10 +52,12 @@ function togglePreview(previewUrl, btn) {
   currentAudio = audio;
   currentPlayBtn = btn;
   btn.textContent = "⏸";
+  btn.setAttribute("aria-label", `Pausar preview de ${songTitle}`);
   btn.classList.add("playing");
 
   audio.addEventListener("ended", () => {
     btn.textContent = "▶";
+    btn.setAttribute("aria-label", `Escuchar preview de ${songTitle}`);
     btn.classList.remove("playing");
     currentAudio = null;
     currentPlayBtn = null;
@@ -85,6 +86,7 @@ async function loadAlbum() {
       throw new Error(album.error || "Error al cargar el álbum");
 
     coverImg.src = album.cover_url?.trim() || "images/fallback.jpg";
+    coverImg.alt = `Portada de ${album.title}`;
     titleEl.innerText = album.title || "Título no disponible";
     artistEl.innerText = album.artist || "Artista no disponible";
     yearEl.innerText = album.release_year
@@ -101,30 +103,46 @@ async function loadAlbum() {
         const li = document.createElement("li");
         li.className = "song-item";
         li.dataset.songId = song.id;
+        li.setAttribute("role", "listitem");
 
-        // Texto de la canción
         const songText = document.createElement("span");
         songText.className = "song-text";
         songText.textContent = `${song.position}. ${song.title} (${formatDuration(song.length)})`;
         li.appendChild(songText);
 
-        // Buscar preview en iTunes
         const previewUrl = await getItunesPreview(song.title, album.artist);
         if (previewUrl) {
           const playBtn = document.createElement("button");
           playBtn.className = "preview-btn";
           playBtn.textContent = "▶";
-          playBtn.title = "Escuchar preview";
+          playBtn.setAttribute("aria-label", `Escuchar preview de ${song.title}`);
           playBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            togglePreview(previewUrl, playBtn);
+            togglePreview(previewUrl, playBtn, song.title);
+          });
+          // Soporte teclado
+          playBtn.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              togglePreview(previewUrl, playBtn, song.title);
+            }
           });
           li.appendChild(playBtn);
         }
 
         if (isLoggedIn()) {
           li.classList.add("clickable");
+          li.setAttribute("role", "button");
+          li.setAttribute("tabindex", "0");
+          li.setAttribute("aria-label", `Marcar ${song.title} como favorita`);
           li.addEventListener("click", () => toggleFavoriteSong(song.id, li));
+          li.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggleFavoriteSong(song.id, li);
+            }
+          });
         }
 
         songsContainer.appendChild(li);
@@ -217,6 +235,13 @@ async function loadUserRating(albumId) {
       currentUserRating = parseFloat(span.dataset.value);
       updateAlbumStars(currentUserRating);
     });
+    span.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        currentUserRating = parseFloat(span.dataset.value);
+        updateAlbumStars(currentUserRating);
+      }
+    });
   });
 }
 
@@ -239,7 +264,9 @@ async function loadUserFavorites(albumId) {
   }
 
   document.querySelectorAll(".song-item").forEach((li) => {
-    li.classList.toggle("selected", selectedSongIds.includes(li.dataset.songId));
+    const isSelected = selectedSongIds.includes(li.dataset.songId);
+    li.classList.toggle("selected", isSelected);
+    li.setAttribute("aria-pressed", isSelected.toString());
   });
 }
 
@@ -248,6 +275,7 @@ function toggleFavoriteSong(songId, element) {
   if (selectedSongIds.includes(songId)) {
     selectedSongIds = selectedSongIds.filter((id) => id !== songId);
     element.classList.remove("selected");
+    element.setAttribute("aria-pressed", "false");
   } else {
     if (selectedSongIds.length >= 3) {
       favMsg.textContent = "Solo puedes elegir 3 canciones favoritas";
@@ -256,6 +284,7 @@ function toggleFavoriteSong(songId, element) {
     }
     selectedSongIds.push(songId);
     element.classList.add("selected");
+    element.setAttribute("aria-pressed", "true");
     favMsg.textContent = "";
   }
 }
@@ -310,12 +339,15 @@ function renderRatingChart(distribution, total) {
 
     const row = document.createElement("div");
     row.className = "chart-row";
+    row.setAttribute("role", "row");
     row.innerHTML = `
-      <span class="chart-label">${val}</span>
-      <div class="chart-bar-wrap">
+      <span class="chart-label" aria-hidden="true">${val}</span>
+      <div class="chart-bar-wrap" role="progressbar"
+        aria-valuenow="${count}" aria-valuemin="0" aria-valuemax="${max}"
+        aria-label="${count} valoraciones con ${val} estrellas">
         <div class="chart-bar" style="width: ${pct}%"></div>
       </div>
-      <span class="chart-count">${count}</span>
+      <span class="chart-count" aria-hidden="true">${count}</span>
     `;
     chart.appendChild(row);
   });
@@ -362,14 +394,15 @@ async function loadFollowingData(albumId) {
       const div = document.createElement("div");
       div.className = "following-item";
       div.innerHTML = `
-        <a href="/userProfile.html?user_id=${user.id}" class="following-user">
+        <a href="/userProfile.html?user_id=${user.id}" class="following-user"
+          aria-label="Ver perfil de ${user.username}">
           <img src="${avatarSrc}" alt="${user.username}" class="following-avatar">
           <span class="following-username">${user.username}</span>
         </a>
         <div class="following-data">
-          ${rating ? `<p class="following-rating">★ ${rating}</p>` : ""}
+          ${rating ? `<p class="following-rating" aria-label="Puntuación: ${rating} estrellas">★ ${rating}</p>` : ""}
           ${songs.length ? `
-            <ul class="following-songs">
+            <ul class="following-songs" aria-label="Canciones favoritas de ${user.username}">
               ${songs.map((s) => `<li>🎵 ${s.title}</li>`).join("")}
             </ul>` : ""}
         </div>

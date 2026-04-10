@@ -11,8 +11,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loginModal = document.getElementById("loginModal");
     const loginForm = document.getElementById("loginForm");
 
-    const renderHeaderLinks = () => {
-      const { userId, userEmail } = getSession();
+    const renderHeaderLinks = async () => {
+      const { userId } = getSession();
 
       let leftHTML = `<a href="/index.html" class="logo-text">Rasty</a>`;
       let centerHTML = '';
@@ -27,7 +27,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       let rightHTML = '';
       if (isLoggedIn()) {
-        rightHTML += `<span>${userEmail}</span>`;
+        try {
+          const res = await fetch(`http://localhost:3000/users/${userId}`);
+          const user = await res.json();
+
+          const avatarSrc = user.avatar_url ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
+
+          rightHTML += `
+            <a href="/userProfile.html?user_id=${userId}" class="header-user">
+              <img src="${avatarSrc}" alt="${user.username}" class="header-avatar">
+              <span class="header-username">${user.username}</span>
+            </a>
+          `;
+        } catch (_) {
+          rightHTML += `<span>Mi perfil</span>`;
+        }
+
         rightHTML += `<a href="#" id="logoutBtn" class="logout-link">Cerrar sesión</a>`;
       } else {
         rightHTML += `<a href="#" id="loginBtn">Iniciar sesión</a>`;
@@ -41,7 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     };
 
-    renderHeaderLinks();
+    await renderHeaderLinks();
 
     // Helpers para el modal
     function setModalError(message, fieldId = null) {
@@ -108,7 +124,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const email = document.getElementById("loginEmail").value.trim();
         const password = document.getElementById("loginPassword").value;
 
-        // Validaciones
         if (!email) {
           setModalError("El email es obligatorio", "loginEmail");
           return;

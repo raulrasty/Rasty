@@ -9,7 +9,6 @@
   gap: 16px;
 }
 
-/* Cabecera de mes */
 .month-header {
   font-family: var(--font-display);
   font-size: 1.2rem;
@@ -20,7 +19,6 @@
   text-transform: capitalize;
 }
 
-/* Cabecera de día */
 .day-header {
   font-size: 0.85rem;
   font-weight: 600;
@@ -31,7 +29,6 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* Contenedor del día */
 .day-container {
   display: flex;
   flex-direction: column;
@@ -39,7 +36,6 @@
   margin-bottom: 16px;
 }
 
-/* Tarjeta de escucha */
 .listen-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -55,7 +51,6 @@
   border-color: var(--border-hover);
 }
 
-/* Portada */
 .album-cover {
   width: 72px;
   height: 72px;
@@ -65,12 +60,12 @@
   border: 1px solid var(--border);
 }
 
-/* Info */
 .listen-info {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
 }
 
 .listen-info h2 {
@@ -78,6 +73,9 @@
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .listen-info p {
@@ -85,19 +83,10 @@
   color: var(--text-muted);
 }
 
-.listen-info .rating {
-  color: #f5a623;
-}
+.listen-info .rating { color: #f5a623; }
+.listen-info .liked  { color: var(--accent); }
+.listen-info em      { font-style: italic; }
 
-.listen-info .liked {
-  color: var(--accent);
-}
-
-.listen-info em {
-  font-style: italic;
-}
-
-/* Canciones favoritas */
 .listen-favorites {
   flex-shrink: 0;
   font-size: 0.82rem;
@@ -119,11 +108,8 @@
   gap: 2px;
 }
 
-.listen-favorites li {
-  color: var(--text-muted);
-}
+.listen-favorites li { color: var(--text-muted); }
 
-/* Botones */
 .listen-actions {
   display: flex;
   flex-direction: column;
@@ -154,6 +140,12 @@
   color: var(--accent);
 }
 
+.listen-actions button:focus,
+.btn-album:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .btn-delete:hover {
   border-color: var(--red) !important;
   color: var(--red) !important;
@@ -170,13 +162,7 @@
   gap: 8px;
 }
 
-.pagination-top {
-  margin-top: 40px;
-}
-
-.pagination-bottom {
-  margin-bottom: 60px;
-}
+.pagination-bottom { margin-bottom: 60px; }
 
 .pagination-btn {
   padding: 6px 14px;
@@ -194,49 +180,52 @@
   color: var(--accent);
 }
 
+.pagination-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .pagination-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
-}
-
-.pagination-pages {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.pagination-page {
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: border-color var(--transition), color var(--transition), background var(--transition);
-}
-
-.pagination-page:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.pagination-page.active {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
-  font-weight: 700;
-}
-
-.pagination-dots {
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  padding: 0 4px;
 }
 
 .pagination-info {
   font-size: 0.82rem;
   color: var(--text-muted);
   padding: 0 8px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  #listens-container {
+    padding: 0 12px;
+  }
+
+  .listen-card {
+    padding: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .album-cover {
+    width: 56px;
+    height: 56px;
+  }
+
+  .listen-favorites {
+    display: none;
+  }
+
+  .listen-actions {
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .listen-actions button,
+  .btn-album {
+    width: auto;
+    flex: 1;
+  }
 }

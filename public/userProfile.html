@@ -2,7 +2,8 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Perfil de Usuario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perfil de Usuario - Rasty</title>
     <link rel="stylesheet" href="css/global.css" />
     <link rel="stylesheet" href="css/header.css" />
     <link rel="stylesheet" href="css/userProfile.css" />
@@ -11,10 +12,10 @@
     <div id="header-container"></div>
 
     <main class="profile-container">
-      <!-- Cabecera del perfil -->
+
       <div class="profile-header">
         <div class="profile-header-top">
-          <img id="avatar" src="" alt="Avatar" />
+          <img id="avatar" src="" alt="Avatar del usuario" />
           <h2 id="username">Cargando...</h2>
         </div>
         <p id="bio"></p>
@@ -23,62 +24,59 @@
           <span id="birth_date"></span>
         </div>
         <div class="profile-actions">
-          <button id="followBtn" class="follow-btn hidden"></button>
-          <button id="editProfileBtn" class="edit-btn hidden">
-            Editar perfil
-          </button>
+          <button id="followBtn" class="follow-btn hidden" aria-pressed="false"></button>
+          <button id="editProfileBtn" class="edit-btn hidden">Editar perfil</button>
         </div>
       </div>
 
-      <!-- Barra de navegación del perfil -->
-      <div class="profile-nav">
-        <span id="albums-nav" class="profile-nav-item">
+      <nav class="profile-nav" aria-label="Estadísticas del perfil">
+        <button id="albums-nav" class="profile-nav-item" aria-label="Ver álbumes">
           <strong id="albums-count">0</strong> Álbumes
-        </span>
-        <span id="listens-nav" class="profile-nav-item">
+        </button>
+        <button id="listens-nav" class="profile-nav-item" aria-label="Ver escuchas">
           <strong id="listens-count">0</strong> Escuchas
-        </span>
-        <span id="followers-nav" class="profile-nav-item">
+        </button>
+        <button id="followers-nav" class="profile-nav-item" aria-label="Ver seguidores">
           <strong id="followers-count">0</strong> Seguidores
-        </span>
-        <span id="following-nav" class="profile-nav-item">
+        </button>
+        <button id="following-nav" class="profile-nav-item" aria-label="Ver seguidos">
           <strong id="following-count">0</strong> Siguiendo
-        </span>
-      </div>
+        </button>
+      </nav>
 
-      <!-- Álbumes favoritos -->
-      <div class="profile-section">
+      <section class="profile-section" aria-labelledby="fav-albums-title">
         <div class="section-header">
-          <h3>Álbumes favoritos</h3>
-          <button id="editFavAlbumsBtn" class="edit-fav-btn hidden">
-            Editar
-          </button>
+          <h3 id="fav-albums-title">Álbumes favoritos</h3>
+          <button id="editFavAlbumsBtn" class="edit-fav-btn hidden">Editar</button>
         </div>
-        <div id="favorite-albums-grid" class="favorite-albums-grid"></div>
-      </div>
-      <!-- Medias de Puntuaciones -->
-      <div class="profile-section">
-        <h3>Mis puntuaciones</h3>
-        <div id="user-rating-chart" class="user-rating-chart"></div>
-        <p id="user-rating-average" class="user-rating-average"></p>
-      </div>
+        <div id="favorite-albums-grid" class="favorite-albums-grid"
+          aria-label="Álbumes favoritos"></div>
+      </section>
 
-      <!-- Últimas escuchas -->
-      <div class="profile-section">
-        <h3>Últimas escuchas</h3>
+      <section class="profile-section" aria-labelledby="ratings-title">
+        <h3 id="ratings-title">Mis puntuaciones</h3>
+        <div id="user-rating-chart" class="user-rating-chart"
+          aria-label="Gráfica de puntuaciones"></div>
+        <p id="user-rating-average" class="user-rating-average" aria-live="polite"></p>
+      </section>
+
+      <section class="profile-section" aria-labelledby="recent-listens-title">
+        <h3 id="recent-listens-title">Últimas escuchas</h3>
         <div id="recent-listens" class="recent-listens"></div>
-      </div>
+      </section>
+
     </main>
 
-    <!-- Modal para editar álbumes favoritos -->
-    <div id="favAlbumsModal" class="profile-modal hidden">
+    <div id="favAlbumsModal" class="profile-modal hidden"
+      role="dialog" aria-modal="true" aria-labelledby="favModalTitle">
       <div class="modal-content">
-        <h3>Tus álbumes favoritos</h3>
+        <h3 id="favModalTitle">Tus álbumes favoritos</h3>
         <p class="fav-hint">
           Añade álbumes desde <a href="/searchAlbums.html">la búsqueda</a> o
           desde la página de cada álbum.
         </p>
-        <div id="favAlbumSelected" class="fav-album-selected"></div>
+        <div id="favAlbumSelected" class="fav-album-selected"
+          aria-label="Álbumes favoritos seleccionados"></div>
         <div class="modal-actions">
           <button id="saveFavAlbums" class="save-fav-btn">Guardar</button>
           <button id="closeFavModal" class="close-fav-btn">Cancelar</button>

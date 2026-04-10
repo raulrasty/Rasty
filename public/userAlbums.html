@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Álbumes escuchados</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Álbumes escuchados - Rasty</title>
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/userAlbums.css">
@@ -12,10 +13,12 @@
 
   <main class="albums-container">
     <div class="albums-header">
-      <a id="back-btn" class="back-btn">← Volver al perfil</a>
+      <a id="back-btn" class="back-btn" role="button" tabindex="0"
+        aria-label="Volver al perfil">← Volver al perfil</a>
       <h1 id="page-title">Álbumes escuchados</h1>
     </div>
-    <div id="albums-grid" class="albums-grid"></div>
+    <div id="albums-grid" class="albums-grid" aria-live="polite"
+      aria-label="Cuadrícula de álbumes escuchados"></div>
   </main>
 
   <script src="/js/header.js"></script>

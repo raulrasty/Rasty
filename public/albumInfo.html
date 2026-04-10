@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Detalle del Álbum</title>
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/header.css">
@@ -21,45 +22,43 @@
           <p id="album-year"></p>
           <a id="create-listen-btn" href="#" class="create-listen-btn hidden">Crear escucha</a>
 
-          <!-- Botón favorito (solo si logueado) -->
-          <button id="fav-album-btn" class="fav-album-btn hidden">⭐ Añadir a favoritos</button>
+          <button id="fav-album-btn" class="fav-album-btn hidden" aria-label="Añadir a favoritos">⭐ Añadir a favoritos</button>
 
-          <!-- Tu rating (solo si logueado) -->
           <div id="user-rating-section" class="user-rating-section hidden">
-            <p class="rating-label">Tu puntuación</p>
-            <div class="star-rating" id="album-star-rating">
+            <p class="rating-label" id="rating-label">Tu puntuación</p>
+            <div class="star-rating" id="album-star-rating" role="group" aria-labelledby="rating-label">
               <span class="star" data-value="1">
-                <span class="half" data-value="0.5">★</span>
-                <span class="full" data-value="1">★</span>
+                <span class="half" data-value="0.5" role="button" tabindex="0" aria-label="0.5 estrellas">★</span>
+                <span class="full" data-value="1" role="button" tabindex="0" aria-label="1 estrella">★</span>
               </span>
               <span class="star" data-value="2">
-                <span class="half" data-value="1.5">★</span>
-                <span class="full" data-value="2">★</span>
+                <span class="half" data-value="1.5" role="button" tabindex="0" aria-label="1.5 estrellas">★</span>
+                <span class="full" data-value="2" role="button" tabindex="0" aria-label="2 estrellas">★</span>
               </span>
               <span class="star" data-value="3">
-                <span class="half" data-value="2.5">★</span>
-                <span class="full" data-value="3">★</span>
+                <span class="half" data-value="2.5" role="button" tabindex="0" aria-label="2.5 estrellas">★</span>
+                <span class="full" data-value="3" role="button" tabindex="0" aria-label="3 estrellas">★</span>
               </span>
               <span class="star" data-value="4">
-                <span class="half" data-value="3.5">★</span>
-                <span class="full" data-value="4">★</span>
+                <span class="half" data-value="3.5" role="button" tabindex="0" aria-label="3.5 estrellas">★</span>
+                <span class="full" data-value="4" role="button" tabindex="0" aria-label="4 estrellas">★</span>
               </span>
               <span class="star" data-value="5">
-                <span class="half" data-value="4.5">★</span>
-                <span class="full" data-value="5">★</span>
+                <span class="half" data-value="4.5" role="button" tabindex="0" aria-label="4.5 estrellas">★</span>
+                <span class="full" data-value="5" role="button" tabindex="0" aria-label="5 estrellas">★</span>
               </span>
             </div>
             <button id="save-rating-btn">Guardar puntuación</button>
-            <p id="rating-message"></p>
+            <p id="rating-message" role="status" aria-live="polite"></p>
           </div>
         </div>
 
         <div class="songs-list">
           <h3>Canciones</h3>
-          <ul id="songs-container"></ul>
+          <ul id="songs-container" aria-label="Lista de canciones"></ul>
 
           <div id="favorite-songs-section" class="favorite-songs-section hidden">
-            <p id="favorites-message"></p>
+            <p id="favorites-message" role="status" aria-live="polite"></p>
             <button id="save-favorites-btn">Guardar favoritas</button>
           </div>
         </div>
@@ -76,12 +75,12 @@
           <h3>Comunidad</h3>
           <div class="community-inner">
             <div class="community-rating">
-              <p id="community-average"></p>
-              <div id="rating-chart" class="rating-chart"></div>
+              <p id="community-average" aria-live="polite"></p>
+              <div id="rating-chart" class="rating-chart" aria-label="Distribución de valoraciones"></div>
             </div>
             <div class="community-songs">
               <p class="community-songs-label">Canciones favoritas</p>
-              <ul id="community-favorites-list"></ul>
+              <ul id="community-favorites-list" aria-label="Canciones favoritas de la comunidad"></ul>
             </div>
           </div>
         </div>

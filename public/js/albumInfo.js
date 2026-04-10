@@ -88,7 +88,9 @@ async function loadAlbum() {
     coverImg.src = album.cover_url?.trim() || "images/fallback.jpg";
     coverImg.alt = `Portada de ${album.title}`;
     titleEl.innerText = album.title || "Título no disponible";
-    artistEl.innerText = album.artist || "Artista no disponible";
+    artistEl.innerHTML = album.artist
+  ? `<a href="/searchAlbums.html?artist=${encodeURIComponent(album.artist)}" class="artist-link">${album.artist}</a>`
+  : "Artista no disponible";
     yearEl.innerText = album.release_year
       ? `Año de lanzamiento: ${album.release_year}`
       : "";

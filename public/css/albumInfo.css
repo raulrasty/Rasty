@@ -553,6 +553,15 @@
   }
 }
 
+.artist-link {
+  color: var(--accent);
+  transition: opacity var(--transition);
+}
+
+.artist-link:hover {
+  opacity: 0.8;
+}
+
 @media (max-width: 400px) {
   .album-container {
     padding: 0 12px;

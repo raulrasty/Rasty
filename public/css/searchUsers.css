@@ -112,6 +112,8 @@
   color: var(--text-dim);
 }
 
+
+
 /* Responsive */
 @media (max-width: 600px) {
   .search-container {

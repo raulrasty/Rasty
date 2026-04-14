@@ -103,7 +103,7 @@ form.addEventListener("submit", async (e) => {
         errorMessage.textContent = data.error || "Error al registrar usuario";
       }
     } else {
-      window.location.href = "/index.html";
+      window.location.href = "/login.html";
     }
   } catch (err) {
     console.error(err);

@@ -213,14 +213,38 @@
     height: 56px;
   }
 
+  .listen-info {
+    flex: 1;
+    min-width: 0;
+  }
+
   .listen-favorites {
-    display: none;
+    display: block;
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+    font-size: 0.8rem;
+    order: 3;
+  }
+
+  .listen-favorites ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .listen-favorites li {
+    background: var(--bg-hover);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
   }
 
   .listen-actions {
     flex-direction: row;
     width: 100%;
     justify-content: flex-end;
+    order: 4;
   }
 
   .listen-actions button,

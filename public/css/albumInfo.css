@@ -2,6 +2,7 @@
   max-width: 800px;
   margin: 60px auto;
   padding: 0 20px;
+  overflow-x: hidden;
 }
 
 .album-card {
@@ -161,6 +162,7 @@
 .songs-list {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .songs-list > h3 {
@@ -179,6 +181,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  width: 100%;
 }
 
 .songs-list li {
@@ -187,6 +190,8 @@
   font-size: 0.88rem;
   color: var(--text-muted);
   transition: background var(--transition), color var(--transition);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .songs-list li:hover {
@@ -199,6 +204,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .song-text {
@@ -217,6 +225,8 @@
   background: var(--accent);
   color: #000;
   font-weight: 600;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .song-item.selected:hover {
@@ -370,6 +380,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .following-rating {
@@ -389,6 +400,9 @@
 .following-songs li {
   font-size: 0.85rem;
   color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Comunidad */
@@ -436,6 +450,9 @@
   font-size: 0.88rem;
   color: var(--text-muted);
   padding: 4px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Gráfica */
@@ -512,10 +529,25 @@
   display: none;
 }
 
+.artist-link {
+  color: var(--accent);
+  transition: opacity var(--transition);
+}
+
+.artist-link:hover {
+  opacity: 0.8;
+}
+
 /* ==================
    RESPONSIVE
    ================== */
 @media (max-width: 700px) {
+  .album-container {
+    padding: 0 12px;
+    overflow-x: hidden;
+    margin: 20px auto;
+  }
+
   .album-card {
     padding: 20px;
   }
@@ -536,9 +568,43 @@
   .album-info img {
     width: 100px;
     height: 100px;
+    flex-shrink: 0;
   }
 
   .album-info-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .album-info h1 {
+    font-size: 1.1rem;
+  }
+
+  .songs-list {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .songs-list ul {
+    width: 100%;
+  }
+
+  .song-item {
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .song-item.selected {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .song-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     flex: 1;
     min-width: 0;
   }
@@ -553,21 +619,12 @@
   }
 }
 
-.artist-link {
-  color: var(--accent);
-  transition: opacity var(--transition);
-}
-
-.artist-link:hover {
-  opacity: 0.8;
-}
-
 @media (max-width: 400px) {
   .album-container {
-    padding: 0 12px;
+    padding: 0 8px;
   }
 
   .album-card {
-    padding: 16px;
+    padding: 12px;
   }
 }

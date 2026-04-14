@@ -16,7 +16,7 @@ backBtn.addEventListener("keydown", (e) => {
 
 async function loadAlbums() {
   try {
-    const res = await fetch(`http://localhost:3000/listens/albums/${profileUserId}`);
+    const res = await fetch(`${API_BASE}/listens/albums/${profileUserId}`);
     const albums = await res.json();
 
     const grid = document.getElementById("albums-grid");

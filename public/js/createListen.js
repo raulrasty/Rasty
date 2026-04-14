@@ -36,7 +36,7 @@ function setLoading(loading) {
 
 async function loadAlbumInfo() {
   try {
-    const res = await fetch(`http://localhost:3000/albumInfo/${albumId}`);
+    const res = await fetch(`${API_BASE}/albumInfo/${albumId}`)
     if (!res.ok) throw new Error("Álbum no encontrado");
 
     const album = await res.json();
@@ -55,7 +55,7 @@ async function loadAlbumInfo() {
 
 async function loadSongsForSelection() {
   try {
-    const res = await fetch(`http://localhost:3000/songs/${albumId}`);
+    const res = await fetch(`${API_BASE}/songs/${albumId}`);
     const data = await res.json();
     const songs = data.songs || [];
 
@@ -179,7 +179,7 @@ form.addEventListener("submit", async (e) => {
   setLoading(true);
 
   try {
-    const res = await authFetch("http://localhost:3000/listens", {
+    const res = await authFetch(`${API_BASE}/listens`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -193,13 +193,13 @@ form.addEventListener("submit", async (e) => {
     }
 
     if (selectedSongIds.length > 0) {
-      await authFetch(`http://localhost:3000/favorite-songs/listen/${data.listen.id}`, {
+      await authFetch(`${API_BASE}/favorite-songs/listen/${data.listen.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ songIds: selectedSongIds }),
       });
 
-      await authFetch(`http://localhost:3000/favorite-songs/album/${albumId}`, {
+      await authFetch(`${API_BASE}/favorite-songs/album/${albumId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ songIds: selectedSongIds }),
@@ -207,7 +207,7 @@ form.addEventListener("submit", async (e) => {
     }
 
     if (body.rating) {
-      await authFetch(`http://localhost:3000/album-ratings/${albumId}`, {
+      await authFetch(`${API_BASE}/album-ratings/${albumId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating: body.rating }),

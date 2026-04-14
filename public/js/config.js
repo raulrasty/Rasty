@@ -1,0 +1,1 @@
+const API_BASE = "https://rasty.up.railway.app";

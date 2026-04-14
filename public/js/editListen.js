@@ -37,7 +37,7 @@ async function loadListenData() {
   const { userId } = getSession();
 
   try {
-    const res = await authFetch(`http://localhost:3000/listens/user/${userId}`);
+    const res = await authFetch(`${API_BASE}/listens/user/${userId}`);
     if (!res.ok) throw new Error("No se pudieron cargar las escuchas");
 
     const listens = await res.json();
@@ -75,7 +75,7 @@ async function loadListenData() {
         new Date(currentListen.listen_date).toISOString().split("T")[0];
     }
 
-    const favRes = await fetch(`http://localhost:3000/favorite-songs/listen/${listenId}`);
+    const favRes = await fetch(`${API_BASE}/favorite-songs/listen/${listenId}`);
     const currentFavs = await favRes.json();
     selectedSongIds = currentFavs.map(f => f.song_id);
 
@@ -89,7 +89,7 @@ async function loadListenData() {
 
 async function loadSongsForSelection(albumId) {
   try {
-    const res = await fetch(`http://localhost:3000/songs/${albumId}`);
+    const res = await fetch(`${API_BASE}/songs/${albumId}`);
     const data = await res.json();
     const songs = data.songs || [];
 
@@ -222,7 +222,7 @@ form.addEventListener("submit", async (e) => {
   setLoading(true);
 
   try {
-    const res = await authFetch(`http://localhost:3000/listens/${listenId}`, {
+    const res = await authFetch(`${API_BASE}/listens/${listenId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -235,27 +235,27 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    await authFetch(`http://localhost:3000/favorite-songs/listen/${listenId}`, {
+    await authFetch(`${API_BASE}/favorite-songs/listen/${listenId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ songIds: selectedSongIds }),
     });
 
-    const allListensRes = await authFetch(`http://localhost:3000/listens/user/${userId}`);
+    const allListensRes = await authFetch(`${API_BASE}/listens/user/${userId}`);
     const allListens = await allListensRes.json();
     const albumListens = allListens
       .filter(l => l.album.id === currentAlbumId)
       .sort((a, b) => new Date(b.listen_date) - new Date(a.listen_date));
 
     if (albumListens[0]?.id === listenId) {
-      await authFetch(`http://localhost:3000/favorite-songs/album/${currentAlbumId}`, {
+      await authFetch(`${API_BASE}/favorite-songs/album/${currentAlbumId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ songIds: selectedSongIds }),
       });
 
       if (body.rating) {
-        await authFetch(`http://localhost:3000/album-ratings/${currentAlbumId}`, {
+        await authFetch(`${API_BASE}/album-ratings/${currentAlbumId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ rating: body.rating }),

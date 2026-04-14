@@ -1,4 +1,4 @@
-const FOLLOWS_URL = "http://localhost:3000/follows";
+const FOLLOWS_URL = `${API_BASE}/follows`;
 const params = new URLSearchParams(window.location.search);
 const profileUserId = params.get("user_id");
 const type = params.get("type");

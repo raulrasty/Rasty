@@ -19,6 +19,22 @@ function normalize(str) {
     .trim();
 }
 
+async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      return res;
+    } catch (err) {
+      console.error(`Intento ${i + 1} fallido para ${url}:`, err.message);
+      if (i < retries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
 async function getAllAlbums() {
   const { data, error } = await supabase.from("albums").select("*");
   if (error) throw new Error(error.message);
@@ -47,7 +63,7 @@ async function getTracksFromDB(albumId) {
 async function getCoverUrl(rgId, releaseId) {
   const rgCoverUrl = `https://coverartarchive.org/release-group/${rgId}/front`;
   try {
-    const res = await fetch(rgCoverUrl, {
+    const res = await fetchWithRetry(rgCoverUrl, {
       method: "HEAD",
       headers: { "User-Agent": userAgentMB },
       redirect: "follow",
@@ -58,7 +74,7 @@ async function getCoverUrl(rgId, releaseId) {
   if (releaseId) {
     const relCoverUrl = `https://coverartarchive.org/release/${releaseId}/front`;
     try {
-      const res = await fetch(relCoverUrl, {
+      const res = await fetchWithRetry(relCoverUrl, {
         method: "HEAD",
         headers: { "User-Agent": userAgentMB },
         redirect: "follow",
@@ -80,7 +96,7 @@ async function searchByArtistId(artistId, artistName, title, page = 1, limit = 6
       `https://musicbrainz.org/ws/2/release-group` +
       `?artist=${artistId}&type=album&fmt=json&limit=${mbLimit}&offset=${offset}`;
 
-    const rgResponse = await fetch(rgUrl, { headers: { "User-Agent": userAgentMB } });
+    const rgResponse = await fetchWithRetry(rgUrl, { headers: { "User-Agent": userAgentMB } });
     const rgData = await rgResponse.json();
 
     if (!rgData["release-groups"] || rgData["release-groups"].length === 0) break;
@@ -117,7 +133,6 @@ async function searchByArtistId(artistId, artistName, title, page = 1, limit = 6
     return true;
   });
 
-  // Ordenar por año de lanzamiento de más antiguo a más reciente
   filtered.sort((a, b) => {
     const yearA = a["first-release-date"] ? parseInt(a["first-release-date"].split("-")[0]) : 0;
     const yearB = b["first-release-date"] ? parseInt(b["first-release-date"].split("-")[0]) : 0;
@@ -167,13 +182,13 @@ async function searchByArtistId(artistId, artistName, title, page = 1, limit = 6
 
         if (tracks.length === 0) {
           const relUrl = `https://musicbrainz.org/ws/2/release/?release-group=${rgId}&status=official&fmt=json&limit=5`;
-          const relResponse = await fetch(relUrl, { headers: { "User-Agent": userAgentMB } });
+          const relResponse = await fetchWithRetry(relUrl, { headers: { "User-Agent": userAgentMB } });
           const relData = await relResponse.json();
           const bestRelease =
             relData.releases?.find((r) => r.status === "Official") || relData.releases?.[0];
 
           if (bestRelease?.id) {
-            const tracksResponse = await fetch(
+            const tracksResponse = await fetchWithRetry(
               `https://musicbrainz.org/ws/2/release/${bestRelease.id}?inc=recordings&fmt=json`,
               { headers: { "User-Agent": userAgentMB } }
             );
@@ -208,7 +223,7 @@ async function searchByArtistId(artistId, artistName, title, page = 1, limit = 6
       const relUrl =
         `https://musicbrainz.org/ws/2/release/` +
         `?release-group=${rgId}&status=official&fmt=json&limit=5`;
-      const relResponse = await fetch(relUrl, { headers: { "User-Agent": userAgentMB } });
+      const relResponse = await fetchWithRetry(relUrl, { headers: { "User-Agent": userAgentMB } });
       const relData = await relResponse.json();
 
       const bestRelease =
@@ -242,7 +257,7 @@ async function searchByArtistId(artistId, artistName, title, page = 1, limit = 6
 
       let tracks = [];
       if (releaseId) {
-        const tracksResponse = await fetch(
+        const tracksResponse = await fetchWithRetry(
           `https://musicbrainz.org/ws/2/release/${releaseId}?inc=recordings&fmt=json`,
           { headers: { "User-Agent": userAgentMB } }
         );
@@ -285,7 +300,7 @@ async function searchAndSaveAlbums(title, artist, artistId = null, page = 1, lim
   if (!artist) throw new Error("Debes proporcionar un artista");
 
   const artistSearchUrl = `https://musicbrainz.org/ws/2/artist/?query=artist:"${artist}"&fmt=json&limit=5`;
-  const artistRes = await fetch(artistSearchUrl, { headers: { "User-Agent": userAgentMB } });
+  const artistRes = await fetchWithRetry(artistSearchUrl, { headers: { "User-Agent": userAgentMB } });
   const artistData = await artistRes.json();
 
   if (!artistData.artists?.length) throw new Error("No se encontró el artista");

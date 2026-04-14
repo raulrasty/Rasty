@@ -6,8 +6,8 @@
   --bg-hover:    #1c1c1c;
   --border:      #2a2a2a;
   --border-hover:#1db954;
-  --accent:      #1db954;
-  --accent-dark: #159c42;
+  --accent:      #f97316;
+  --accent-dark: #ea6c0a;
   --text:        #f0f0f0;
   --text-muted:  #888;
   --text-dim:    #555;
@@ -403,13 +403,6 @@ ul {
   gap: 20px;
 }
 
-.loader-logo {
-  font-family: var(--font-display);
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: -1px;
-}
 
 .loader-bar {
   width: 160px;

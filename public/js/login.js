@@ -1,5 +1,5 @@
-const API_URL = "http://localhost:3000/users";
-
+const API_URL = `${API_BASE}/users`
+`${API_BASE}/users`
 if (isLoggedIn()) {
   window.location.href = "/index.html";
 }

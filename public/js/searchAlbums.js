@@ -111,8 +111,8 @@ async function goToPage(page) {
     const query = new URLSearchParams({ artist: currentArtistName, page, limit: 6 });
     if (currentArtistId) query.append('artistId', currentArtistId);
     if (currentTitle) query.append('title', currentTitle);
-
-    const res = await fetch(`http://localhost:3000/albums/search-mb?${query}`);
+`${API_BASE}/albums/search-mb?${query}`
+    const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
     const data = await res.json();
     renderAlbums(data.results, data.total, data.page, data.totalPages);
   } catch (err) {
@@ -177,7 +177,7 @@ async function searchByArtistId(artistId, artistName, title) {
     const query = new URLSearchParams({ artistId, artist: artistName, page: 1, limit: 6 });
     if (title) query.append('title', title);
 
-    const res = await fetch(`http://localhost:3000/albums/search-mb?${query}`);
+    const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
     const data = await res.json();
     renderAlbums(data.results, data.total, data.page, data.totalPages);
   } catch (err) {
@@ -209,7 +209,7 @@ form.addEventListener('submit', async (e) => {
     const query = new URLSearchParams({ artist, page: 1, limit: 6 });
     if (title) query.append('title', title);
 
-    const res = await fetch(`http://localhost:3000/albums/search-mb?${query}`);
+    const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
     const data = await res.json();
 
     if (data.disambiguation) {

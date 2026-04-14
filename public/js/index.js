@@ -1,4 +1,4 @@
-const COMMUNITY_URL = "http://localhost:3000/community";
+const COMMUNITY_URL = `${API_BASE}/community`;
 
 document.addEventListener("DOMContentLoaded", async () => {
   const main = document.getElementById("main-content");

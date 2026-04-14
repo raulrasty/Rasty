@@ -10,7 +10,7 @@ async function fetchListens(page = 1) {
   container.innerHTML = '<p class="state-msg">Cargando...</p>';
 
   try {
-    const res = await fetch(`http://localhost:3000/listens/paginated/${profileUserId}?page=${page}&limit=${limit}`);
+    const res = await fetch(`${API_BASE}/listens/paginated/${profileUserId}?page=${page}&limit=${limit}`);
     const { listens, total } = await res.json();
 
     totalListens = total;
@@ -104,8 +104,9 @@ async function buildListenCard(l) {
   const favDiv = document.createElement("div");
   favDiv.className = "listen-favorites";
 
+
   try {
-    const favRes = await fetch(`http://localhost:3000/favorite-songs/listen/${l.id}`);
+    const favRes = await fetch(`${API_BASE}/favorite-songs/listen/${l.id}`);
     const favSongs = await favRes.json();
 
     if (favSongs.length > 0) {
@@ -187,7 +188,7 @@ function renderPagination() {
 async function deleteListen(listenId, cardElement) {
   if (!confirm("¿Seguro que quieres eliminar esta escucha?")) return;
 
-  const res = await authFetch(`http://localhost:3000/listens/${listenId}`, {
+  const res = await authFetch(`${API_BASE}/listens/${listenId}`, {
     method: "DELETE",
   });
 

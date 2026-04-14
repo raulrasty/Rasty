@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/users";
+const API_URL = `${API_BASE}/users`;
 const messageEl = document.getElementById("message");
 const submitBtn = document.querySelector(".btn-submit");
 

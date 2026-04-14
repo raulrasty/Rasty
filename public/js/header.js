@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (isLoggedIn()) {
         try {
-          const res = await fetch(`http://localhost:3000/users/${userId}`);
+          const res = await fetch(`${API_BASE}/users/${userId}`);
           const user = await res.json();
           const avatarSrc = user.avatar_url ||
             `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       let mobileUserLinks = '';
       if (isLoggedIn()) {
         try {
-          const res = await fetch(`http://localhost:3000/users/${userId}`);
+          const res = await fetch(`${API_BASE}/users/${userId}`);
           const user = await res.json();
           const avatarSrc = user.avatar_url ||
             `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       let mobileRightBtn = '';
       if (isLoggedIn()) {
         try {
-          const res = await fetch(`http://localhost:3000/users/${userId}`);
+          const res = await fetch(`${API_BASE}/users/${userId}`);
           const user = await res.json();
           const avatarSrc = user.avatar_url ||
             `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         setModalLoading(true);
 
         try {
-          const res = await fetch("http://localhost:3000/users/login", {
+          const res = await fetch(`${API_BASE}/users/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })

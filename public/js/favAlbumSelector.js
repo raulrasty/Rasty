@@ -1,4 +1,4 @@
-const FAV_ALBUMS_URL = "http://localhost:3000/favorite-albums";
+const FAV_ALBUMS_URL = `${API_BASE}/favorite-albums`
 let currentFavAlbums = [];
 
 async function loadCurrentFavAlbums() {

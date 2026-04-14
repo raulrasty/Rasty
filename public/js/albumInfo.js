@@ -1,7 +1,7 @@
-const API_URL_ALBUM = "http://localhost:3000/albumInfo";
-const API_URL_SONGS = "http://localhost:3000/songs";
-const API_URL_FAVORITES = "http://localhost:3000/favorite-songs";
-const API_URL_RATINGS = "http://localhost:3000/album-ratings";
+const API_URL_ALBUM = `${API_BASE}/albumInfo`;
+const API_URL_SONGS = `${API_BASE}/songs`;
+const API_URL_FAVORITES = `${API_BASE}/favorite-songs`;
+const API_URL_RATINGS = `${API_BASE}/album-ratings`;
 
 let albumSongs = [];
 let selectedSongIds = [];

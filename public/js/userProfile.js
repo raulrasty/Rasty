@@ -1,7 +1,7 @@
-const API_URL = "http://localhost:3000/users";
-const FOLLOWS_URL = "http://localhost:3000/follows";
-const LISTENS_URL = "http://localhost:3000/listens";
-const FAV_ALBUMS_URL = "http://localhost:3000/favorite-albums";
+const API_URL = `${API_BASE}/users`
+const FOLLOWS_URL = `${API_BASE}/follows`
+const LISTENS_URL = `${API_BASE}/listens`
+const FAV_ALBUMS_URL = `${API_BASE}/favorite-albums`
 
 const params = new URLSearchParams(window.location.search);
 const profileUserId = params.get("user_id");
@@ -256,7 +256,7 @@ async function loadRecentListens() {
 
 async function loadUserRatingChart() {
   try {
-    const res = await fetch(`http://localhost:3000/user-ratings/${profileUserId}`);
+    const res = await fetch(`${API_BASE}/user-ratings/${profileUserId}`);
     const { distribution, total, average } = await res.json();
 
     const avgEl = document.getElementById("user-rating-average");

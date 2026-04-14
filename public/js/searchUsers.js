@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3000/users";
+const API_URL = `${API_BASE}/users`;
+
 
 const form = document.getElementById("searchForm");
 const searchInput = document.getElementById("searchInput");

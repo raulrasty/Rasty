@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const renderHeaderLinks = async () => {
       const { userId } = getSession();
 
-      // ESCRITORIO
       let leftHTML = `<a href="/index.html" class="logo-text">Rasty</a>`;
       let centerHTML = '';
       let rightHTML = '';
@@ -27,28 +26,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       centerHTML += `<a href="/searchAlbums.html">Albums</a>`;
       centerHTML += `<a href="/searchUsers.html">Usuarios</a>`;
 
+      // Datos del usuario desde localStorage sin esperar al servidor
+      const cachedUser = JSON.parse(localStorage.getItem('sessionUser') || '{}');
+      const cachedUsername = cachedUser.username || '';
+      const cachedAvatar = cachedUser.avatar_url ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(cachedUsername || 'U')}&background=1db954&color=000&size=32`;
+
       if (isLoggedIn()) {
-        try {
-          const res = await fetch(`${API_BASE}/users/${userId}`);
-          const user = await res.json();
-          const avatarSrc = user.avatar_url ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
-          rightHTML += `
-            <a href="/userProfile.html?user_id=${userId}" class="header-user">
-              <img src="${avatarSrc}" alt="${user.username}" class="header-avatar">
-              <span class="header-username">${user.username}</span>
-            </a>
-          `;
-        } catch (_) {
-          rightHTML += `<span>Mi perfil</span>`;
-        }
+        rightHTML += `
+          <a href="/userProfile.html?user_id=${userId}" class="header-user">
+            <img src="${cachedAvatar}" alt="${cachedUsername}" class="header-avatar" id="headerAvatar">
+            <span class="header-username" id="headerUsername">${cachedUsername}</span>
+          </a>
+        `;
         rightHTML += `<a href="#" id="logoutBtn" class="logout-link">Cerrar sesión</a>`;
       } else {
         rightHTML += `<a href="#" id="loginBtn">Iniciar sesión</a>`;
         rightHTML += `<a href="/register.html">Crear cuenta</a>`;
       }
 
-      // MÓVIL — links del hamburguesa izquierdo
+      // MÓVIL — links hamburguesa izquierdo
       let mobileNavLinks = '';
       if (isLoggedIn()) {
         mobileNavLinks += `<a href="/userProfile.html?user_id=${userId}" class="mobile-nav-link">Mi perfil</a>`;
@@ -57,41 +54,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       mobileNavLinks += `<a href="/searchAlbums.html" class="mobile-nav-link">Albums</a>`;
       mobileNavLinks += `<a href="/searchUsers.html" class="mobile-nav-link">Usuarios</a>`;
 
-      // MÓVIL — links del desplegable derecho
+      // MÓVIL — links desplegable derecho
       let mobileUserLinks = '';
       if (isLoggedIn()) {
-        try {
-          const res = await fetch(`${API_BASE}/users/${userId}`);
-          const user = await res.json();
-          const avatarSrc = user.avatar_url ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
-          mobileUserLinks += `
-            <a href="/userProfile.html?user_id=${userId}" class="mobile-nav-link mobile-user-info">
-              <img src="${avatarSrc}" alt="${user.username}" class="header-avatar">
-              <span>${user.username}</span>
-            </a>
-          `;
-        } catch (_) {}
+        mobileUserLinks += `
+          <a href="/userProfile.html?user_id=${userId}" class="mobile-nav-link mobile-user-info">
+            <img src="${cachedAvatar}" alt="${cachedUsername}" class="header-avatar" id="mobileHeaderAvatar">
+            <span>${cachedUsername}</span>
+          </a>
+        `;
         mobileUserLinks += `<a href="#" id="mobileLogoutBtn" class="mobile-nav-link mobile-logout">Cerrar sesión</a>`;
       } else {
         mobileUserLinks += `<a href="#" id="mobileLoginBtn" class="mobile-nav-link">Iniciar sesión</a>`;
         mobileUserLinks += `<a href="/register.html" class="mobile-nav-link">Crear cuenta</a>`;
       }
 
-      // MÓVIL — botón derecho (avatar o icono persona)
+      // MÓVIL — botón derecho
       let mobileRightBtn = '';
       if (isLoggedIn()) {
-        try {
-          const res = await fetch(`${API_BASE}/users/${userId}`);
-          const user = await res.json();
-          const avatarSrc = user.avatar_url ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
-          mobileRightBtn = `<img src="${avatarSrc}" alt="${user.username}" class="header-avatar mobile-user-btn" id="mobileUserBtn">`;
-        } catch (_) {
-          mobileRightBtn = `<button class="mobile-icon-btn" id="mobileUserBtn" aria-label="Menú usuario">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          </button>`;
-        }
+        mobileRightBtn = `<img src="${cachedAvatar}" alt="${cachedUsername}" class="header-avatar mobile-user-btn" id="mobileUserBtn">`;
       } else {
         mobileRightBtn = `<button class="mobile-icon-btn" id="mobileUserBtn" aria-label="Iniciar sesión" aria-expanded="false">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -119,6 +100,33 @@ document.addEventListener("DOMContentLoaded", async () => {
           ${mobileUserLinks}
         </div>
       `;
+
+      // Actualizar avatar en segundo plano sin bloquear el render
+      if (isLoggedIn()) {
+        fetch(`${API_BASE}/users/${userId}`)
+          .then(r => r.json())
+          .then(user => {
+            if (!user) return;
+            const newAvatar = user.avatar_url ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'U')}&background=1db954&color=000&size=32`;
+
+            // Actualizar escritorio
+            const avatarEl = document.getElementById('headerAvatar');
+            const usernameEl = document.getElementById('headerUsername');
+            if (avatarEl) avatarEl.src = newAvatar;
+            if (usernameEl) usernameEl.textContent = user.username;
+
+            // Actualizar móvil
+            const mobileAvatarEl = document.getElementById('mobileHeaderAvatar');
+            const mobileUserBtnEl = document.getElementById('mobileUserBtn');
+            if (mobileAvatarEl) mobileAvatarEl.src = newAvatar;
+            if (mobileUserBtnEl && mobileUserBtnEl.tagName === 'IMG') mobileUserBtnEl.src = newAvatar;
+
+            // Guardar en localStorage para la próxima vez
+            localStorage.setItem('sessionUser', JSON.stringify(user));
+          })
+          .catch(() => {});
+      }
     };
 
     await renderHeaderLinks();
@@ -134,7 +142,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const isOpen = mobileHamburger.getAttribute("aria-expanded") === "true";
         mobileHamburger.setAttribute("aria-expanded", (!isOpen).toString());
         mobileNavDropdown?.classList.toggle("open", !isOpen);
-        // Cerrar el otro si está abierto
         mobileUserDropdown?.classList.remove("open");
         mobileUserBtn?.setAttribute("aria-expanded", "false");
       });
@@ -146,7 +153,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const isOpen = mobileUserDropdown?.classList.contains("open");
         mobileUserDropdown?.classList.toggle("open", !isOpen);
         mobileUserBtn.setAttribute("aria-expanded", (!isOpen).toString());
-        // Cerrar el otro si está abierto
         mobileNavDropdown?.classList.remove("open");
         mobileHamburger?.setAttribute("aria-expanded", "false");
       });

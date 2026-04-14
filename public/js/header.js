@@ -14,8 +14,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const renderHeaderLinks = async () => {
       const { userId } = getSession();
 
+      // ESCRITORIO
       let leftHTML = `<a href="/index.html" class="logo-text">Rasty</a>`;
       let centerHTML = '';
+      let rightHTML = '';
 
       if (isLoggedIn()) {
         centerHTML += `<a href="/userProfile.html?user_id=${userId}">Mi perfil</a>`;
@@ -25,15 +27,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       centerHTML += `<a href="/searchAlbums.html">Albums</a>`;
       centerHTML += `<a href="/searchUsers.html">Usuarios</a>`;
 
-      let rightHTML = '';
       if (isLoggedIn()) {
         try {
           const res = await fetch(`http://localhost:3000/users/${userId}`);
           const user = await res.json();
-
           const avatarSrc = user.avatar_url ||
             `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
-
           rightHTML += `
             <a href="/userProfile.html?user_id=${userId}" class="header-user">
               <img src="${avatarSrc}" alt="${user.username}" class="header-avatar">
@@ -43,21 +42,126 @@ document.addEventListener("DOMContentLoaded", async () => {
         } catch (_) {
           rightHTML += `<span>Mi perfil</span>`;
         }
-
         rightHTML += `<a href="#" id="logoutBtn" class="logout-link">Cerrar sesión</a>`;
       } else {
         rightHTML += `<a href="#" id="loginBtn">Iniciar sesión</a>`;
         rightHTML += `<a href="/register.html">Crear cuenta</a>`;
       }
 
+      // MÓVIL — links del hamburguesa izquierdo
+      let mobileNavLinks = '';
+      if (isLoggedIn()) {
+        mobileNavLinks += `<a href="/userProfile.html?user_id=${userId}" class="mobile-nav-link">Mi perfil</a>`;
+        mobileNavLinks += `<a href="/listensUser.html?user_id=${userId}" class="mobile-nav-link">Mis escuchas</a>`;
+      }
+      mobileNavLinks += `<a href="/searchAlbums.html" class="mobile-nav-link">Albums</a>`;
+      mobileNavLinks += `<a href="/searchUsers.html" class="mobile-nav-link">Usuarios</a>`;
+
+      // MÓVIL — links del desplegable derecho
+      let mobileUserLinks = '';
+      if (isLoggedIn()) {
+        try {
+          const res = await fetch(`http://localhost:3000/users/${userId}`);
+          const user = await res.json();
+          const avatarSrc = user.avatar_url ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
+          mobileUserLinks += `
+            <a href="/userProfile.html?user_id=${userId}" class="mobile-nav-link mobile-user-info">
+              <img src="${avatarSrc}" alt="${user.username}" class="header-avatar">
+              <span>${user.username}</span>
+            </a>
+          `;
+        } catch (_) {}
+        mobileUserLinks += `<a href="#" id="mobileLogoutBtn" class="mobile-nav-link mobile-logout">Cerrar sesión</a>`;
+      } else {
+        mobileUserLinks += `<a href="#" id="mobileLoginBtn" class="mobile-nav-link">Iniciar sesión</a>`;
+        mobileUserLinks += `<a href="/register.html" class="mobile-nav-link">Crear cuenta</a>`;
+      }
+
+      // MÓVIL — botón derecho (avatar o icono persona)
+      let mobileRightBtn = '';
+      if (isLoggedIn()) {
+        try {
+          const res = await fetch(`http://localhost:3000/users/${userId}`);
+          const user = await res.json();
+          const avatarSrc = user.avatar_url ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || "U")}&background=1db954&color=000&size=32`;
+          mobileRightBtn = `<img src="${avatarSrc}" alt="${user.username}" class="header-avatar mobile-user-btn" id="mobileUserBtn">`;
+        } catch (_) {
+          mobileRightBtn = `<button class="mobile-icon-btn" id="mobileUserBtn" aria-label="Menú usuario">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </button>`;
+        }
+      } else {
+        mobileRightBtn = `<button class="mobile-icon-btn" id="mobileUserBtn" aria-label="Iniciar sesión" aria-expanded="false">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </button>`;
+      }
+
       navLinks.innerHTML = `
         <div class="header-left">${leftHTML}</div>
-        <div class="header-center">${centerHTML}</div>
-        <div class="header-right">${rightHTML}</div>
+        <div class="header-center" id="headerCenter">${centerHTML}</div>
+        <div class="header-right" id="headerRight">${rightHTML}</div>
+
+        <div class="mobile-header">
+          <button class="mobile-hamburger" id="mobileHamburger" aria-label="Abrir menú" aria-expanded="false">
+            <span></span><span></span><span></span>
+          </button>
+          <a href="/index.html" class="logo-text mobile-logo">Rasty</a>
+          <div class="mobile-right-btn" id="mobileRightBtnWrap">${mobileRightBtn}</div>
+        </div>
+
+        <div class="mobile-nav-dropdown" id="mobileNavDropdown">
+          ${mobileNavLinks}
+        </div>
+
+        <div class="mobile-user-dropdown" id="mobileUserDropdown">
+          ${mobileUserLinks}
+        </div>
       `;
     };
 
     await renderHeaderLinks();
+
+    // Hamburguesa izquierda
+    const mobileHamburger = document.getElementById("mobileHamburger");
+    const mobileNavDropdown = document.getElementById("mobileNavDropdown");
+    const mobileUserDropdown = document.getElementById("mobileUserDropdown");
+    const mobileUserBtn = document.getElementById("mobileUserBtn");
+
+    if (mobileHamburger) {
+      mobileHamburger.addEventListener("click", () => {
+        const isOpen = mobileHamburger.getAttribute("aria-expanded") === "true";
+        mobileHamburger.setAttribute("aria-expanded", (!isOpen).toString());
+        mobileNavDropdown?.classList.toggle("open", !isOpen);
+        // Cerrar el otro si está abierto
+        mobileUserDropdown?.classList.remove("open");
+        mobileUserBtn?.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    // Botón derecho usuario
+    if (mobileUserBtn) {
+      mobileUserBtn.addEventListener("click", () => {
+        const isOpen = mobileUserDropdown?.classList.contains("open");
+        mobileUserDropdown?.classList.toggle("open", !isOpen);
+        mobileUserBtn.setAttribute("aria-expanded", (!isOpen).toString());
+        // Cerrar el otro si está abierto
+        mobileNavDropdown?.classList.remove("open");
+        mobileHamburger?.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    // Cerrar al hacer click fuera
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#mobileHamburger") && !e.target.closest("#mobileNavDropdown")) {
+        mobileNavDropdown?.classList.remove("open");
+        mobileHamburger?.setAttribute("aria-expanded", "false");
+      }
+      if (!e.target.closest("#mobileUserBtn") && !e.target.closest("#mobileRightBtnWrap") && !e.target.closest("#mobileUserDropdown")) {
+        mobileUserDropdown?.classList.remove("open");
+      }
+    });
 
     // Helpers para el modal
     function setModalError(message, fieldId = null) {
@@ -85,9 +189,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Delegación de eventos
     document.addEventListener("click", async (e) => {
 
-      if (e.target.id === "loginBtn") {
+      if (e.target.id === "loginBtn" || e.target.id === "mobileLoginBtn") {
         e.preventDefault();
         clearModalErrors();
+        mobileUserDropdown?.classList.remove("open");
         loginModal.style.display = "flex";
       }
 
@@ -101,21 +206,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         clearModalErrors();
       }
 
-      if (e.target.id === "logoutBtn") {
+      if (e.target.id === "logoutBtn" || e.target.id === "mobileLogoutBtn") {
         e.preventDefault();
         logout();
         window.location.reload();
       }
     });
 
-    // Limpiar errores al escribir
     document.addEventListener("input", (e) => {
       if (e.target.id === "loginEmail" || e.target.id === "loginPassword") {
         clearModalErrors();
       }
     });
 
-    // Submit login
     if (loginForm) {
       loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();

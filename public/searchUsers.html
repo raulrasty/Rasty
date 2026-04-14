@@ -9,6 +9,14 @@
   <link rel="stylesheet" href="css/searchUsers.css">
 </head>
 <body>
+  <div id="page-loader">
+    <div class="loader-content">
+      <span class="loader-logo">Rasty</span>
+      <div class="loader-bar">
+        <div class="loader-bar-fill"></div>
+      </div>
+    </div>
+  </div>
 
   <div id="header-container"></div>
 
@@ -29,6 +37,7 @@
     <div id="results" class="results" aria-live="polite" aria-label="Resultados de búsqueda"></div>
   </main>
 
+  <script src="/js/loader.js"></script>
   <script src="/js/header.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/searchUsers.js"></script>

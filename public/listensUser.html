@@ -9,12 +9,21 @@
   <link rel="stylesheet" href="css/listensUser.css">
 </head>
 <body>
+  <div id="page-loader">
+    <div class="loader-content">
+      <span class="loader-logo">Rasty</span>
+      <div class="loader-bar">
+        <div class="loader-bar-fill"></div>
+      </div>
+    </div>
+  </div>
   <div id="header-container"></div>
 
   <main id="listens-container" aria-live="polite" aria-label="Lista de escuchas"></main>
 
   <nav id="pagination" class="pagination pagination-bottom" aria-label="Paginación"></nav>
 
+  <script src="/js/loader.js"></script>
   <script src="/js/header.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/listensUser.js"></script>

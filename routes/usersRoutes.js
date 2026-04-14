@@ -14,5 +14,9 @@ router.get('/search', usersController.searchUsersController);
 router.get('/:user_id', usersController.getUserByIdController);
 //ruta para editar los datos de tu usuario
 router.put('/:user_id', requireAuth, upload.single('avatar'), usersController.updateUserController);
+// Eliminar cuenta propia
+router.delete('/me', requireAuth, usersController.deleteAccountController);
+// Eliminar cuenta de otro usuario (solo admin)
+router.delete('/:user_id', requireAuth, usersController.deleteUserByAdminController);
 
 module.exports = router;

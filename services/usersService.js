@@ -91,12 +91,57 @@ async function updateUserService(user_id, updates) {
     .update(updates)
     .eq("id", user_id)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) throw new Error(error.message);
 
   return data || {};
 }
 
+// ELIMINAR CUENTA PROPIA
+async function deleteAccountService(userId) {
+  // Eliminar de public.users (el cascade se encarga del resto)
+  const { error: profileError } = await supabase
+    .from('users')
+    .delete()
+    .eq('id', userId);
 
-module.exports = { register, login, getUserByIdService, updateUserService, searchUsersService };
+  if (profileError) throw new Error(profileError.message);
+
+  // Eliminar de auth.users
+  const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+  if (authError) throw new Error(authError.message);
+
+  return { message: 'Cuenta eliminada correctamente' };
+}
+
+// ELIMINAR CUENTA DE OTRO USUARIO (solo admin)
+async function deleteUserByAdminService(adminId, targetUserId) {
+  // Verificar que el que hace la petición es admin
+  const { data: admin, error: adminError } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', adminId)
+    .maybeSingle();
+
+  if (adminError) throw new Error(adminError.message);
+  if (!admin || admin.role !== 'admin') {
+    throw { status: 403, message: 'No tienes permisos para realizar esta acción' };
+  }
+
+  // Eliminar de public.users
+  const { error: profileError } = await supabase
+    .from('users')
+    .delete()
+    .eq('id', targetUserId);
+
+  if (profileError) throw new Error(profileError.message);
+
+  // Eliminar de auth.users
+  const { error: authError } = await supabase.auth.admin.deleteUser(targetUserId);
+  if (authError) throw new Error(authError.message);
+
+  return { message: 'Usuario eliminado correctamente' };
+}
+
+module.exports = { register, login, getUserByIdService, updateUserService, searchUsersService, deleteAccountService, deleteUserByAdminService };

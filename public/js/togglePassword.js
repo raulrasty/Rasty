@@ -6,7 +6,7 @@ document.addEventListener("click", (e) => {
 
     if (input.type === "password") {
       input.type = "text";
-      e.target.textContent = "🙈";
+      e.target.textContent = "👁";
       e.target.setAttribute("aria-label", "Ocultar contraseña");
     } else {
       input.type = "password";

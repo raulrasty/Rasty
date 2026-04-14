@@ -41,6 +41,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error(err);
     showError("Error cargando el perfil. Inténtalo de nuevo.");
   }
+
+  // Botón eliminar cuenta
+  const deleteBtn = document.getElementById("delete-account-btn");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", deleteAccount);
+  }
 });
 
 function populateForm(user) {
@@ -145,3 +151,38 @@ document.getElementById("editProfileForm").addEventListener("submit", async (e) 
     setLoading(false);
   }
 });
+
+// Eliminar cuenta propia
+async function deleteAccount() {
+  const confirmed = confirm("¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer y perderás todos tus datos.");
+  if (!confirmed) return;
+
+  const deleteBtn = document.getElementById("delete-account-btn");
+  deleteBtn.disabled = true;
+  deleteBtn.textContent = "Eliminando...";
+  deleteBtn.setAttribute("aria-busy", "true");
+
+  try {
+    const res = await authFetch(`${API_URL}/me`, { method: "DELETE" });
+
+    if (res.ok) {
+      showSuccess("Cuenta eliminada correctamente. Redirigiendo...");
+      setTimeout(() => {
+        logout();
+        window.location.href = "/login.html";
+      }, 1500);
+    } else {
+      const data = await res.json();
+      showError(data.error || "Error al eliminar la cuenta");
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = "Eliminar cuenta";
+      deleteBtn.setAttribute("aria-busy", "false");
+    }
+  } catch (err) {
+    console.error(err);
+    showError("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = "Eliminar cuenta";
+    deleteBtn.setAttribute("aria-busy", "false");
+  }
+}

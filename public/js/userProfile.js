@@ -38,11 +38,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       const editFavBtn = document.getElementById("editFavAlbumsBtn");
       editFavBtn.classList.remove("hidden");
       editFavBtn.addEventListener("click", openFavAlbumsModal);
+
     } else if (isLoggedIn()) {
       await loadFollowButton();
+
+      // Comprobar si el usuario actual es admin
+      const { userId: currentUserId } = getSession();
+      try {
+        const meRes = await fetch(`${API_URL}/${currentUserId}`);
+        const me = await meRes.json();
+        if (me.role === 'admin') {
+          const adminDeleteBtn = document.getElementById("adminDeleteBtn");
+          if (adminDeleteBtn) {
+            adminDeleteBtn.classList.remove("hidden");
+            adminDeleteBtn.addEventListener("click", () => deleteUserAsAdmin(profileUserId));
+          }
+        }
+      } catch (err) {
+        console.error("Error comprobando rol de admin:", err);
+      }
     }
 
-    // Navegación — ahora son botones
+    // Navegación
     document.getElementById("albums-nav").addEventListener("click", () => {
       window.location.href = `/userAlbums.html?user_id=${profileUserId}`;
     });
@@ -58,7 +75,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("closeFavModal")?.addEventListener("click", closeFavAlbumsModal);
 
-    // Cerrar modal con Escape
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeFavAlbumsModal();
     });
@@ -321,6 +337,35 @@ function renderSelectedFavAlbums() {
     }
 
     container.appendChild(slot);
+  }
+}
+
+async function deleteUserAsAdmin(userId) {
+  const confirmed = confirm("¿Seguro que quieres eliminar esta cuenta? Esta acción no se puede deshacer.");
+  if (!confirmed) return;
+
+  const btn = document.getElementById("adminDeleteBtn");
+  btn.disabled = true;
+  btn.textContent = "Eliminando...";
+  btn.setAttribute("aria-busy", "true");
+
+  try {
+    const res = await authFetch(`${API_URL}/${userId}`, { method: "DELETE" });
+    if (res.ok) {
+      window.location.href = "/index.html";
+    } else {
+      const data = await res.json();
+      alert(data.error || "Error al eliminar el usuario");
+      btn.disabled = false;
+      btn.textContent = "Eliminar usuario";
+      btn.setAttribute("aria-busy", "false");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("No se pudo conectar con el servidor");
+    btn.disabled = false;
+    btn.textContent = "Eliminar usuario";
+    btn.setAttribute("aria-busy", "false");
   }
 }
 

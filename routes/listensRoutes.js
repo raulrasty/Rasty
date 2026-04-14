@@ -6,7 +6,22 @@ const requireAuth = require('../middleware/requireAuth');
 //ruta para registrar una escucha
 router.post('/', requireAuth, listensController.addListen);
 
+//Álbumes únicos de un usuario
+router.get('/albums/:user_id', listensController.getUserAlbums);
+
 //ruta para obtener las escuchas de un usuario
 router.get('/:user_id', listensController.getUserListens);
+
+// Obtener escuchas propias, usado para editar escuchas
+router.get('/user/:user_id', requireAuth, listensController.getUserListens);
+
+// Eliminar una escucha (requiere auth)
+router.delete('/:id', requireAuth, listensController.deleteListen);
+
+// Editar una escucha (requiere auth)
+router.put('/:id', requireAuth, listensController.updateListen);
+
+//Obtener escuchas de un usuario con paginación
+router.get('/paginated/:user_id', listensController.getUserListensPaginated);
 
 module.exports = router;

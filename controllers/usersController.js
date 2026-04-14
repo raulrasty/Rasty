@@ -6,17 +6,19 @@ const supabase = require("../config/supabaseClient");
 // REGISTER
 
 async function register(req, res) {
-  const { email, password, username } = req.body; 
+  const { email, password, username } = req.body;
 
   if (!email || !password || !username) {
     return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
   try {
-    const result = await usersService.register(email, password, username); 
+    const result = await usersService.register(email, password, username);
     res.status(201).json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    const status = err.status || 400;
+    const message = err.message || "Error al registrar usuario";
+    res.status(status).json({ error: message });
   }
 }
 
@@ -33,7 +35,9 @@ async function login(req, res) {
     const result = await usersService.login(email, password);
     res.json(result);
   } catch (err) {
-    res.status(401).json({ error: err.message });
+    const status = err.status || 401;
+    const message = err.message || "Error al iniciar sesión";
+    res.status(status).json({ error: message });
   }
 }
 
@@ -75,36 +79,65 @@ async function getUserByIdController(req, res) {
 
 async function updateUserController(req, res) {
   try {
-    const userId = req.userId; // 
+    const userId = req.userId;
     const updates = { ...req.body };
- 
+
+    // Evitar que el usuario pueda cambiar campos sensibles
+    delete updates.role;
+    delete updates.id;
+    delete updates.email;
+    delete updates.created_at;
 
     if (req.file) {
-      const fileName = `${userId}-${Date.now()}`; 
- 
+      const fileName = `${userId}-${Date.now()}`;
+
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, req.file.buffer, {
           contentType: req.file.mimetype,
           upsert: true
         });
- 
+
       if (uploadError) throw uploadError;
- 
-     
+
       const { data: urlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
- 
+
       updates.avatar_url = urlData.publicUrl;
     }
- 
+
     const updatedUser = await usersService.updateUserService(userId, updates);
     res.json(updatedUser);
- 
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
+  }
+}
+
+// ELIMINAR CUENTA PROPIA
+async function deleteAccountController(req, res) {
+  try {
+    const userId = req.userId;
+    const result = await usersService.deleteAccountService(userId);
+    res.json(result);
+  } catch (err) {
+    const status = err.status || 500;
+    res.status(status).json({ error: err.message });
+  }
+}
+
+// ELIMINAR CUENTA POR ADMIN
+async function deleteUserByAdminController(req, res) {
+  try {
+    const adminId = req.userId;
+    const { user_id } = req.params;
+    const result = await usersService.deleteUserByAdminService(adminId, user_id);
+    res.json(result);
+  } catch (err) {
+    const status = err.status || 500;
+    res.status(status).json({ error: err.message });
   }
 }
 
@@ -113,5 +146,7 @@ module.exports = {
   login,
   getUserByIdController,
   updateUserController,
-  searchUsersController
+  searchUsersController,
+  deleteAccountController,
+  deleteUserByAdminController
 };

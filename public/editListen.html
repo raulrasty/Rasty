@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editar escucha</title>
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/header.css" />
+    <link rel="stylesheet" href="css/listen.css" />
+  </head>
+  <body>
+    <div id="page-loader">
+    <div class="loader-content">
+      <div class="loader-bar">
+        <div class="loader-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+    <div id="header-container"></div>
+
+    <main class="listen-card">
+      <div class="album-info">
+        <img id="album-cover" src="" alt="Portada del álbum" />
+        <div>
+          <h2 id="album-title"></h2>
+          <p id="album-artist"></p>
+        </div>
+      </div>
+
+      <form id="editListenForm" novalidate aria-label="Formulario de edición de escucha">
+        <input type="hidden" name="rating" id="ratingValue" />
+        <input type="hidden" name="liked" id="likedValue" value="false" />
+
+        <div class="form-group">
+          <label id="rating-label">Puntuación</label>
+          <div class="star-rating" role="group" aria-labelledby="rating-label">
+            <span class="star" data-value="1">
+              <span class="half" data-value="0.5" role="button" tabindex="0" aria-label="0.5 estrellas">★</span>
+              <span class="full" data-value="1" role="button" tabindex="0" aria-label="1 estrella">★</span>
+            </span>
+            <span class="star" data-value="2">
+              <span class="half" data-value="1.5" role="button" tabindex="0" aria-label="1.5 estrellas">★</span>
+              <span class="full" data-value="2" role="button" tabindex="0" aria-label="2 estrellas">★</span>
+            </span>
+            <span class="star" data-value="3">
+              <span class="half" data-value="2.5" role="button" tabindex="0" aria-label="2.5 estrellas">★</span>
+              <span class="full" data-value="3" role="button" tabindex="0" aria-label="3 estrellas">★</span>
+            </span>
+            <span class="star" data-value="4">
+              <span class="half" data-value="3.5" role="button" tabindex="0" aria-label="3.5 estrellas">★</span>
+              <span class="full" data-value="4" role="button" tabindex="0" aria-label="4 estrellas">★</span>
+            </span>
+            <span class="star" data-value="5">
+              <span class="half" data-value="4.5" role="button" tabindex="0" aria-label="4.5 estrellas">★</span>
+              <span class="full" data-value="5" role="button" tabindex="0" aria-label="5 estrellas">★</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label id="liked-label">Me gusta</label>
+          <span id="heart" class="heart" role="button" tabindex="0"
+            aria-pressed="false" aria-label="Marcar como me gusta">&#10084;</span>
+        </div>
+
+        <div class="form-group">
+          <label for="review">Reseña</label>
+          <textarea id="review" name="review" rows="4"
+            placeholder="Escribe tu opinión sobre este álbum..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="listen_date">Fecha de escucha</label>
+          <input type="date" id="listen_date" name="listen_date"
+            aria-required="true" />
+        </div>
+
+        <div class="form-group">
+          <label>Canciones favoritas <span class="label-hint">(máximo 3)</span></label>
+          <ul id="favorite-songs-list" class="favorite-songs-list"
+            aria-label="Selecciona tus canciones favoritas"></ul>
+        </div>
+
+        <button type="submit">Guardar cambios</button>
+      </form>
+
+      <div id="message" role="status" aria-live="polite"></div>
+    </main>
+
+    <script src="/js/loader.js"></script>
+    <script src="/js/header.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/togglePassword.js"></script>
+    <script src="/js/editListen.js"></script>
+    <script src="/js/cookieBanner.js"></script>
+  </body>
+</html>

@@ -1,6 +1,3 @@
-
-
-
 .album-container {
   max-width: 800px;
   margin: 60px auto;
@@ -13,8 +10,26 @@
   border-radius: var(--radius);
   padding: 36px;
   display: flex;
+  flex-direction: column;
+}
+
+/* Parte superior */
+.album-top {
+  display: flex;
   gap: 40px;
   align-items: flex-start;
+  width: 100%;
+}
+
+/* Parte inferior */
+.album-bottom {
+  width: 100%;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 /* Info izquierda */
@@ -52,12 +67,103 @@
   color: var(--text-muted);
 }
 
+/* Tu rating */
+.user-rating-section {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rating-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+/* Estrellas */
+.star-rating {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  position: relative;
+  width: 1.4rem;
+  height: 1.4rem;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.star .half,
+.star .full {
+  position: absolute;
+  top: 0;
+  font-size: 1.4rem;
+  color: var(--border);
+  line-height: 1;
+  transition: color var(--transition);
+  overflow: hidden;
+}
+
+.star .half {
+  left: 0;
+  width: 45%;
+  z-index: 2;
+}
+
+.star .full {
+  left: 0;
+  width: 100%;
+  z-index: 1;
+}
+
+.star .half.filled,
+.star .full.filled {
+  color: #f5a623;
+}
+
+.star .half:focus,
+.star .full:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+#save-rating-btn {
+  padding: 5px 12px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: background var(--transition);
+  width: fit-content;
+}
+
+#save-rating-btn:hover {
+  background: var(--accent-dark);
+}
+
+#save-rating-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+#rating-message {
+  font-size: 0.78rem;
+}
+
 /* Lista canciones */
 .songs-list {
   flex: 1;
+  min-width: 0;
 }
 
-.songs-list h3 {
+.songs-list > h3 {
   font-family: var(--font-display);
   font-size: 0.85rem;
   font-weight: 700;
@@ -88,16 +194,380 @@
   color: var(--text);
 }
 
-/* Responsive */
-@media (max-width: 600px) {
+/* Canciones */
+.song-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.song-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-item.clickable {
+  cursor: pointer;
+}
+
+.song-item.selected {
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+}
+
+.song-item.selected:hover {
+  background: var(--accent);
+  color: #000;
+}
+
+/* Botón preview */
+.preview-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  line-height: 1;
+  padding: 0;
+  padding-left: 2px;
+}
+
+.preview-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.preview-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.preview-btn.playing {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+
+.song-item.selected .preview-btn {
+  border-color: #000;
+  color: #000;
+}
+
+.song-item.selected .preview-btn:hover {
+  border-color: #000;
+  background: rgba(0,0,0,0.15);
+}
+
+.song-item.selected .preview-btn.playing {
+  background: #000;
+  border-color: #000;
+  color: var(--accent);
+}
+
+/* Botón guardar favoritas */
+.favorite-songs-section {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+#favorites-message {
+  font-size: 0.82rem;
+}
+
+#save-favorites-btn {
+  padding: 6px 16px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: background var(--transition);
+  white-space: nowrap;
+}
+
+#save-favorites-btn:hover {
+  background: var(--accent-dark);
+}
+
+#save-favorites-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Cabeceras secciones inferiores */
+.following-section h3,
+.community-section h3 {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Seguidos */
+.following-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.following-item:last-child {
+  border-bottom: none;
+}
+
+.following-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--text);
+  flex-shrink: 0;
+  width: 60px;
+}
+
+.following-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.following-username {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  word-break: break-word;
+}
+
+.following-data {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.following-rating {
+  font-size: 0.85rem;
+  color: #f5a623;
+  font-weight: 600;
+}
+
+.following-songs {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.following-songs li {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Comunidad */
+.community-inner {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.community-rating {
+  flex: 1;
+}
+
+.community-songs {
+  flex: 1;
+}
+
+#community-average {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f5a623;
+  margin-bottom: 12px;
+}
+
+.community-songs-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.community-favorites-section ul,
+.community-songs ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.community-favorites-section li,
+.community-songs li {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+/* Gráfica */
+.rating-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chart-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+}
+
+.chart-label {
+  width: 24px;
+  color: var(--text-muted);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.chart-bar-wrap {
+  flex: 1;
+  background: var(--border);
+  border-radius: 2px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.chart-bar {
+  height: 100%;
+  background: #f5a623;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.chart-count {
+  width: 20px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Misc */
+.empty-msg {
+  font-style: italic;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.create-listen-btn {
+  padding: 7px 14px;
+  background: var(--accent);
+  color: #000;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--transition);
+  text-align: center;
+}
+
+.create-listen-btn:hover {
+  background: var(--accent-dark);
+}
+
+.create-listen-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ==================
+   RESPONSIVE
+   ================== */
+@media (max-width: 700px) {
   .album-card {
-    flex-direction: column;
+    padding: 20px;
   }
+
+  .album-top {
+    flex-direction: column;
+    gap: 20px;
+  }
+
   .album-info {
     width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
   }
+
   .album-info img {
-    width: 100%;
-    height: auto;
+    width: 100px;
+    height: 100px;
+  }
+
+  .album-info-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .community-inner {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .following-item {
+    flex-wrap: wrap;
+  }
+}
+
+.artist-link {
+  color: var(--accent);
+  transition: opacity var(--transition);
+}
+
+.artist-link:hover {
+  opacity: 0.8;
+}
+
+@media (max-width: 400px) {
+  .album-container {
+    padding: 0 12px;
+  }
+
+  .album-card {
+    padding: 16px;
   }
 }

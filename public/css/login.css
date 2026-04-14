@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
@@ -19,6 +18,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 40px 16px;
 }
 
 .container {
@@ -66,6 +66,14 @@ body {
 
 .form-group input:focus { border-color: var(--accent); }
 
+.form-group input.input-error { border-color: var(--red); }
+
+.field-error {
+  font-size: 0.78rem;
+  color: var(--red);
+  min-height: 16px;
+}
+
 button[type="submit"] {
   width: 100%;
   margin-top: 8px;
@@ -81,6 +89,13 @@ button[type="submit"] {
 
 button[type="submit"]:hover  { background: var(--accent-dark); }
 button[type="submit"]:active { transform: scale(0.98); }
+button[type="submit"]:focus  { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .error-message {
   color: var(--red);
@@ -102,3 +117,10 @@ button[type="submit"]:active { transform: scale(0.98); }
 }
 
 .message a:hover { text-decoration: underline; }
+.message a:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+@media (max-width: 480px) {
+  .container {
+    padding: 32px 20px;
+  }
+}

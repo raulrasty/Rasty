@@ -1,20 +1,54 @@
-
 const API_URL = "http://localhost:3000/users";
 
-// Si ya hay sesión, redirigir al inicio
 if (isLoggedIn()) {
   window.location.href = "/index.html";
 }
 
-//evento principal de login
-document.getElementById("login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+const form = document.getElementById("login-form");
+const errorEl = document.getElementById("error");
+const submitBtn = form.querySelector("button[type='submit']");
 
-  //obtener los datos del formulario
-  const email = document.getElementById("email").value;
+function setError(message, fieldId = null) {
+  errorEl.textContent = message;
+  if (fieldId) {
+    const input = document.getElementById(fieldId);
+    input?.classList.add("input-error");
+    const fieldError = document.getElementById(`${fieldId}Error`);
+    if (fieldError) fieldError.textContent = message;
+  }
+}
+
+function clearErrors() {
+  errorEl.textContent = "";
+  document.querySelectorAll(".input-error").forEach(el => el.classList.remove("input-error"));
+  document.querySelectorAll(".field-error").forEach(el => el.textContent = "");
+}
+
+function setLoading(loading) {
+  submitBtn.disabled = loading;
+  submitBtn.textContent = loading ? "Entrando..." : "Entrar";
+  submitBtn.setAttribute("aria-busy", loading.toString());
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  clearErrors();
+
+  const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  //petición al back para hacer el login
+  if (!email) {
+    setError("El email es obligatorio", "email");
+    return;
+  }
+
+  if (!password) {
+    setError("La contraseña es obligatoria", "password");
+    return;
+  }
+
+  setLoading(true);
+
   try {
     const res = await fetch(`${API_URL}/login`, {
       method: "POST",
@@ -25,17 +59,25 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (!res.ok) {
-      document.getElementById("error").textContent = data.error;
+      if (res.status === 401) {
+        setError("Email o contraseña incorrectos");
+      } else if (res.status === 404) {
+        setError("No existe ninguna cuenta con ese email", "email");
+      } else {
+        setError(data.error || "Error al iniciar sesión");
+      }
       return;
     }
 
-    //Guardar los datos
-    saveSession(data); 
-
-    // Redirigir
+    saveSession(data);
     window.location.href = "/index.html";
 
   } catch (err) {
-    document.getElementById("error").textContent = "Error al conectar con el servidor";
+    setError("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+  } finally {
+    setLoading(false);
   }
 });
+
+document.getElementById("email").addEventListener("input", clearErrors);
+document.getElementById("password").addEventListener("input", clearErrors);

@@ -1,22 +1,42 @@
-<!-- header.html -->
-<header class="main-header">
-  <nav class="nav-links" id="navLinks">
+<header class="main-header" role="banner">
+  <nav class="nav-links" id="navLinks" role="navigation" aria-label="Navegación principal">
     <a href="#" id="loginBtn">Iniciar sesión</a>
     <a href="/register.html">Crear cuenta</a>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Abrir menú" aria-expanded="false" aria-controls="headerCenter headerRight">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </nav>
 </header>
 
 <!-- MODAL LOGIN -->
-<div id="loginModal" class="modal">
+<div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
   <div class="modal-content">
-    <span class="close-btn" id="closeModal">&times;</span>
-    <h2>Iniciar sesión</h2>
+    <button class="close-btn" id="closeModal" aria-label="Cerrar modal">&times;</button>
+    <h2 id="loginModalTitle">Iniciar sesión</h2>
 
-    <form id="loginForm">
-      <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
-      <input type="password" id="loginPassword" placeholder="Contraseña" required>
-      <button type="submit">Entrar</button>
-      <p id="loginError" class="error-message"></p>
+    <form id="loginForm" novalidate>
+      <div class="modal-form-group">
+        <label for="loginEmail" class="sr-only">Correo electrónico</label>
+        <input type="email" id="loginEmail" placeholder="Correo electrónico" required
+          aria-required="true" aria-describedby="loginEmailError">
+        <p class="modal-field-error" id="loginEmailError" role="alert"></p>
+      </div>
+      <div class="modal-form-group">
+        <label for="loginPassword" class="sr-only">Contraseña</label>
+        <div class="input-password-wrap">
+          <input type="password" id="loginPassword" placeholder="Contraseña" required
+            aria-required="true" aria-describedby="loginPasswordError">
+          <button type="button" class="toggle-password" data-target="loginPassword"
+            aria-label="Mostrar contraseña">👁</button>
+        </div>
+        <p class="modal-field-error" id="loginPasswordError" role="alert"></p>
+      </div>
+      <button type="submit" id="loginSubmitBtn">Entrar</button>
+      <p id="loginError" class="error-message" role="alert" aria-live="polite"></p>
     </form>
+
   </div>
 </div>
+

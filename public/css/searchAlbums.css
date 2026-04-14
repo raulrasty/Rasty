@@ -1,7 +1,5 @@
-
-
-
-body > h1 {
+body > h1,
+main > h1 {
   font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 800;
@@ -39,12 +37,13 @@ body > h1 {
   font-weight: 600;
   font-size: 0.95rem;
   transition: background var(--transition), transform 0.1s;
+  cursor: pointer;
 }
 
 #search-form button:hover  { background: var(--accent-dark); }
 #search-form button:active { transform: scale(0.97); }
+#search-form button:focus  { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/*  Grid de álbumes  */
 .albums {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -80,36 +79,203 @@ body > h1 {
   font-weight: 600;
   line-height: 1.3;
   margin-top: 4px;
+  min-height: 2.6em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .album-card p {
   font-size: 0.82rem;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.album-card button {
+.album-card-spacer { flex: 1; }
+
+.album-card-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.album-card-buttons button {
+  width: 100%;
   padding: 7px 12px;
   border: none;
   border-radius: var(--radius-sm);
   font-size: 0.82rem;
   font-weight: 600;
-  transition: background var(--transition);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  cursor: pointer;
 }
 
-.album-card button:first-of-type {
+.album-card-buttons button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-ver-album {
   background: var(--bg-hover);
   color: var(--text);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border) !important;
 }
 
-.album-card button:first-of-type:hover {
-  border-color: var(--accent);
+.btn-ver-album:hover {
+  border-color: var(--accent) !important;
   color: var(--accent);
 }
 
-.album-card button:last-of-type {
+.btn-crear-escucha {
   background: var(--accent);
   color: #000;
 }
 
-.album-card button:last-of-type:hover { background: var(--accent-dark); }
+.btn-crear-escucha:hover { background: var(--accent-dark); }
+
+.fav-album-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border) !important;
+}
+
+.fav-album-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent);
+}
+
+/* Candidatos */
+.candidates-container { margin: 0 32px; }
+
+.candidates-title {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+#candidates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 560px;
+  margin-bottom: 60px;
+}
+
+.candidate-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  text-align: left;
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.candidate-btn:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.candidate-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.candidate-btn strong {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.candidate-btn span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.candidate-flag-img {
+  width: 24px;
+  height: 18px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  body > h1,
+  main > h1 {
+    margin: 24px 16px 16px;
+    font-size: 1.6rem;
+  }
+
+  #search-form {
+    margin: 0 16px 24px;
+  }
+
+  .albums {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    margin: 0 16px;
+    gap: 12px;
+  }
+
+  .candidates-container {
+    margin: 0 16px;
+  }
+}
+
+
+.pagination {
+  max-width: 760px;
+  margin: 16px auto 60px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pagination-btn {
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pagination-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 0 8px;
+}
+
+@media (max-width: 400px) {
+  .albums {
+    grid-template-columns: 1fr 1fr;
+  }
+}

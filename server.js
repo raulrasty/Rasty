@@ -36,6 +36,8 @@ const userRatingRoutes = require('./routes/userRatingRoutes');
 app.use('/user-ratings', userRatingRoutes);
 const communityRoutes = require('./routes/communityRoutes');
 app.use('/community', communityRoutes);
+const itunesRoutes = require('./routes/itunesRoutes');
+app.use('/itunes', itunesRoutes);
 
 app.get('/', (req, res) => {
   res.send('¡Servidor funcionando!');

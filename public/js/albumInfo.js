@@ -19,9 +19,10 @@ function formatDuration(ms) {
 
 async function getItunesPreview(songTitle, artistName) {
   try {
-    const res = await fetch(`${API_BASE}/itunes/preview?title=${encodeURIComponent(songTitle)}&artist=${encodeURIComponent(artistName)}`);
+    const query = encodeURIComponent(`${songTitle} ${artistName}`);
+    const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
     const data = await res.json();
-    return data.previewUrl || null;
+    return data.results?.[0]?.previewUrl || null;
   } catch (_) {
     return null;
   }

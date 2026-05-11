@@ -1,7 +1,10 @@
+// SELECTORES GLOBALES DEL FORMULARIO
 const form = document.getElementById("registerForm");
 const errorMessage = document.getElementById("errorMessage");
 const submitBtn = document.getElementById("submitBtn");
 
+
+//FUNCIONES DE GESTIÓN DE ERRORES VISUALES
 function setFieldError(fieldId, message) {
   const input = document.getElementById(fieldId);
   const errorEl = document.getElementById(`${fieldId}Error`);
@@ -15,18 +18,21 @@ function clearErrors() {
   document.querySelectorAll(".field-error").forEach(el => el.textContent = "");
 }
 
+
+// MANEJO DEL ESTADO DE CARGA
 function setLoading(loading) {
   submitBtn.disabled = loading;
   submitBtn.textContent = loading ? "Registrando..." : "Registrarse";
   submitBtn.setAttribute("aria-busy", loading.toString());
 }
-
+// EVENTOS DE LIMPIEZA AUTOMÁTICA AL ESCRIBIR
 ["username", "email", "password", "passwordConfirm"].forEach(id => {
   document.getElementById(id)?.addEventListener("input", clearErrors);
 });
 
 document.getElementById("acceptPrivacy")?.addEventListener("change", clearErrors);
 
+// LÓGICA DE VALIDACIÓN Y ENVÍO DE DATOS
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   clearErrors();
@@ -39,6 +45,7 @@ form.addEventListener("submit", async (e) => {
 
   let hasErrors = false;
 
+  // Validación del Nombre de Usuario
   if (!username) {
     setFieldError("username", "El nombre de usuario es obligatorio");
     hasErrors = true;
@@ -50,11 +57,14 @@ form.addEventListener("submit", async (e) => {
     hasErrors = true;
   }
 
+
+  // Validación del Email
   if (!email) {
     setFieldError("email", "El correo electrónico es obligatorio");
     hasErrors = true;
   }
 
+  // Validación de la Contraseña
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
   if (!password) {
     setFieldError("password", "La contraseña es obligatoria");
@@ -63,7 +73,7 @@ form.addEventListener("submit", async (e) => {
     setFieldError("password", "Mínimo 6 caracteres, una mayúscula, una minúscula y un número");
     hasErrors = true;
   }
-
+  // Validación de Confirmación de Contraseña
   if (!passwordConfirm) {
     setFieldError("passwordConfirm", "Confirma tu contraseña");
     hasErrors = true;
@@ -72,6 +82,8 @@ form.addEventListener("submit", async (e) => {
     hasErrors = true;
   }
 
+
+  // Validación de Términos y Privacidad
   if (!acceptPrivacy) {
     setFieldError("acceptPrivacy", "Debes aceptar la política de privacidad");
     hasErrors = true;
@@ -81,6 +93,8 @@ form.addEventListener("submit", async (e) => {
 
   setLoading(true);
 
+
+  // REGISTRO
   try {
     const res = await fetch(`${API_BASE}/users/register`, {
       method: "POST",
@@ -103,6 +117,7 @@ form.addEventListener("submit", async (e) => {
         errorMessage.textContent = data.error || "Error al registrar usuario";
       }
     } else {
+      // Registro completado: Redirección al login
       window.location.href = "/login.html";
     }
   } catch (err) {

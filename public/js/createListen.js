@@ -1,3 +1,4 @@
+// VALIDACIÓN DE AUTENTICACIÓN Y PARÁMETROS
 if (!requireLogin()) throw new Error("No autenticado");
 
 const params = new URLSearchParams(window.location.search);
@@ -16,6 +17,8 @@ document.getElementById("listen_date").valueAsDate = new Date();
 
 let selectedSongIds = [];
 
+
+// UTILIDADES DE INTERFAZ
 function showError(msg) {
   messageDiv.innerHTML = `<p class="msg-error" role="alert">${msg}</p>`;
 }
@@ -34,6 +37,8 @@ function setLoading(loading) {
   submitBtn.setAttribute("aria-busy", loading.toString());
 }
 
+
+// CARGA DE INFORMACIÓN DEL ÁLBUM
 async function loadAlbumInfo() {
   try {
     const res = await fetch(`${API_BASE}/albumInfo/${albumId}`)
@@ -53,6 +58,8 @@ async function loadAlbumInfo() {
   }
 }
 
+
+// Cargar canciones para selección de favoritas
 async function loadSongsForSelection() {
   try {
     const res = await fetch(`${API_BASE}/songs/${albumId}`);
@@ -90,6 +97,8 @@ async function loadSongsForSelection() {
   }
 }
 
+
+// SELECCIÓN DE CANCIONES FAVORITAS
 function toggleFavoriteSong(songId, element) {
   if (selectedSongIds.includes(songId)) {
     selectedSongIds = selectedSongIds.filter((id) => id !== songId);
@@ -130,6 +139,8 @@ document.querySelectorAll(".star .half, .star .full").forEach(span => {
   });
 });
 
+
+// Actualizar visualmente estrellas
 function updateStars(value) {
   document.querySelectorAll(".star .half").forEach(half => {
     half.classList.toggle("filled", parseFloat(half.dataset.value) <= value);

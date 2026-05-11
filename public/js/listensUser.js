@@ -1,3 +1,5 @@
+
+// CONFIGURACIÓN Y ESTADO DE PAGINACIÓN
 const params = new URLSearchParams(window.location.search);
 const profileUserId = params.get("user_id");
 
@@ -5,6 +7,8 @@ const limit = 15;
 let currentPage = 1;
 let totalListens = 0;
 
+
+//OBTENCIÓN DE DATOS
 async function fetchListens(page = 1) {
   const container = document.getElementById("listens-container");
   container.innerHTML = '<p class="state-msg">Cargando...</p>';
@@ -26,10 +30,13 @@ async function fetchListens(page = 1) {
   }
 }
 
+//DESPLAZAMIENTO SUAVE AL INICIO
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+
+//AGRUPACIÓN POR FECHAS Y RENDERIZADO
 async function displayListens(listens) {
   const container = document.getElementById("listens-container");
   container.innerHTML = "";
@@ -41,6 +48,7 @@ async function displayListens(listens) {
 
   const grouped = {};
 
+  // Agrupación jerárquica: Mes -> Día
   listens.forEach((l) => {
     const date = new Date(l.listen_date);
     const monthKey = date.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
@@ -52,6 +60,7 @@ async function displayListens(listens) {
     grouped[monthKey][dayKey].push(l);
   });
 
+  // Generación de la estructura HTML agrupada
   for (const [month, days] of Object.entries(grouped)) {
     const monthHeader = document.createElement("h2");
     monthHeader.className = "month-header";
@@ -81,6 +90,8 @@ async function displayListens(listens) {
   }
 }
 
+
+//TARJETA DE ESCUCHA
 async function buildListenCard(l) {
   const card = document.createElement("article");
   card.className = "listen-card";
@@ -101,6 +112,8 @@ async function buildListenCard(l) {
     ${l.review ? `<p><em>"${l.review}"</em></p>` : ""}
   `;
 
+
+  //CARGA DE CANCIONES FAVORITAS POR ESCUCHA
   const favDiv = document.createElement("div");
   favDiv.className = "listen-favorites";
 
@@ -119,6 +132,8 @@ async function buildListenCard(l) {
     }
   } catch (_) {}
 
+
+  //BOTONES DE VER, EDITAR Y ELIMINAR
   const btnGroup = document.createElement("div");
   btnGroup.className = "listen-actions";
 
@@ -154,6 +169,8 @@ async function buildListenCard(l) {
   return card;
 }
 
+
+//PGINACIÓN
 function renderPagination() {
   const totalPages = Math.ceil(totalListens / limit);
   const pagination = document.getElementById("pagination");
@@ -185,6 +202,8 @@ function renderPagination() {
   if (currentPage < totalPages) pagination.appendChild(nextBtn);
 }
 
+
+// LÓGICA PARA ELIMINAR UNA ESCUCHA
 async function deleteListen(listenId, cardElement) {
   if (!confirm("¿Seguro que quieres eliminar esta escucha?")) return;
 

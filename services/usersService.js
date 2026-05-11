@@ -13,7 +13,7 @@ async function register(email, password, username) {
 
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) {
-    if (error.message === "User already registered") {
+    if (error.message === "Usuario ya registrado") {
       throw { status: 409, message: "Ya existe una cuenta con ese correo electrónico" };
     }
     throw { status: 400, message: error.message };

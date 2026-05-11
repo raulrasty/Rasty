@@ -1,13 +1,17 @@
+// CONFIGURACIÓN Y REDIRECCIÓN DE SEGURIDAD
 const API_URL = `${API_BASE}/users`
 
 if (isLoggedIn()) {
   window.location.href = "/index.html";
 }
 
+// SELECTORES DE ELEMENTOS DEL DOM
 const form = document.getElementById("login-form");
 const errorEl = document.getElementById("error");
 const submitBtn = form.querySelector("button[type='submit']");
 
+
+// FUNCIONES DE GESTIÓN DE ERRORES Y VALIDACIÓN VISUAL
 function setError(message, fieldId = null) {
   errorEl.textContent = message;
   if (fieldId) {
@@ -24,12 +28,15 @@ function clearErrors() {
   document.querySelectorAll(".field-error").forEach(el => el.textContent = "");
 }
 
+// CONTROL DEL ESTADO DE CARGA
 function setLoading(loading) {
   submitBtn.disabled = loading;
   submitBtn.textContent = loading ? "Entrando..." : "Entrar";
   submitBtn.setAttribute("aria-busy", loading.toString());
 }
 
+
+// PROCESAMIENTO Y ENVÍO DEL FORMULARIO DE LOGIN
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   clearErrors();
@@ -49,6 +56,7 @@ form.addEventListener("submit", async (e) => {
 
   setLoading(true);
 
+  // Petición de autenticación al servidor
   try {
     const res = await fetch(`${API_URL}/login`, {
       method: "POST",
@@ -58,6 +66,7 @@ form.addEventListener("submit", async (e) => {
 
     const data = await res.json();
 
+    // Manejo de respuestas de error del servido
     if (!res.ok) {
       if (res.status === 401) {
         setError("Email o contraseña incorrectos");
@@ -69,6 +78,7 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
+    // Inicio de sesión exitoso y redirección
     saveSession(data);
     window.location.href = "/index.html";
 
@@ -79,5 +89,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
+
+// EVENTOS PARA LIMPIAR ERRORES AL ESCRIBIR 
 document.getElementById("email").addEventListener("input", clearErrors);
 document.getElementById("password").addEventListener("input", clearErrors);

@@ -1,12 +1,17 @@
+//CONFIGURACIÓN Y CAPTURA DE PARÁMETROS DE URL
 const params = new URLSearchParams(window.location.search);
 const profileUserId = params.get("user_id");
 
+// GESTIÓN DEL BOTÓN DE RETORNO AL PERFI
 const backBtn = document.getElementById("back-btn");
 
+
+// Navegación mediante clic
 backBtn.addEventListener("click", () => {
   window.location.href = `/userProfile.html?user_id=${profileUserId}`;
 });
 
+// Navegación mediante teclado
 backBtn.addEventListener("keydown", (e) => {
   if (e.key === "Enter" || e.key === " ") {
     e.preventDefault();
@@ -14,6 +19,8 @@ backBtn.addEventListener("keydown", (e) => {
   }
 });
 
+
+//LÓGICA DE CARGA Y RENDERIZADO DE ÁLBUMES
 async function loadAlbums() {
   try {
     const res = await fetch(`${API_BASE}/listens/albums/${profileUserId}`);
@@ -22,11 +29,13 @@ async function loadAlbums() {
     const grid = document.getElementById("albums-grid");
     grid.innerHTML = "";
 
+    // Manejo de estado vacío
     if (!albums.length) {
       grid.innerHTML = '<p class="state-msg">No hay álbumes escuchados</p>';
       return;
     }
 
+    // Generación dinámica del grid de álbumes
     albums.forEach(album => {
       const slot = document.createElement("a");
       slot.className = "album-slot";

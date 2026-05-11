@@ -1,3 +1,4 @@
+// VARIABLES DE ESTADO Y SELECTORES
 const form = document.getElementById('search-form');
 const albumsContainer = document.getElementById('albums');
 const pagination = document.getElementById('albums-pagination');
@@ -7,6 +8,7 @@ let currentArtistName = null;
 let currentTitle = null;
 let currentPage = 1;
 
+// RENDERIZADO DE LISTADO DE ÁLBUMES 
 function renderAlbums(results, total, page, totalPages) {
   if (!Array.isArray(results) || results.length === 0) {
     albumsContainer.innerHTML = '<p class="state-msg">No se encontraron álbumes.</p>';
@@ -47,6 +49,7 @@ function renderAlbums(results, total, page, totalPages) {
     btnVer.addEventListener('click', () => viewAlbum(album.id));
     btnGroup.appendChild(btnVer);
 
+    // Acciones adicionales para usuarios autenticados
     if (isLoggedIn()) {
       const btnListen = document.createElement('button');
       btnListen.textContent = 'Crear escucha';
@@ -74,6 +77,8 @@ function renderAlbums(results, total, page, totalPages) {
   renderPagination(page, totalPages);
 }
 
+
+//PAGINACIÓN
 function renderPagination(page, totalPages) {
   pagination.innerHTML = '';
   if (totalPages <= 1) return;
@@ -101,6 +106,8 @@ function renderPagination(page, totalPages) {
   if (page < totalPages) pagination.appendChild(nextBtn);
 }
 
+
+//NAVEGACIÓN ENTRE PÁGINA
 async function goToPage(page) {
   currentPage = page;
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
@@ -121,6 +128,8 @@ async function goToPage(page) {
   }
 }
 
+
+//FORMATEO DE BANDERAS Y PAÍSES
 function countryToFlag(countryCode) {
   if (!countryCode || countryCode.length !== 2) return '';
   return countryCode
@@ -130,6 +139,8 @@ function countryToFlag(countryCode) {
     .join('');
 }
 
+
+//LISTA DE CANDIDATOS
 function renderCandidates(candidates, title) {
   albumsContainer.className = 'candidates-container';
   albumsContainer.innerHTML = `
@@ -164,6 +175,8 @@ function renderCandidates(candidates, title) {
   });
 }
 
+
+//BÚSQUEDA ESPECÍFICA POR ID DE ARTISTA
 async function searchByArtistId(artistId, artistName, title) {
   currentArtistId = artistId;
   currentArtistName = artistName;
@@ -186,6 +199,7 @@ async function searchByArtistId(artistId, artistName, title) {
   }
 }
 
+//ENVÍO DEL FORMULARIO DE BÚSQUEDA
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const artist = document.getElementById('artist').value.trim();
@@ -224,6 +238,8 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
+
+//LÓGICA DE REDIRECCIÓN Y NAVEGACIÓN
 function viewAlbum(albumId) {
   window.location.href = `/albumInfo.html?id=${albumId}`;
 }
@@ -232,6 +248,8 @@ function goCreateListen(albumId) {
   window.location.href = `/createListen.html?album_id=${albumId}`;
 }
 
+
+//INICIALIZACIÓN: CARGA POR PARÁMETROS URL
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   const artistParam = params.get("artist");

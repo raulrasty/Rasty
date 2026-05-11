@@ -1,3 +1,5 @@
+
+// CONFIGURACIÓN DE ENDPOINTS Y CAPTURA DE PARÁMETROS
 const API_URL = `${API_BASE}/users`
 const FOLLOWS_URL = `${API_BASE}/follows`
 const LISTENS_URL = `${API_BASE}/listens`
@@ -8,6 +10,7 @@ const profileUserId = params.get("user_id");
 
 let selectedFavAlbums = [];
 
+// INICIALIZACIÓN DE LA PÁGINA Y CARGA DE DATOS
 document.addEventListener("DOMContentLoaded", async () => {
   if (!profileUserId) {
     displayError("No se especificó ningún usuario.");
@@ -20,6 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const user = await res.json();
     renderUser(user);
 
+    // Carga paralela de todos los componentes del perfil
     await Promise.all([
       loadFollowStats(),
       loadCounts(),
@@ -28,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       loadUserRatingChart(),
     ]);
 
+    // LÓGICA DE PERMISOS: PERFIL PROPIO VS OTROS USUARIOS
     if (isOwnProfile(profileUserId)) {
       const editProfileBtn = document.getElementById("editProfileBtn");
       editProfileBtn.classList.remove("hidden");
@@ -104,6 +109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+// RENDERIZADO DE INFORMACIÓN BÁSICA DEL USUARIO
 function renderUser(user) {
   document.getElementById("username").textContent = user.username || "Sin nombre";
   document.getElementById("bio").textContent = user.bio || "";
@@ -122,6 +128,7 @@ function renderUser(user) {
   avatarEl.alt = `Avatar de ${user.username}`;
 }
 
+// GESTIÓN DE CONTADORES (ÁLBUMES Y ESCUCHAS)
 async function loadCounts() {
   try {
     const res = await fetch(`${LISTENS_URL}/${profileUserId}`);
@@ -132,6 +139,7 @@ async function loadCounts() {
   } catch (_) {}
 }
 
+// GESTIÓN DE SEGUIDORES Y SIGUIENDO
 async function loadFollowStats() {
   try {
     const [followersRes, followingRes] = await Promise.all([
@@ -147,6 +155,7 @@ async function loadFollowStats() {
   }
 }
 
+// SISTEMA DE SEGUIMIENTO (FOLLOW/UNFOLLOW)
 async function loadFollowButton() {
   try {
     const res = await authFetch(`${FOLLOWS_URL}/is-following/${profileUserId}`);
@@ -177,6 +186,8 @@ function updateFollowButton(btn, isFollowing) {
   btn.classList.toggle("following", isFollowing);
 }
 
+
+//RENDERIZADO DE 5 ÁLBUMES FAVORITOS 
 async function loadFavoriteAlbums() {
   try {
     const res = await fetch(`${FAV_ALBUMS_URL}/${profileUserId}`);
@@ -217,6 +228,8 @@ async function loadFavoriteAlbums() {
   }
 }
 
+
+// CARGA DE ÚLTIMAS ESCUCHAS REGISTRADA
 async function loadRecentListens() {
   try {
     const res = await fetch(`${LISTENS_URL}/${profileUserId}`);
@@ -254,6 +267,8 @@ async function loadRecentListens() {
   }
 }
 
+
+// GENERACIÓN DE GRÁFICA DE DISTRIBUCIÓN DE CALIFICACIONES
 async function loadUserRatingChart() {
   try {
     const res = await fetch(`${API_BASE}/user-ratings/${profileUserId}`);
@@ -300,6 +315,8 @@ async function loadUserRatingChart() {
   }
 }
 
+
+// GESTIÓN DE MODAL PARA EDITAR FAVORITOS
 function openFavAlbumsModal() {
   const modal = document.getElementById("favAlbumsModal");
   modal.classList.remove("hidden");
@@ -340,6 +357,8 @@ function renderSelectedFavAlbums() {
   }
 }
 
+
+// Eliminación de usuario si eres Admin
 async function deleteUserAsAdmin(userId) {
   const confirmed = confirm("¿Seguro que quieres eliminar esta cuenta? Esta acción no se puede deshacer.");
   if (!confirmed) return;
@@ -369,6 +388,8 @@ async function deleteUserAsAdmin(userId) {
   }
 }
 
+
+// --- MANEJO DE ERRORES VISUALES
 function displayError(message) {
   const container = document.querySelector(".profile-container");
   container.innerHTML = `<p role="alert" style="color:red;text-align:center;margin-top:50px;">${message}</p>`;

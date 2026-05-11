@@ -1,3 +1,5 @@
+
+// BANNER DE COOKIES
 document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("cookiesAccepted")) return;
 

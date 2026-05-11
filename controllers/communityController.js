@@ -1,5 +1,6 @@
 const communityService = require('../services/communityService');
 
+// Obtener álbumes más escuchados de la semana
 async function getTopAlbumsThisWeek(req, res) {
   try {
     const data = await communityService.getTopAlbumsThisWeek();
@@ -9,6 +10,7 @@ async function getTopAlbumsThisWeek(req, res) {
   }
 }
 
+// Obtener álbumes mejor valorados 
 async function getTopRatedAlbums(req, res) {
   try {
     const data = await communityService.getTopRatedAlbums();
@@ -18,6 +20,7 @@ async function getTopRatedAlbums(req, res) {
   }
 }
 
+// Obtener actividad de usuarios seguidos
 async function getFollowingActivity(req, res) {
   const userId = req.user.id;
   try {
@@ -28,6 +31,8 @@ async function getFollowingActivity(req, res) {
   }
 }
 
+
+// Obtener álbumes más escuchados de la semana por usuarios seguidos
 async function getFollowingTopThisWeek(req, res) {
   const userId = req.user.id;
   try {
@@ -38,6 +43,8 @@ async function getFollowingTopThisWeek(req, res) {
   }
 }
 
+
+// Obtener álbumes mejor valorados por usuarios seguidos
 async function getFollowingTopRated(req, res) {
   const userId = req.user.id;
   try {
@@ -48,6 +55,8 @@ async function getFollowingTopRated(req, res) {
   }
 }
 
+
+// Obtener actividad propia del usuario autenticado
 async function getOwnActivity(req, res) {
   const userId = req.user.id;
   try {

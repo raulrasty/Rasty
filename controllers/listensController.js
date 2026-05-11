@@ -69,6 +69,7 @@ async function updateListen(req, res) {
   }
 }
 
+// Obtener álbumes escuchados por un usuario
 async function getUserAlbums(req, res) {
   const { user_id } = req.params;
 
@@ -81,6 +82,8 @@ async function getUserAlbums(req, res) {
   }
 }
 
+
+// Obtener escuchas de un usuario con paginación
 async function getUserListensPaginated(req, res) {
   const { user_id } = req.params;
   const page = parseInt(req.query.page) || 1;

@@ -1,10 +1,10 @@
-# 🎵 Rasty
+# Rasty
 
 Rasty es una aplicación web de registro y seguimiento musical inspirada en Letterboxd. Permite a los usuarios registrar los álbumes que escuchan, valorarlos, escribir reseñas y compartir su actividad musical con otros usuarios.
 
-🌐 **Demo en producción:** [rasty.up.railway.app](https://rasty.up.railway.app)
+**Demo en producción:** [rasty.up.railway.app](https://rasty.up.railway.app)
 
-## 🚀 Características principales
+## Características principales
 
 - Registro e inicio de sesión con autenticación segura mediante Supabase Auth
 - Búsqueda de álbumes por artista mediante la API de MusicBrainz
@@ -16,7 +16,7 @@ Rasty es una aplicación web de registro y seguimiento musical inspirada en Lett
 - Diseño responsive y accesible (WCAG)
 - Page loader animado en todas las páginas
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 - **Frontend:** HTML5, CSS3, JavaScript vanilla
 - **Backend:** Node.js + Express
@@ -24,14 +24,14 @@ Rasty es una aplicación web de registro y seguimiento musical inspirada en Lett
 - **Despliegue:** Railway
 - **APIs externas:** MusicBrainz, Cover Art Archive, iTunes Search API, UI Avatars
 
-## 📋 Requisitos previos
+## Requisitos previos
 
 - Node.js v18 o superior
 - npm v9 o superior
 - Cuenta en Supabase (plan gratuito suficiente)
 - Conexión a internet (para las APIs externas)
 
-## ⚙️ Instalación en local
+## Instalación en local
 
 ### 1. Clonar el repositorio
 
@@ -53,7 +53,7 @@ Crea un archivo .env en la raíz del proyecto:
     JWT_SECRET=tu-clave-secreta
     PORT=3000
 
-⚠️ Nunca subas el archivo .env al repositorio. Está incluido en .gitignore.
+Nunca subas el archivo .env al repositorio. Está incluido en .gitignore.
 
 ### 4. Crear las tablas en Supabase
 
@@ -67,7 +67,7 @@ La aplicación estará disponible en http://localhost:3000
 
 Para desarrollo con recarga automática usa npm run dev
 
-## 🚀 Despliegue en Railway
+## Despliegue en Railway
 
 1. Conecta el repositorio de GitHub en railway.app
 2. Railway detecta Node.js automáticamente y ejecuta npm start
@@ -75,7 +75,7 @@ Para desarrollo con recarga automática usa npm run dev
 4. Railway genera un dominio público automáticamente
 5. Cada push a main desencadena un redespliegue automático
 
-## 📁 Estructura del proyecto
+## Estructura del proyecto
 
     rasty/
     ├── config/
@@ -98,7 +98,7 @@ Para desarrollo con recarga automática usa npm run dev
     ├── package.json
     └── server.js
 
-## 🌐 Rutas de la API
+## Rutas de la API
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
@@ -122,7 +122,7 @@ Para desarrollo con recarga automática usa npm run dev
 | GET | /community/top-rated | Álbumes mejor valorados |
 | GET | /community/following-activity | Actividad de seguidos |
 
-## 🔒 Variables de entorno
+## Variables de entorno
 
 |          Variable         |     Descripción                         |
 |---------------------------|-----------------------------------------|
@@ -133,12 +133,12 @@ Para desarrollo con recarga automática usa npm run dev
 |        JWT_SECRET         | Clave secreta para tokens JWT           |
 |            PORT           | Puerto del servidor (por defecto 3000)  |
 
-## 👑 Sistema de roles
+## Sistema de roles
 
 Rasty tiene dos roles: user (por defecto) y admin. Para dar permisos de administrador ejecuta en el SQL Editor de Supabase:
 
     UPDATE users SET role = 'admin' WHERE username = 'tu-username';
 
-## 👤 Autor
+## Autor
 
-Raúl Álvarez Tejero — Proyecto Final de Ciclo DAW 2024-2025
+Raúl Álvarez Tejero — Proyecto Final de Ciclo DAW 2026

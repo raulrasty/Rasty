@@ -65,7 +65,7 @@ async function getTopAlbumSongsByUsers(req, res) {
   }
 }
 
-
+// Obtener canciones favoritas de usuarios seguidos para un álbum concreto
 async function getFollowingFavoritesByAlbum(req, res) {
   const { albumId } = req.params;
   const userId = req.user.id;

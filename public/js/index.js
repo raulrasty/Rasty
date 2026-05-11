@@ -1,10 +1,13 @@
-const COMMUNITY_URL = `${API_BASE}/community`;
 
+// CONFIGURACIÓN Y URLS DE LA API
+const COMMUNITY_URL = `${API_BASE}/community`;
+//CARGA DE DATOS
 document.addEventListener("DOMContentLoaded", async () => {
   const main = document.getElementById("main-content");
   main.innerHTML = '<p class="state-msg">Cargando...</p>';
 
   try {
+    // Peticiones públicas paralelas (Top de la comunidad)
     const [topWeekRes, topRatedRes] = await Promise.all([
       fetch(`${COMMUNITY_URL}/top-week`),
       fetch(`${COMMUNITY_URL}/top-rated`)
@@ -18,6 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let followingTopRated = [];
     let ownActivity = [];
 
+    // Peticiones privadas paralelas (Solo si el usuario está logueado)
     if (isLoggedIn()) {
       const [activityRes, followingTopRes, followingRatedRes, ownActivityRes] = await Promise.all([
         authFetch(`${COMMUNITY_URL}/following-activity`),
@@ -39,6 +43,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+
+// RENDERIZADO DE LA ESTRUCTURA PRINCIPAL DE LA PÁGINA
 function renderPage(container, { topWeek, topRated, followingActivity, followingTopWeek, followingTopRated, ownActivity }) {
   container.innerHTML = `
     <div class="home">
@@ -93,6 +99,8 @@ function renderPage(container, { topWeek, topRated, followingActivity, following
     </div>
   `;
 
+
+  // Invocación de renderizados específicos
   renderAlbumList('top-week', topWeek, true, false);
   renderAlbumList('top-rated', topRated, false, true);
 
@@ -109,6 +117,8 @@ function renderPage(container, { topWeek, topRated, followingActivity, following
   }
 }
 
+
+// RENDERIZADO DE LISTA DE ÁLBUMES (RANKINGS)
 function renderAlbumList(containerId, albums, showCount = false, showRating = false) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -140,6 +150,8 @@ function renderAlbumList(containerId, albums, showCount = false, showRating = fa
   });
 }
 
+
+//FEED DE ACTIVIDAD DE SEGUIDOS
 function renderFollowingActivity(containerId, listens) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -194,6 +206,8 @@ function renderFollowingActivity(containerId, listens) {
   });
 }
 
+
+//FEED DE ACTIVIDAD PROPIA
 function renderOwnActivity(containerId, listens) {
   const container = document.getElementById(containerId);
   if (!container) return;

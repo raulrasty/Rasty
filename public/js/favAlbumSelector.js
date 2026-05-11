@@ -1,6 +1,8 @@
+// CONFIGURACIÓN Y ESTADO GLOBAL 
 const FAV_ALBUMS_URL = `${API_BASE}/favorite-albums`
 let currentFavAlbums = [];
 
+// CARGA DE ÁLBUMES FAVORITOS 
 async function loadCurrentFavAlbums() {
   try {
     const { userId } = getSession();
@@ -17,6 +19,8 @@ async function loadCurrentFavAlbums() {
   }
 }
 
+
+// CREACIÓN Y GESTIÓN DEL MODAL DE SELECCIÓN
 async function openFavSlotSelector(album, onSaved) {
   await loadCurrentFavAlbums();
 
@@ -36,6 +40,7 @@ async function openFavSlotSelector(album, onSaved) {
 
   document.body.appendChild(overlay);
 
+  // RENDERIZADO DE LOS ESPACIOS DISPONIBLES
   const grid = overlay.querySelector("#fav-slot-grid");
   for (let i = 1; i <= 5; i++) {
     const existing = currentFavAlbums.find(f => f.position === i);
@@ -70,6 +75,7 @@ async function openFavSlotSelector(album, onSaved) {
     grid.appendChild(slot);
   }
 
+  // LÓGICA DE CIERRE Y ACCESIBILIDAD DEL MODAL
   const cancelBtn = overlay.querySelector(".fav-slot-cancel");
   cancelBtn.addEventListener("click", () => document.body.removeChild(overlay));
 
@@ -90,6 +96,8 @@ async function openFavSlotSelector(album, onSaved) {
   cancelBtn.focus();
 }
 
+
+//GUARDAR ACTUALIZACIÓN EN EL SERVIDOR
 async function saveFavAlbumInSlot(album, position) {
   const updated = currentFavAlbums.filter(
     f => f.position !== position && f.album_id !== album.id

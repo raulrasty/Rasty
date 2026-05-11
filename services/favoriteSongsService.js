@@ -121,6 +121,7 @@ async function getFollowingFavoritesByAlbum(albumId, userId) {
 
   const followingIds = follows.map(f => f.following_id);
 
+  
   // Obtener sus favoritas de este álbum
   const { data, error } = await supabase
     .from('album_favorite_songs')
@@ -129,6 +130,7 @@ async function getFollowingFavoritesByAlbum(albumId, userId) {
     .in('user_id', followingIds);
 
   if (error) throw new Error(error.message);
+
 
   // Agrupar por usuario
   const grouped = {};

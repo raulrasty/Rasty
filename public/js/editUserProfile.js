@@ -1,7 +1,10 @@
+// CONFIGURACIÓN Y SELECTORES GLOBALES
 const API_URL = `${API_BASE}/users`;
 const messageEl = document.getElementById("message");
 const submitBtn = document.querySelector(".btn-submit");
 
+
+// FUNCIONES DE FEEDBACK VISUAL (ESTADOS Y MENSAJES)
 function showError(msg) {
   messageEl.textContent = msg;
   messageEl.className = "message msg-error";
@@ -26,6 +29,8 @@ function setLoading(loading) {
   submitBtn.setAttribute("aria-busy", loading.toString());
 }
 
+
+// CARGA INICIAL DEL PERFIL AL INICIAR LA PÁGINA
 document.addEventListener("DOMContentLoaded", async () => {
   if (!requireLogin()) return;
 
@@ -49,6 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+// LLENADO DE LOS CAMPOS DEL FORMULARIO  ---
 function populateForm(user) {
   document.getElementById("username").value = user.username || "";
   document.getElementById("bio").value = user.bio || "";

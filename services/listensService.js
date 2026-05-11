@@ -131,7 +131,7 @@ async function getAlbumsByUser(userId) {
   return unique.sort((a, b) => (b.release_year || 0) - (a.release_year || 0));
 }
 
-
+// Obtener escuchas paginadas de un usuario
 async function getListensByUserPaginated(user_id, page = 1, limit = 20) {
   const from = (page - 1) * limit;
   const to = from + limit - 1;

@@ -10,6 +10,8 @@ let currentUserRating = null;
 let currentAudio = null;
 let currentPlayBtn = null;
 
+
+// Formatear duración de canciones
 function formatDuration(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const mins = Math.floor(totalSeconds / 60);
@@ -17,6 +19,7 @@ function formatDuration(ms) {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
+// Obtener preview de canción desde iTunes API
 async function getItunesPreview(songTitle, artistName) {
   try {
     const query = encodeURIComponent(`${songTitle} ${artistName}`);
@@ -28,6 +31,7 @@ async function getItunesPreview(songTitle, artistName) {
   }
 }
 
+// Reproducir/pausar preview de audio 
 function togglePreview(previewUrl, btn, songTitle) {
   if (currentAudio && currentPlayBtn && currentPlayBtn !== btn) {
     currentAudio.pause();
@@ -64,6 +68,9 @@ function togglePreview(previewUrl, btn, songTitle) {
   });
 }
 
+// CARGA PRINCIPAL DEL ÁLBUM
+
+// Cargar información del álbum, canciones y datos de usuario
 async function loadAlbum() {
   const params = new URLSearchParams(window.location.search);
   currentAlbumId = params.get("id");
@@ -80,6 +87,7 @@ async function loadAlbum() {
   }
 
   try {
+    // Cargar información del álbum
     const resAlbum = await fetch(`${API_URL_ALBUM}/${currentAlbumId}`);
     const album = await resAlbum.json();
     if (!resAlbum.ok)
@@ -95,6 +103,7 @@ async function loadAlbum() {
       ? `Año de lanzamiento: ${album.release_year}`
       : "";
 
+    // Renderizar lista de canciones
     const resSongs = await fetch(`${API_URL_SONGS}/${currentAlbumId}`);
     const songsData = await resSongs.json();
     albumSongs = songsData.songs || [];
@@ -223,6 +232,9 @@ async function loadAlbum() {
   }
 }
 
+// RATING DEL USUARIO
+
+// Cargar puntuación del usuario
 async function loadUserRating(albumId) {
   try {
     const res = await authFetch(`${API_URL_RATINGS}/${albumId}/my-rating`);
@@ -256,6 +268,9 @@ function updateAlbumStars(value) {
   });
 }
 
+// FAVORITOS DE CANCIONES
+
+// Cargar canciones favoritas del usuario
 async function loadUserFavorites(albumId) {
   try {
     const res = await authFetch(`${API_URL_FAVORITES}/album/${albumId}`);
@@ -272,6 +287,7 @@ async function loadUserFavorites(albumId) {
   });
 }
 
+// Añadir/quitar canción de favoritos
 function toggleFavoriteSong(songId, element) {
   const favMsg = document.getElementById("favorites-message");
   if (selectedSongIds.includes(songId)) {
@@ -291,6 +307,9 @@ function toggleFavoriteSong(songId, element) {
   }
 }
 
+// DATOS DE COMUNIDAD
+
+// Cargar estadísticas globales del álbum
 async function loadCommunityData(albumId) {
   try {
     const [avgRes, distRes, favsRes] = await Promise.all([
@@ -326,6 +345,8 @@ async function loadCommunityData(albumId) {
   }
 }
 
+
+// Renderizar gráfico de valoraciones
 function renderRatingChart(distribution, total) {
   const chart = document.getElementById("rating-chart");
   chart.innerHTML = "";
@@ -355,6 +376,9 @@ function renderRatingChart(distribution, total) {
   });
 }
 
+// ACTIVIDAD DE USUARIOS SEGUIDOS
+
+// Cargar actividad de usuarios seguidos en este álbum
 async function loadFollowingData(albumId) {
   try {
     const [favsRes, ratingsRes] = await Promise.all([

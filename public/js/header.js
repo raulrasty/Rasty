@@ -1,3 +1,4 @@
+// CARGA E INYECCIÓN DEL COMPONENTE HEADER
 document.addEventListener("DOMContentLoaded", async () => {
 
   const headerContainer = document.getElementById("header-container");
@@ -11,6 +12,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loginModal = document.getElementById("loginModal");
     const loginForm = document.getElementById("loginForm");
 
+
+    // LÓGICA DE RENDERIZADO DINÁMICO DE ENLACES SEGÚN ESTADO D ELA SESIÓN
     const renderHeaderLinks = async () => {
       const { userId } = getSession();
 
@@ -45,6 +48,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         rightHTML += `<a href="/register.html">Crear cuenta</a>`;
       }
 
+
+      // CONFIGURACIÓN DE MENÚS PARA DISPOSITIVOS MÓVILES 
       // MÓVIL — links hamburguesa izquierdo
       let mobileNavLinks = '';
       if (isLoggedIn()) {
@@ -79,6 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         </button>`;
       }
 
+      // Inyección del HTML final en el contenedor de navegación
       navLinks.innerHTML = `
         <div class="header-left">${leftHTML}</div>
         <div class="header-center" id="headerCenter">${centerHTML}</div>
@@ -131,6 +137,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await renderHeaderLinks();
 
+    // --- GESTIÓN DE EVENTOS DEL MENÚ MÓVIL
     // Hamburguesa izquierda
     const mobileHamburger = document.getElementById("mobileHamburger");
     const mobileNavDropdown = document.getElementById("mobileNavDropdown");
@@ -192,7 +199,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.textContent = loading ? "Entrando..." : "Entrar";
     }
 
-    // Delegación de eventos
+    // DELEGACIÓN DE EVENTOS PARA EL MODAL Y CIERRE DE SESIÓN
     document.addEventListener("click", async (e) => {
 
       if (e.target.id === "loginBtn" || e.target.id === "mobileLoginBtn") {
@@ -225,6 +232,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
+    // PROCESAMIENTO DEL FORMULARIO DE LOGIN
     if (loginForm) {
       loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();

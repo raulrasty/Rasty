@@ -1,3 +1,5 @@
+
+// VALIDACIÓN Y PARÁMETROS INICIALES
 if (!requireLogin()) throw new Error("No autenticado");
 
 const params = new URLSearchParams(window.location.search);
@@ -6,11 +8,14 @@ const messageDiv = document.getElementById("message");
 const form = document.getElementById("editListenForm");
 const submitBtn = form.querySelector("button[type='submit']");
 
+// VALIDACIÓN DE ESCUCHA
 if (!listenId) {
   alert("No se ha especificado la escucha");
   window.location.href = "/";
 }
 
+
+// ESTADO GLOBAL
 let selectedSongIds = [];
 let currentAlbumId = null;
 let currentListen = null;
@@ -33,6 +38,7 @@ function setLoading(loading) {
   submitBtn.setAttribute("aria-busy", loading.toString());
 }
 
+// CARGA DE DATOS DE LA ESCUCHA
 async function loadListenData() {
   const { userId } = getSession();
 
@@ -87,6 +93,7 @@ async function loadListenData() {
   }
 }
 
+// CARGA DE CANCIONES DEL ÁLBUM
 async function loadSongsForSelection(albumId) {
   try {
     const res = await fetch(`${API_BASE}/songs/${albumId}`);
@@ -133,6 +140,8 @@ async function loadSongsForSelection(albumId) {
   }
 }
 
+
+// SELECCIÓN DE CANCIONES FAVORITAS
 function toggleFavoriteSong(songId, element) {
   if (selectedSongIds.includes(songId)) {
     selectedSongIds = selectedSongIds.filter(id => id !== songId);
@@ -173,6 +182,8 @@ document.querySelectorAll(".star .half, .star .full").forEach(span => {
   });
 });
 
+
+// Actualizar visualmente estrellas
 function updateStars(value) {
   document.querySelectorAll(".star .half").forEach(half => {
     half.classList.toggle("filled", parseFloat(half.dataset.value) <= value);
@@ -182,7 +193,7 @@ function updateStars(value) {
   });
 }
 
-// Sistema de corazón
+// Sistema de like de corazones
 const heart = document.getElementById("heart");
 const likedInput = document.getElementById("likedValue");
 

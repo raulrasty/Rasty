@@ -1,3 +1,11 @@
+const dns = require("dns");
+
+dns.setDefaultResultOrder("ipv4first");
+
+const https = require("https");
+
+https.globalAgent.options.family = 4;
+
 const express = require('express');
 require('dotenv').config();
 const path = require('path');

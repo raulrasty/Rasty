@@ -3,12 +3,130 @@ const form = document.getElementById('search-form');
 const albumsContainer = document.getElementById('albums');
 const pagination = document.getElementById('albums-pagination');
 
+const MB_BASE = 'https://musicbrainz.org/ws/2';
+const MB_HEADERS = { 'User-Agent': 'RastyApp/1.0' };
+
+const TITLE_BLACKLIST = ['sampler', 'bootleg', 'promo', 'rehearsal', 'outtakes'];
+const BAD_SECONDARY = [
+  'Compilation', 'Live', 'Remix', 'Soundtrack',
+  'Interview', 'Spokenword', 'Audiobook', 'Audio drama', 'Mixtape/Street', 'Demo'
+];
+
 let currentArtistId = null;
 let currentArtistName = null;
 let currentTitle = null;
 let currentPage = 1;
+let allFilteredReleaseGroups = []; // cache de release groups filtrados
 
-// RENDERIZADO DE LISTADO DE ÁLBUMES 
+// ====================== MUSICBRAINZ (DESDE FRONTEND) ======================
+
+function normalizeStr(str) {
+  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, '').trim();
+}
+
+async function fetchMB(url) {
+  const res = await fetch(url, { headers: MB_HEADERS });
+  if (!res.ok) throw new Error(`MusicBrainz error: ${res.status}`);
+  return res.json();
+}
+
+// Buscar artista por nombre en MusicBrainz
+async function searchArtistMB(artistName) {
+  const data = await fetchMB(`${MB_BASE}/artist/?query=artist:"${encodeURIComponent(artistName)}"&fmt=json&limit=5`);
+  return data.artists || [];
+}
+
+// Obtener todos los release-groups de un artista
+async function getReleaseGroupsMB(artistId) {
+  let all = [];
+  let offset = 0;
+  while (true) {
+    const data = await fetchMB(`${MB_BASE}/release-group?artist=${artistId}&type=album&fmt=json&limit=100&offset=${offset}`);
+    if (!data['release-groups']?.length) break;
+    all.push(...data['release-groups']);
+    if (data['release-groups'].length < 100) break;
+    offset += 100;
+  }
+  return all;
+}
+
+// Filtrar release-groups para quedarse solo con LPs originales
+function filterReleaseGroups(rgs, title) {
+  return rgs.filter(rg => {
+    if (rg['primary-type'] !== 'Album') return false;
+    if (rg['secondary-types']?.some(t => BAD_SECONDARY.includes(t))) return false;
+    const rgTitle = rg.title.toLowerCase();
+    if (TITLE_BLACKLIST.some(w => new RegExp(`\\b${w}\\b`).test(rgTitle))) return false;
+    if (/^\[.*\]$/.test(rg.title.trim()) || /^\(.*\)$/.test(rg.title.trim())) return false;
+    if (title && !normalizeStr(rg.title).includes(normalizeStr(title))) return false;
+    return true;
+  }).sort((a, b) => {
+    const ya = a['first-release-date'] ? parseInt(a['first-release-date']) : 0;
+    const yb = b['first-release-date'] ? parseInt(b['first-release-date']) : 0;
+    return ya - yb;
+  });
+}
+
+// Obtener la mejor release oficial de un release-group
+async function getBestRelease(rgId) {
+  try {
+    const data = await fetchMB(`${MB_BASE}/release/?release-group=${rgId}&status=official&fmt=json&limit=5`);
+    return data.releases?.find(r => r.status === 'Official') || data.releases?.[0] || null;
+  } catch { return null; }
+}
+
+// Obtener canciones de una release
+async function getTracksMB(releaseId) {
+  try {
+    const data = await fetchMB(`${MB_BASE}/release/${releaseId}?inc=recordings&fmt=json`);
+    return data.media?.flatMap(m => m.tracks.map(t => ({
+      position: t.position,
+      title: t.title,
+      length: t.length || null,
+    }))) || [];
+  } catch { return []; }
+}
+
+// Procesar una página de release-groups y mandar al backend para guardar
+async function processPage(rgs, page, limit, artistName) {
+  const total = rgs.length;
+  const totalPages = Math.ceil(total / limit);
+  const from = (page - 1) * limit;
+  const paginated = rgs.slice(from, from + limit);
+
+  const albumsToSave = [];
+
+  for (const rg of paginated) {
+    const rgId = rg.id;
+    const releaseYear = rg['first-release-date'] ? parseInt(rg['first-release-date'].split('-')[0]) : null;
+    const artist = rg['artist-credit']?.map(ac => (ac.name || ac.artist?.name || '') + (ac.joinphrase || '')).join('') || artistName;
+
+    const bestRelease = await getBestRelease(rgId);
+    const releaseId = bestRelease?.id || null;
+    const releaseDate = bestRelease?.date?.match(/^\d{4}-\d{2}-\d{2}$/) ? bestRelease.date : null;
+    const coverUrl = `https://coverartarchive.org/release-group/${rgId}/front`;
+
+    let tracks = [];
+    if (releaseId) tracks = await getTracksMB(releaseId);
+
+    albumsToSave.push({ rgId, title: rg.title, artist, releaseYear, releaseDate, coverUrl, tracks });
+  }
+
+  // Mandar al backend para guardar en Supabase
+  const res = await fetch(`${API_BASE}/albums/save-from-frontend`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ albums: albumsToSave, page, limit }),
+  });
+
+  if (!res.ok) throw new Error('Error guardando álbumes en el servidor');
+  const data = await res.json();
+
+  return { ...data, total, totalPages };
+}
+
+// ====================== RENDERIZADO ======================
+
 function renderAlbums(results, total, page, totalPages) {
   if (!Array.isArray(results) || results.length === 0) {
     albumsContainer.innerHTML = '<p class="state-msg">No se encontraron álbumes.</p>';
@@ -49,7 +167,6 @@ function renderAlbums(results, total, page, totalPages) {
     btnVer.addEventListener('click', () => viewAlbum(album.id));
     btnGroup.appendChild(btnVer);
 
-    // Acciones adicionales para usuarios autenticados
     if (isLoggedIn()) {
       const btnListen = document.createElement('button');
       btnListen.textContent = 'Crear escucha';
@@ -77,8 +194,6 @@ function renderAlbums(results, total, page, totalPages) {
   renderPagination(page, totalPages);
 }
 
-
-//PAGINACIÓN
 function renderPagination(page, totalPages) {
   pagination.innerHTML = '';
   if (totalPages <= 1) return;
@@ -106,8 +221,8 @@ function renderPagination(page, totalPages) {
   if (page < totalPages) pagination.appendChild(nextBtn);
 }
 
+// ====================== NAVEGACIÓN ======================
 
-//NAVEGACIÓN ENTRE PÁGINA
 async function goToPage(page) {
   currentPage = page;
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
@@ -115,10 +230,17 @@ async function goToPage(page) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   try {
+    // Si tenemos release groups en caché, paginar directamente
+    if (allFilteredReleaseGroups.length > 0) {
+      const data = await processPage(allFilteredReleaseGroups, page, 6, currentArtistName);
+      renderAlbums(data.results, data.total, page, data.totalPages);
+      return;
+    }
+
+    // Si no hay caché, buscar en DB
     const query = new URLSearchParams({ artist: currentArtistName, page, limit: 6 });
     if (currentArtistId) query.append('artistId', currentArtistId);
     if (currentTitle) query.append('title', currentTitle);
-`${API_BASE}/albums/search-mb?${query}`
     const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
     const data = await res.json();
     renderAlbums(data.results, data.total, data.page, data.totalPages);
@@ -128,19 +250,11 @@ async function goToPage(page) {
   }
 }
 
-
-//FORMATEO DE BANDERAS Y PAÍSES
 function countryToFlag(countryCode) {
   if (!countryCode || countryCode.length !== 2) return '';
-  return countryCode
-    .toUpperCase()
-    .split('')
-    .map(c => String.fromCodePoint(0x1F1A5 + c.charCodeAt(0)))
-    .join('');
+  return countryCode.toUpperCase().split('').map(c => String.fromCodePoint(0x1F1A5 + c.charCodeAt(0))).join('');
 }
 
-
-//LISTA DE CANDIDATOS
 function renderCandidates(candidates, title) {
   albumsContainer.className = 'candidates-container';
   albumsContainer.innerHTML = `
@@ -150,7 +264,6 @@ function renderCandidates(candidates, title) {
   pagination.innerHTML = '';
 
   const candidatesList = document.getElementById('candidates-list');
-
   candidates.forEach(candidate => {
     const btn = document.createElement('button');
     btn.className = 'candidate-btn';
@@ -175,8 +288,7 @@ function renderCandidates(candidates, title) {
   });
 }
 
-
-//BÚSQUEDA ESPECÍFICA POR ID DE ARTISTA
+// Buscar por artistId — llamada directa a MusicBrainz desde el frontend
 async function searchByArtistId(artistId, artistName, title) {
   currentArtistId = artistId;
   currentArtistName = artistName;
@@ -187,19 +299,25 @@ async function searchByArtistId(artistId, artistName, title) {
   pagination.innerHTML = '';
 
   try {
-    const query = new URLSearchParams({ artistId, artist: artistName, page: 1, limit: 6 });
-    if (title) query.append('title', title);
+    const rgs = await getReleaseGroupsMB(artistId);
+    const filtered = filterReleaseGroups(rgs, title);
+    allFilteredReleaseGroups = filtered; // guardar en caché para paginación
 
-    const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
-    const data = await res.json();
-    renderAlbums(data.results, data.total, data.page, data.totalPages);
+    if (filtered.length === 0) {
+      albumsContainer.innerHTML = '<p class="state-msg">No se encontraron álbumes.</p>';
+      return;
+    }
+
+    const data = await processPage(filtered, 1, 6, artistName);
+    renderAlbums(data.results, data.total, 1, data.totalPages);
   } catch (err) {
     console.error(err);
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';
   }
 }
 
-//ENVÍO DEL FORMULARIO DE BÚSQUEDA
+// ====================== FORMULARIO ======================
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const artist = document.getElementById('artist').value.trim();
@@ -209,6 +327,7 @@ form.addEventListener('submit', async (e) => {
   currentPage = 1;
   currentArtistId = null;
   currentArtistName = artist;
+  allFilteredReleaseGroups = [];
 
   if (!artist) {
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Introduce el nombre de un artista.</p>';
@@ -220,26 +339,47 @@ form.addEventListener('submit', async (e) => {
   pagination.innerHTML = '';
 
   try {
+    // 1. Buscar primero en DB (sin tocar MusicBrainz)
     const query = new URLSearchParams({ artist, page: 1, limit: 6 });
     if (title) query.append('title', title);
-
     const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
     const data = await res.json();
 
-    if (data.disambiguation) {
-      renderCandidates(data.candidates, title);
+    // 2. Si está en DB, mostrar directamente
+    if (!data.needsMusicBrainz && data.results) {
+      renderAlbums(data.results, data.total, data.page, data.totalPages);
       return;
     }
 
-    renderAlbums(data.results, data.total, data.page, data.totalPages);
+    // 3. Si no está en DB, buscar en MusicBrainz desde el frontend
+    const artists = await searchArtistMB(artist);
+    if (!artists.length) {
+      albumsContainer.innerHTML = '<p class="state-msg">No se encontró el artista.</p>';
+      return;
+    }
+
+    // 4. Si hay varios artistas, mostrar candidatos
+    if (artists.length > 1) {
+      renderCandidates(artists.map(a => ({
+        id: a.id,
+        name: a.name,
+        disambiguation: a.disambiguation || '',
+        country: a.country || '',
+      })), title);
+      return;
+    }
+
+    // 5. Un solo artista — buscar sus álbumes
+    await searchByArtistId(artists[0].id, artists[0].name, title);
+
   } catch (err) {
     console.error(err);
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';
   }
 });
 
+// ====================== REDIRECCIÓN ======================
 
-//LÓGICA DE REDIRECCIÓN Y NAVEGACIÓN
 function viewAlbum(albumId) {
   window.location.href = `/albumInfo.html?id=${albumId}`;
 }
@@ -248,13 +388,13 @@ function goCreateListen(albumId) {
   window.location.href = `/createListen.html?album_id=${albumId}`;
 }
 
+// ====================== INICIALIZACIÓN ======================
 
-//INICIALIZACIÓN: CARGA POR PARÁMETROS URL
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
-  const artistParam = params.get("artist");
+  const artistParam = params.get('artist');
   if (artistParam) {
-    document.getElementById("artist").value = artistParam;
-    form.dispatchEvent(new Event("submit"));
+    document.getElementById('artist').value = artistParam;
+    form.dispatchEvent(new Event('submit'));
   }
 });

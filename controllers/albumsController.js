@@ -11,7 +11,7 @@ async function getAlbums(req, res) {
   }
 }
 
-// Buscar y guardar álbumes desde MusicBrainz
+// Buscar álbumes — primero en DB, si no hay devuelve needsMusicBrainz: true
 async function searchAndSaveAlbums(req, res) {
   const { title, artist, artistId } = req.query;
   const page = parseInt(req.query.page) || 1;
@@ -30,4 +30,21 @@ async function searchAndSaveAlbums(req, res) {
   }
 }
 
-module.exports = { getAlbums, searchAndSaveAlbums };
+// Recibir álbumes procesados desde el frontend y guardarlos en Supabase
+async function saveFromFrontend(req, res) {
+  const { albums, page, limit } = req.body;
+
+  try {
+    if (!albums || !Array.isArray(albums) || albums.length === 0) {
+      return res.status(400).json({ error: "No se proporcionaron álbumes" });
+    }
+
+    const results = await albumsService.saveFromFrontend(albums, page || 1, limit || 6);
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { getAlbums, searchAndSaveAlbums, saveFromFrontend };

@@ -72,7 +72,7 @@ Para desarrollo con recarga automática usa npm run dev
 1. Conecta el repositorio de GitHub en render
 2. Crea un nuevo Web Service — Render detecta Node.js automáticamente y ejecuta npm start
 3. Añade las variables de entorno en la pestaña Variables
-4. Railway genera un dominio público automáticamente
+4. Render genera un dominio público automáticamente
 5. Cada push a main desencadena un redespliegue automático
 
 ## Estructura del proyecto

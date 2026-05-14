@@ -109,18 +109,41 @@ Para desarrollo con recarga automática usa npm run dev
 | PUT | /users/:id | Actualizar perfil |
 | DELETE | /users/me | Eliminar cuenta propia |
 | DELETE | /users/:id | Eliminar cuenta (solo admin) |
+| GET | /albums | Obtener todos los álbumes |
 | GET | /albums/search-mb | Buscar álbumes en MusicBrainz |
+| GET | /albumInfo/:id | Obtener info de un álbum |
+| GET | /songs/:album_id | Obtener canciones de un álbum |
 | GET | /listens/:user_id | Escuchas de un usuario |
 | GET | /listens/paginated/:user_id | Escuchas paginadas |
+| GET | /listens/albums/:user_id | Álbumes únicos de un usuario |
 | POST | /listens | Crear escucha |
 | PUT | /listens/:id | Editar escucha |
 | DELETE | /listens/:id | Eliminar escucha |
-| POST | /follows/:id | Seguir usuario |
-| DELETE | /follows/:id | Dejar de seguir |
-| GET | /album-ratings/:id/average | Media de valoraciones |
+| POST | /follows/:userId | Seguir usuario |
+| DELETE | /follows/:userId | Dejar de seguir |
+| GET | /follows/is-following/:userId | Comprobar si sigues a un usuario |
+| GET | /follows/followers/:userId | Obtener seguidores |
+| GET | /follows/following/:userId | Obtener seguidos |
+| POST | /album-ratings/:albumId | Guardar valoración |
+| GET | /album-ratings/:albumId/my-rating | Obtener valoración propia |
+| GET | /album-ratings/:albumId/average | Media de valoraciones |
+| GET | /album-ratings/:albumId/distribution | Distribución de valoraciones |
+| GET | /album-ratings/:albumId/following | Valoraciones de seguidos |
+| GET | /favorite-albums/:userId | Álbumes favoritos de un usuario |
+| POST | /favorite-albums | Guardar álbumes favoritos |
+| POST | /favorite-songs/listen/:listenId | Guardar canciones favoritas de escucha |
+| GET | /favorite-songs/listen/:listenId | Obtener canciones favoritas de escucha |
+| POST | /favorite-songs/album/:albumId | Guardar canciones favoritas de álbum |
+| GET | /favorite-songs/album/:albumId | Obtener canciones favoritas de álbum |
+| GET | /favorite-songs/album/:albumId/top | Top canciones favoritas comunidad |
+| GET | /favorite-songs/album/:albumId/following | Top canciones favoritas seguidos |
+| GET | /user-ratings/:userId | Distribución de ratings de un usuario |
 | GET | /community/top-week | Álbumes más escuchados esta semana |
 | GET | /community/top-rated | Álbumes mejor valorados |
 | GET | /community/following-activity | Actividad de seguidos |
+| GET | /community/following-top-week | Top semanal de seguidos |
+| GET | /community/following-top-rated | Mejor valorados por seguidos |
+| GET | /community/own-activity | Actividad propia |
 
 ## Variables de entorno
 

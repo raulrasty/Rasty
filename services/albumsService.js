@@ -1,43 +1,5 @@
 require("dotenv").config();
 const supabase = require("../config/supabaseClient");
-const userAgentMB = process.env.MUSICBRAINZ_USER_AGENT;
-
-// Palabras clave para filtrar álbumes no deseados
-
-const TITLE_BLACKLIST = [
-  "sampler",
-  "bootleg",
-  "promo",
-  "rehearsal",
-  "outtakes",
-];
-
-// Normalizar texto para comparaciones flexibles
-function normalize(str) {
-  return str
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .trim();
-}
-
-// Realizar peticiones fetch con reintentos automáticos
-async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const res = await fetch(url, options);
-      return res;
-    } catch (err) {
-      console.error(`Intento ${i + 1} fallido para ${url}:`, err.message);
-      if (i < retries - 1) {
-        await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
-      } else {
-        throw err;
-      }
-    }
-  }
-}
 
 // Obtener todos los álbumes guardados
 async function getAllAlbums() {
@@ -46,14 +8,12 @@ async function getAllAlbums() {
   return data;
 }
 
-
 // Crear un nuevo álbum en la base de datos
 async function createAlbum(albumData) {
   const { data, error } = await supabase.from("albums").insert([albumData]).select();
   if (error) throw new Error(error.message);
   return data[0];
 }
-
 
 // Obtener canciones de un álbum desde la base de datos
 async function getTracksFromDB(albumId) {
@@ -69,290 +29,114 @@ async function getTracksFromDB(albumId) {
   return data || [];
 }
 
+// Buscar álbumes en Supabase por artista
+async function searchInDB(artist, title, page = 1, limit = 6) {
+  let query = supabase
+    .from("albums")
+    .select("*")
+    .ilike("artist", `%${artist}%`);
 
-// Obtener portada desde Cover Art Archive
-async function getCoverUrl(rgId, releaseId) {
-  const rgCoverUrl = `https://coverartarchive.org/release-group/${rgId}/front`;
-  try {
-    const res = await fetchWithRetry(rgCoverUrl, {
-      method: "HEAD",
-      headers: { "User-Agent": userAgentMB },
-      redirect: "follow",
-    });
-    if (res.ok) return rgCoverUrl;
-  } catch (_) {}
+  if (title) query = query.ilike("title", `%${title}%`);
 
-  if (releaseId) {
-    const relCoverUrl = `https://coverartarchive.org/release/${releaseId}/front`;
-    try {
-      const res = await fetchWithRetry(relCoverUrl, {
-        method: "HEAD",
-        headers: { "User-Agent": userAgentMB },
-        redirect: "follow",
-      });
-      if (res.ok) return relCoverUrl;
-    } catch (_) {}
-  }
+  const { data, error } = await query.order("release_year", { ascending: true });
+  if (error) throw new Error(error.message);
+  if (!data || data.length === 0) return null;
 
-  return rgCoverUrl;
-}
-
-
-// Búsqueda y sincronización de álbumes desde MusicBrainz
-
-// Buscar álbumes a partir del ID de un artista
-async function searchByArtistId(artistId, artistName, title, page = 1, limit = 6) {
-  let allReleaseGroups = [];
-  let offset = 0;
-  const mbLimit = 100;
-// Obtener todos los release groups del artista
-  while (true) {
-    const rgUrl =
-      `https://musicbrainz.org/ws/2/release-group` +
-      `?artist=${artistId}&type=album&fmt=json&limit=${mbLimit}&offset=${offset}`;
-
-    const rgResponse = await fetchWithRetry(rgUrl, { headers: { "User-Agent": userAgentMB } });
-    const rgData = await rgResponse.json();
-
-    if (!rgData["release-groups"] || rgData["release-groups"].length === 0) break;
-
-    allReleaseGroups.push(...rgData["release-groups"]);
-
-    if (rgData["release-groups"].length < mbLimit) break;
-
-    offset += mbLimit;
-  }
-
-  const filtered = allReleaseGroups.filter((rg) => {
-    if (rg["primary-type"] !== "Album") return false;
-
-    const badSecondary = [
-      "Compilation", "Live", "Remix", "Soundtrack",
-      "Interview", "Spokenword", "Audiobook", "Audio drama", "Mixtape/Street", "Demo",
-    ];
-    if (rg["secondary-types"]?.some((t) => badSecondary.includes(t))) return false;
-
-    const rgTitle = rg.title.toLowerCase();
-    if (TITLE_BLACKLIST.some((word) => new RegExp(`\\b${word}\\b`).test(rgTitle))) {
-      return false;
-    }
-
-    if (/^\[.*\]$/.test(rg.title.trim()) || /^\(.*\)$/.test(rg.title.trim())) {
-      return false;
-    }
-
-    if (title && !normalize(rg.title).includes(normalize(title))) {
-      return false;
-    }
-
-    return true;
-  });
-
-// Ordenar álbumes por año de lanzamiento
-  filtered.sort((a, b) => {
-    const yearA = a["first-release-date"] ? parseInt(a["first-release-date"].split("-")[0]) : 0;
-    const yearB = b["first-release-date"] ? parseInt(b["first-release-date"].split("-")[0]) : 0;
-    return yearA - yearB;
-  });
-
-  // Aplicar paginación
-  const total = filtered.length;
+  const total = data.length;
   const totalPages = Math.ceil(total / limit);
   const from = (page - 1) * limit;
-  const to = from + limit;
-  const paginated = filtered.slice(from, to);
+  const paginated = data.slice(from, from + limit);
 
-  console.log(`Total filtrados: ${total}, página ${page}/${totalPages}, procesando ${paginated.length}`);
-
-  if (paginated.length === 0) throw new Error("No se encontraron álbumes del artista indicado");
-
-  const results = [];
-
-  // Procesar cada álbum
-  for (const rg of paginated) {
-    try {
-      const rgId = rg.id;
-
-      // Comprobar si el álbum ya existe en la base de datos
-      let { data: existing, error: existingError } = await supabase
-        .from("albums")
-        .select("*")
-        .eq("musicbrainz_id", rgId);
-      if (existingError) throw new Error(existingError.message);
-// Si el álbum existe pero no tiene canciones, sincronizarlas
-      if (existing.length === 0) {
-        const artistCredit =
-          rg["artist-credit"]
-            ?.map((ac) => (ac.name || ac.artist?.name || "") + (ac.joinphrase || ""))
-            .join("") || "";
-
-        const { data: existingByTitle, error: titleError } = await supabase
-          .from("albums")
-          .select("*")
-          .ilike("title", rg.title)
-          .ilike("artist", artistCredit);
-        if (titleError) throw new Error(titleError.message);
-        existing = existingByTitle;
-      }
-
-      if (existing.length > 0) {
-        const savedAlbum = existing[0];
-        let tracks = await getTracksFromDB(savedAlbum.id);
-
-        if (tracks.length === 0) {
-          // Obtener información detallada del release oficial
-          const relUrl = `https://musicbrainz.org/ws/2/release/?release-group=${rgId}&status=official&fmt=json&limit=5`;
-          const relResponse = await fetchWithRetry(relUrl, { headers: { "User-Agent": userAgentMB } });
-          const relData = await relResponse.json();
-          const bestRelease =
-            relData.releases?.find((r) => r.status === "Official") || relData.releases?.[0];
-
-          if (bestRelease?.id) {
-            const tracksResponse = await fetchWithRetry(
-              `https://musicbrainz.org/ws/2/release/${bestRelease.id}?inc=recordings&fmt=json`,
-              { headers: { "User-Agent": userAgentMB } }
-            );
-            const tracksData = await tracksResponse.json();
-
-            if (tracksData.media?.length > 0) {
-              tracks = tracksData.media.flatMap((medium) =>
-                medium.tracks.map((track) => ({
-                  album_id: savedAlbum.id,
-                  position: track.position,
-                  title: track.title,
-                  length: track.length,
-                  created_at: new Date().toISOString(),
-                }))
-              );
-              if (tracks.length > 0) {
-                await supabase.from("songs").insert(tracks);
-              }
-            }
-          }
-        }
-
-        results.push({ album: savedAlbum, tracks });
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        continue;
-      }
-
-      const releaseYear = rg["first-release-date"]
-        ? parseInt(rg["first-release-date"].split("-")[0])
-        : null;
-
-      const relUrl =
-        `https://musicbrainz.org/ws/2/release/` +
-        `?release-group=${rgId}&status=official&fmt=json&limit=5`;
-      const relResponse = await fetchWithRetry(relUrl, { headers: { "User-Agent": userAgentMB } });
-      const relData = await relResponse.json();
-
-      const bestRelease =
-        relData.releases?.find((r) => r.status === "Official") || relData.releases?.[0];
-
-      const releaseId = bestRelease?.id ?? null;
-      const releaseDate = bestRelease?.date?.match(/^\d{4}-\d{2}-\d{2}$/)
-        ? bestRelease.date
-        : null;
-
-      const coverUrl = await getCoverUrl(rgId, releaseId);
-// Guardar álbum en la base de datos
-      const albumData = {
-        musicbrainz_id: rgId,
-        title: rg.title,
-        artist:
-          rg["artist-credit"]
-            ?.map((ac) => (ac.name || ac.artist?.name || "") + (ac.joinphrase || ""))
-            .join("") || artistName,
-        release_date: releaseDate,
-        release_year: releaseYear,
-        cover_url: coverUrl,
-      };
-
-      const { data: newAlbum, error: insertError } = await supabase
-        .from("albums")
-        .insert([albumData])
-        .select();
-      if (insertError) throw new Error(insertError.message);
-      const savedAlbum = newAlbum[0];
-
-      let tracks = [];
-
-      // Obtener y guardar canciones del álbum
-      if (releaseId) {
-        const tracksResponse = await fetchWithRetry(
-          `https://musicbrainz.org/ws/2/release/${releaseId}?inc=recordings&fmt=json`,
-          { headers: { "User-Agent": userAgentMB } }
-        );
-        const tracksData = await tracksResponse.json();
-
-        if (tracksData.media?.length > 0) {
-          tracks = tracksData.media.flatMap((medium) =>
-            medium.tracks.map((track) => ({
-              album_id: savedAlbum.id,
-              position: track.position,
-              title: track.title,
-              length: track.length,
-              created_at: new Date().toISOString(),
-            }))
-          );
-          if (tracks.length > 0) {
-            const { error: tracksError } = await supabase.from("songs").insert(tracks);
-            if (tracksError) console.error("Error guardando canciones:", tracksError);
-          }
-        }
-      }
-
-      results.push({ album: savedAlbum, tracks });
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-    } catch (err) {
-      console.error('Error procesando álbum:', rg.title, err.message);
-      continue;
-    }
-  }
+  const results = await Promise.all(
+    paginated.map(async (album) => {
+      const tracks = await getTracksFromDB(album.id);
+      return { album, tracks };
+    })
+  );
 
   return { results, total, page, totalPages };
 }
 
+// Recibir álbumes desde el frontend y guardarlos en Supabase
+async function saveFromFrontend(albumsData, page = 1, limit = 6) {
+  const results = [];
 
-// Buscar artista y resolver ambigüedades
-async function searchAndSaveAlbums(title, artist, artistId = null, page = 1, limit = 6) {
- 
- // Si ya se dispone del artistId, buscar directamente
-  if (artistId) {
-    return await searchByArtistId(artistId, artist || 'Artista', title, page, limit);
+  for (const item of albumsData) {
+    const { rgId, title, artist, releaseYear, releaseDate, coverUrl, tracks: incomingTracks } = item;
+
+    // Comprobar si ya existe por musicbrainz_id
+    let { data: existing } = await supabase
+      .from("albums")
+      .select("*")
+      .eq("musicbrainz_id", rgId);
+
+    // Si no, buscar por título + artista
+    if (!existing || existing.length === 0) {
+      const { data: byTitle } = await supabase
+        .from("albums")
+        .select("*")
+        .ilike("title", title)
+        .ilike("artist", artist);
+      existing = byTitle;
+    }
+
+    let savedAlbum;
+
+    if (existing && existing.length > 0) {
+      savedAlbum = existing[0];
+    } else {
+      // Guardar álbum nuevo
+      const { data: newAlbum, error: insertError } = await supabase
+        .from("albums")
+        .insert([{ musicbrainz_id: rgId, title, artist, release_year: releaseYear, release_date: releaseDate, cover_url: coverUrl }])
+        .select();
+      if (insertError) {
+        console.error("Error insertando álbum:", insertError.message);
+        continue;
+      }
+      savedAlbum = newAlbum[0];
+    }
+
+    // Obtener canciones existentes
+    let tracks = await getTracksFromDB(savedAlbum.id);
+
+    // Si no hay canciones y el frontend mandó tracks, guardarlas
+    if (tracks.length === 0 && incomingTracks?.length > 0) {
+      const tracksToInsert = incomingTracks.map(t => ({
+        album_id: savedAlbum.id,
+        position: t.position,
+        title: t.title,
+        length: t.length,
+        created_at: new Date().toISOString(),
+      }));
+      const { error: tracksError } = await supabase.from("songs").insert(tracksToInsert);
+      if (!tracksError) tracks = tracksToInsert;
+    }
+
+    results.push({ album: savedAlbum, tracks });
   }
 
-  if (!artist) throw new Error("Debes proporcionar un artista");
+  // Paginación sobre los resultados
+  const total = results.length;
+  const totalPages = Math.ceil(total / limit);
+  const from = (page - 1) * limit;
+  const paginated = results.slice(from, from + limit);
 
-  // Buscar artista en MusicBrainz
-  const artistSearchUrl = `https://musicbrainz.org/ws/2/artist/?query=artist:"${artist}"&fmt=json&limit=5`;
-  const artistRes = await fetchWithRetry(artistSearchUrl, { headers: { "User-Agent": userAgentMB } });
-  const artistData = await artistRes.json();
-
-  if (!artistData.artists?.length) throw new Error("No se encontró el artista");
-
-
-  // Devolver candidatos si hay múltiples coincidencias
-  if (artistData.artists.length > 1) {
-    return {
-      disambiguation: true,
-      candidates: artistData.artists.map((a) => ({
-        id: a.id,
-        name: a.name,
-        disambiguation: a.disambiguation || "",
-        country: a.country || "",
-      })),
-    };
-  }
-
-  const foundArtistId = artistData.artists[0].id;
-  const foundArtistName = artistData.artists[0].name;
-
-
-  // Continuar búsqueda con el artista encontrado
-  return await searchByArtistId(foundArtistId, foundArtistName, title, page, limit);
+  return { results: paginated, total, page, totalPages };
 }
 
-// Exportar funciones del servicio
-module.exports = { getAllAlbums, createAlbum, searchAndSaveAlbums };
+// Buscar en DB primero, si no hay resultados devolver null para que el frontend busque en MB
+async function searchAndSaveAlbums(title, artist, artistId = null, page = 1, limit = 6) {
+  if (artist) {
+    const dbResults = await searchInDB(artist, title, page, limit);
+    if (dbResults) {
+      console.log(`Artista "${artist}" encontrado en DB con ${dbResults.total} álbumes`);
+      return dbResults;
+    }
+    console.log(`Artista "${artist}" no está en DB`);
+  }
+  // Si no hay nada en DB devolver indicación para que el frontend busque en MusicBrainz
+  return { needsMusicBrainz: true };
+}
+
+module.exports = { getAllAlbums, createAlbum, searchAndSaveAlbums, saveFromFrontend };

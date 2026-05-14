@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
-
 const albumsController = require('../controllers/albumsController');
 
-//ruta para obtener todos los albumes
+// Obtener todos los álbumes
 router.get('/', albumsController.getAlbums);
 
-
-//ruta para buscar y guardar un album desde  MusicBrainz
+// Buscar álbumes (primero en DB, si no hay devuelve needsMusicBrainz: true)
 router.get('/search-mb', albumsController.searchAndSaveAlbums);
+
+// Recibir álbumes desde el frontend y guardarlos en Supabase
+router.post('/save-from-frontend', albumsController.saveFromFrontend);
 
 module.exports = router;

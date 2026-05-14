@@ -2,7 +2,7 @@
 
 Rasty es una aplicación web de registro y seguimiento musical inspirada en Letterboxd. Permite a los usuarios registrar los álbumes que escuchan, valorarlos, escribir reseñas y compartir su actividad musical con otros usuarios.
 
-**Demo en producción:** [rasty.up.railway.app](https://rasty.up.railway.app)
+**Demo en producción:** [rasty.onrender.com](https://rasty.onrender.com)
 
 ## Características principales
 
@@ -21,7 +21,7 @@ Rasty es una aplicación web de registro y seguimiento musical inspirada en Lett
 - **Frontend:** HTML5, CSS3, JavaScript vanilla
 - **Backend:** Node.js + Express
 - **Base de datos y autenticación:** Supabase (PostgreSQL)
-- **Despliegue:** Railway
+- **Despliegue:** Render
 - **APIs externas:** MusicBrainz, Cover Art Archive, iTunes Search API, UI Avatars
 
 ## Requisitos previos
@@ -67,10 +67,10 @@ La aplicación estará disponible en http://localhost:3000
 
 Para desarrollo con recarga automática usa npm run dev
 
-## Despliegue en Railway
+## Despliegue en Render
 
-1. Conecta el repositorio de GitHub en railway.app
-2. Railway detecta Node.js automáticamente y ejecuta npm start
+1. Conecta el repositorio de GitHub en render
+2. Crea un nuevo Web Service — Render detecta Node.js automáticamente y ejecuta npm start
 3. Añade las variables de entorno en la pestaña Variables
 4. Railway genera un dominio público automáticamente
 5. Cada push a main desencadena un redespliegue automático

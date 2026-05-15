@@ -1,10 +1,12 @@
 // VARIABLES DE ESTADO Y SELECTORES
+// VARIABLES DE ESTADO Y SELECTORES
 const form = document.getElementById('search-form');
 const albumsContainer = document.getElementById('albums');
 const pagination = document.getElementById('albums-pagination');
 
 const MB_BASE = 'https://musicbrainz.org/ws/2';
 const MB_HEADERS = { 'User-Agent': 'RastyApp/1.0' };
+const PLACEHOLDER = 'https://placehold.co/200x200?text=Sin+portada';
 
 const TITLE_BLACKLIST = ['sampler', 'bootleg', 'promo', 'rehearsal', 'outtakes'];
 const BAD_SECONDARY = [
@@ -18,14 +20,25 @@ let currentTitle = null;
 let currentPage = 1;
 let allFilteredReleaseGroups = [];
 
-// musicbrainz
+// ====================== MUSICBRAINZ ======================
 
 function normalizeStr(str) {
   return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, '').trim();
 }
 
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
 async function fetchMB(url) {
   const res = await fetch(url, { headers: MB_HEADERS });
+  if (res.status === 503) {
+    // Rate limit — esperar y reintentar una vez
+    await sleep(1000);
+    const retry = await fetch(url, { headers: MB_HEADERS });
+    if (!retry.ok) throw new Error(`MusicBrainz error: ${retry.status}`);
+    return retry.json();
+  }
   if (!res.ok) throw new Error(`MusicBrainz error: ${res.status}`);
   return res.json();
 }
@@ -44,6 +57,7 @@ async function getReleaseGroupsMB(artistId) {
     all.push(...data['release-groups']);
     if (data['release-groups'].length < 100) break;
     offset += 100;
+    await sleep(300);
   }
   return all;
 }
@@ -104,6 +118,9 @@ async function processPage(rgs, page, limit, artistName) {
     if (releaseId) tracks = await getTracksMB(releaseId);
 
     albumsToSave.push({ rgId, title: rg.title, artist, releaseYear, releaseDate, coverUrl, tracks });
+
+    // Esperar entre álbumes para no saturar MusicBrainz
+    await sleep(300);
   }
 
   const res = await fetch(`${API_BASE}/albums/save-from-frontend`, {
@@ -118,7 +135,7 @@ async function processPage(rgs, page, limit, artistName) {
   return { ...data, total, totalPages };
 }
 
-// renderizado
+// ====================== RENDERIZADO ======================
 
 function renderAlbums(results, total, page, totalPages) {
   if (!Array.isArray(results) || results.length === 0) {
@@ -136,9 +153,9 @@ function renderAlbums(results, total, page, totalPages) {
     card.setAttribute('role', 'article');
 
     const img = document.createElement('img');
-    img.src = album.cover_url || 'https://via.placeholder.com/200?text=Sin+portada';
+    img.src = album.cover_url || PLACEHOLDER;
     img.alt = `Portada de ${album.title}`;
-    img.onerror = () => img.src = 'https://via.placeholder.com/200?text=Sin+portada';
+    img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER; };
 
     const title = document.createElement('h4');
     title.textContent = album.title;
@@ -214,7 +231,7 @@ function renderPagination(page, totalPages) {
   if (page < totalPages) pagination.appendChild(nextBtn);
 }
 
-// navegación
+// ====================== NAVEGACIÓN ======================
 
 async function goToPage(page) {
   currentPage = page;
@@ -300,7 +317,7 @@ async function searchByArtistId(artistId, artistName, title) {
   }
 }
 
-// formulario
+// ====================== FORMULARIO ======================
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -323,7 +340,6 @@ form.addEventListener('submit', async (e) => {
   pagination.innerHTML = '';
 
   try {
-    // Siempre buscar en MusicBrainz desde el frontend
     const artists = await searchArtistMB(artist);
     if (!artists.length) {
       albumsContainer.innerHTML = '<p class="state-msg">No se encontró el artista.</p>';
@@ -348,7 +364,7 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-//  REDIRECCIÓN
+// ====================== REDIRECCIÓN ======================
 
 function viewAlbum(albumId) {
   window.location.href = `/albumInfo.html?id=${albumId}`;
@@ -358,7 +374,7 @@ function goCreateListen(albumId) {
   window.location.href = `/createListen.html?album_id=${albumId}`;
 }
 
-//INICIALIZACIÓN 
+// ====================== INICIALIZACIÓN ======================
 
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);

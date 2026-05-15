@@ -1,21 +1,18 @@
 require("dotenv").config();
 const supabase = require("../config/supabaseClient");
 
-// Obtener todos los álbumes guardados
 async function getAllAlbums() {
   const { data, error } = await supabase.from("albums").select("*");
   if (error) throw new Error(error.message);
   return data;
 }
 
-// Crear un nuevo álbum en la base de datos
 async function createAlbum(albumData) {
   const { data, error } = await supabase.from("albums").insert([albumData]).select();
   if (error) throw new Error(error.message);
   return data[0];
 }
 
-// Obtener canciones de un álbum desde la base de datos
 async function getTracksFromDB(albumId) {
   const { data, error } = await supabase
     .from("songs")
@@ -29,48 +26,21 @@ async function getTracksFromDB(albumId) {
   return data || [];
 }
 
-// Buscar álbumes en Supabase por artista
-async function searchInDB(artist, title, page = 1, limit = 6) {
-  let query = supabase
-    .from("albums")
-    .select("*")
-    .ilike("artist", `%${artist}%`);
-
-  if (title) query = query.ilike("title", `%${title}%`);
-
-  const { data, error } = await query.order("release_year", { ascending: true });
-  if (error) throw new Error(error.message);
-  if (!data || data.length === 0) return null;
-
-  const total = data.length;
-  const totalPages = Math.ceil(total / limit);
-  const from = (page - 1) * limit;
-  const paginated = data.slice(from, from + limit);
-
-  const results = await Promise.all(
-    paginated.map(async (album) => {
-      const tracks = await getTracksFromDB(album.id);
-      return { album, tracks };
-    })
-  );
-
-  return { results, total, page, totalPages };
-}
-
-// Recibir álbumes desde el frontend y guardarlos en Supabase
-async function saveFromFrontend(albumsData, page = 1, limit = 6) {
+// Recibir álbumes desde el frontend, guardarlos y devolverlos
+// Sin paginación — el frontend ya manda solo los álbumes de la página actual
+async function saveFromFrontend(albumsData) {
   const results = [];
 
   for (const item of albumsData) {
     const { rgId, title, artist, releaseYear, releaseDate, coverUrl, tracks: incomingTracks } = item;
 
-    // Comprobar si ya existe por musicbrainz_id
+    // Buscar por musicbrainz_id
     let { data: existing } = await supabase
       .from("albums")
       .select("*")
       .eq("musicbrainz_id", rgId);
 
-    // Si no, buscar por título + artista
+    // Si no existe, buscar por título + artista
     if (!existing || existing.length === 0) {
       const { data: byTitle } = await supabase
         .from("albums")
@@ -85,10 +55,16 @@ async function saveFromFrontend(albumsData, page = 1, limit = 6) {
     if (existing && existing.length > 0) {
       savedAlbum = existing[0];
     } else {
-      // Guardar álbum nuevo
       const { data: newAlbum, error: insertError } = await supabase
         .from("albums")
-        .insert([{ musicbrainz_id: rgId, title, artist, release_year: releaseYear, release_date: releaseDate, cover_url: coverUrl }])
+        .insert([{
+          musicbrainz_id: rgId,
+          title,
+          artist,
+          release_year: releaseYear,
+          release_date: releaseDate,
+          cover_url: coverUrl,
+        }])
         .select();
       if (insertError) {
         console.error("Error insertando álbum:", insertError.message);
@@ -116,26 +92,34 @@ async function saveFromFrontend(albumsData, page = 1, limit = 6) {
     results.push({ album: savedAlbum, tracks });
   }
 
-  // Paginación sobre los resultados
-  const total = results.length;
-  const totalPages = Math.ceil(total / limit);
-  const from = (page - 1) * limit;
-  const paginated = results.slice(from, from + limit);
-
-  return { results: paginated, total, page, totalPages };
+  return results;
 }
 
-// Buscar en DB primero, si no hay resultados devolver null para que el frontend busque en MB
 async function searchAndSaveAlbums(title, artist, artistId = null, page = 1, limit = 6) {
+  // Solo buscar en DB — si no hay nada devolver needsMusicBrainz
   if (artist) {
-    const dbResults = await searchInDB(artist, title, page, limit);
-    if (dbResults) {
-      console.log(`Artista "${artist}" encontrado en DB con ${dbResults.total} álbumes`);
-      return dbResults;
+    let query = supabase.from("albums").select("*").ilike("artist", `%${artist}%`);
+    if (title) query = query.ilike("title", `%${title}%`);
+    const { data, error } = await query.order("release_year", { ascending: true });
+    if (error) throw new Error(error.message);
+
+    if (data && data.length > 0) {
+      const total = data.length;
+      const totalPages = Math.ceil(total / limit);
+      const from = (page - 1) * limit;
+      const paginated = data.slice(from, from + limit);
+
+      const results = await Promise.all(
+        paginated.map(async (album) => {
+          const tracks = await getTracksFromDB(album.id);
+          return { album, tracks };
+        })
+      );
+
+      return { results, total, page, totalPages };
     }
-    console.log(`Artista "${artist}" no está en DB`);
   }
-  // Si no hay nada en DB devolver indicación para que el frontend busque en MusicBrainz
+
   return { needsMusicBrainz: true };
 }
 

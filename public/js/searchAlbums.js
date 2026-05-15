@@ -13,11 +13,14 @@ const BAD_SECONDARY = [
   'Interview', 'Spokenword', 'Audiobook', 'Audio drama', 'Mixtape/Street', 'Demo'
 ];
 
+const LIMIT = 6;
+
 let currentArtistId = null;
 let currentArtistName = null;
 let currentTitle = null;
 let currentPage = 1;
-let allFilteredReleaseGroups = [];
+let allFilteredReleaseGroups = []; // todos los release groups filtrados
+let allSavedAlbums = [];           // todos los álbumes ya guardados en Supabase
 
 // ====================== MUSICBRAINZ ======================
 
@@ -32,7 +35,6 @@ function sleep(ms) {
 async function fetchMB(url) {
   const res = await fetch(url, { headers: MB_HEADERS });
   if (res.status === 503) {
-    // Rate limit — esperar 2 segundos y reintentar
     await sleep(2000);
     const retry = await fetch(url, { headers: MB_HEADERS });
     if (!retry.ok) throw new Error(`MusicBrainz error: ${retry.status}`);
@@ -95,15 +97,11 @@ async function getTracksMB(releaseId) {
   } catch { return []; }
 }
 
-async function processPage(rgs, page, limit, artistName) {
-  const total = rgs.length;
-  const totalPages = Math.ceil(total / limit);
-  const from = (page - 1) * limit;
-  const paginated = rgs.slice(from, from + limit);
-
+// Procesar UN lote de release groups y guardarlos en Supabase
+async function processAndSave(rgs, artistName) {
   const albumsToSave = [];
 
-  for (const rg of paginated) {
+  for (const rg of rgs) {
     try {
       const rgId = rg.id;
       const releaseYear = rg['first-release-date'] ? parseInt(rg['first-release-date'].split('-')[0]) : null;
@@ -119,8 +117,7 @@ async function processPage(rgs, page, limit, artistName) {
 
       albumsToSave.push({ rgId, title: rg.title, artist, releaseYear, releaseDate, coverUrl, tracks });
     } catch (err) {
-      console.warn(`Error procesando ${rg.title}, continuando:`, err.message);
-      // Añadir álbum sin tracks para que al menos aparezca
+      console.warn(`Error procesando ${rg.title}:`, err.message);
       albumsToSave.push({
         rgId: rg.id,
         title: rg.title,
@@ -131,24 +128,29 @@ async function processPage(rgs, page, limit, artistName) {
         tracks: [],
       });
     }
-
-    // Esperar 500ms entre álbumes para no saturar MusicBrainz
     await sleep(500);
   }
 
+  // Mandar al backend para guardar
   const res = await fetch(`${API_BASE}/albums/save-from-frontend`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ albums: albumsToSave, page, limit }),
+    body: JSON.stringify({ albums: albumsToSave }),
   });
 
   if (!res.ok) throw new Error('Error guardando álbumes en el servidor');
-  const data = await res.json();
-
-  return { ...data, total, totalPages };
+  return res.json(); // array de { album, tracks }
 }
 
 // ====================== RENDERIZADO ======================
+
+function renderPage(page) {
+  const total = allSavedAlbums.length;
+  const totalPages = Math.ceil(total / LIMIT);
+  const from = (page - 1) * LIMIT;
+  const paginated = allSavedAlbums.slice(from, from + LIMIT);
+  renderAlbums(paginated, total, page, totalPages);
+}
 
 function renderAlbums(results, total, page, totalPages) {
   if (!Array.isArray(results) || results.length === 0) {
@@ -248,22 +250,15 @@ function renderPagination(page, totalPages) {
 
 async function goToPage(page) {
   currentPage = page;
-  console.log('allFilteredReleaseGroups al paginar:', allFilteredReleaseGroups.length);
-  albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
-  pagination.innerHTML = '';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  try {
-    if (allFilteredReleaseGroups.length > 0) {
-      const data = await processPage(allFilteredReleaseGroups, page, 6, currentArtistName);
-      renderAlbums(data.results, data.total, page, data.totalPages);
-      return;
-    }
-    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error cargando álbumes.</p>';
-  } catch (err) {
-    console.error(err);
-    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error cargando álbumes.</p>';
+  // Si ya tenemos todos los álbumes en memoria, solo paginar
+  if (allSavedAlbums.length > 0) {
+    renderPage(page);
+    return;
   }
+
+  albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error cargando álbumes.</p>';
 }
 
 function countryToFlag(countryCode) {
@@ -309,6 +304,7 @@ async function searchByArtistId(artistId, artistName, title) {
   currentArtistName = artistName;
   currentTitle = title;
   currentPage = 1;
+  allSavedAlbums = [];
 
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
   pagination.innerHTML = '';
@@ -323,8 +319,11 @@ async function searchByArtistId(artistId, artistName, title) {
       return;
     }
 
-    const data = await processPage(filtered, 1, 6, artistName);
-    renderAlbums(data.results, data.total, 1, data.totalPages);
+    // Procesar TODOS los álbumes de una vez y guardarlos en Supabase
+    allSavedAlbums = await processAndSave(filtered, artistName);
+
+    // Mostrar primera página
+    renderPage(1);
   } catch (err) {
     console.error(err);
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';
@@ -343,6 +342,7 @@ form.addEventListener('submit', async (e) => {
   currentArtistId = null;
   currentArtistName = artist;
   allFilteredReleaseGroups = [];
+  allSavedAlbums = [];
 
   if (!artist) {
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Introduce el nombre de un artista.</p>';

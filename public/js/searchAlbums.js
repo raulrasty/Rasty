@@ -1,5 +1,4 @@
 // VARIABLES DE ESTADO Y SELECTORES
-// VARIABLES DE ESTADO Y SELECTORES
 const form = document.getElementById('search-form');
 const albumsContainer = document.getElementById('albums');
 const pagination = document.getElementById('albums-pagination');
@@ -33,8 +32,8 @@ function sleep(ms) {
 async function fetchMB(url) {
   const res = await fetch(url, { headers: MB_HEADERS });
   if (res.status === 503) {
-    // Rate limit — esperar y reintentar una vez
-    await sleep(1000);
+    // Rate limit — esperar 2 segundos y reintentar
+    await sleep(2000);
     const retry = await fetch(url, { headers: MB_HEADERS });
     if (!retry.ok) throw new Error(`MusicBrainz error: ${retry.status}`);
     return retry.json();
@@ -105,22 +104,36 @@ async function processPage(rgs, page, limit, artistName) {
   const albumsToSave = [];
 
   for (const rg of paginated) {
-    const rgId = rg.id;
-    const releaseYear = rg['first-release-date'] ? parseInt(rg['first-release-date'].split('-')[0]) : null;
-    const artist = rg['artist-credit']?.map(ac => (ac.name || ac.artist?.name || '') + (ac.joinphrase || '')).join('') || artistName;
+    try {
+      const rgId = rg.id;
+      const releaseYear = rg['first-release-date'] ? parseInt(rg['first-release-date'].split('-')[0]) : null;
+      const artist = rg['artist-credit']?.map(ac => (ac.name || ac.artist?.name || '') + (ac.joinphrase || '')).join('') || artistName;
 
-    const bestRelease = await getBestRelease(rgId);
-    const releaseId = bestRelease?.id || null;
-    const releaseDate = bestRelease?.date?.match(/^\d{4}-\d{2}-\d{2}$/) ? bestRelease.date : null;
-    const coverUrl = `https://coverartarchive.org/release-group/${rgId}/front`;
+      const bestRelease = await getBestRelease(rgId);
+      const releaseId = bestRelease?.id || null;
+      const releaseDate = bestRelease?.date?.match(/^\d{4}-\d{2}-\d{2}$/) ? bestRelease.date : null;
+      const coverUrl = `https://coverartarchive.org/release-group/${rgId}/front`;
 
-    let tracks = [];
-    if (releaseId) tracks = await getTracksMB(releaseId);
+      let tracks = [];
+      if (releaseId) tracks = await getTracksMB(releaseId);
 
-    albumsToSave.push({ rgId, title: rg.title, artist, releaseYear, releaseDate, coverUrl, tracks });
+      albumsToSave.push({ rgId, title: rg.title, artist, releaseYear, releaseDate, coverUrl, tracks });
+    } catch (err) {
+      console.warn(`Error procesando ${rg.title}, continuando:`, err.message);
+      // Añadir álbum sin tracks para que al menos aparezca
+      albumsToSave.push({
+        rgId: rg.id,
+        title: rg.title,
+        artist: rg['artist-credit']?.map(ac => (ac.name || '') + (ac.joinphrase || '')).join('') || artistName,
+        releaseYear: rg['first-release-date'] ? parseInt(rg['first-release-date'].split('-')[0]) : null,
+        releaseDate: null,
+        coverUrl: `https://coverartarchive.org/release-group/${rg.id}/front`,
+        tracks: [],
+      });
+    }
 
-    // Esperar entre álbumes para no saturar MusicBrainz
-    await sleep(300);
+    // Esperar 500ms entre álbumes para no saturar MusicBrainz
+    await sleep(500);
   }
 
   const res = await fetch(`${API_BASE}/albums/save-from-frontend`, {
@@ -234,8 +247,8 @@ function renderPagination(page, totalPages) {
 // ====================== NAVEGACIÓN ======================
 
 async function goToPage(page) {
-    console.log('allFilteredReleaseGroups al paginar:', allFilteredReleaseGroups.length);
   currentPage = page;
+  console.log('allFilteredReleaseGroups al paginar:', allFilteredReleaseGroups.length);
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
   pagination.innerHTML = '';
   window.scrollTo({ top: 0, behavior: 'smooth' });

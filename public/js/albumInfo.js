@@ -10,7 +10,6 @@ let currentUserRating = null;
 let currentAudio = null;
 let currentPlayBtn = null;
 
-
 // Formatear duración de canciones
 function formatDuration(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -31,7 +30,7 @@ async function getItunesPreview(songTitle, artistName) {
   }
 }
 
-// Reproducir/pausar preview de audio 
+// Reproducir/pausar preview de audio
 function togglePreview(previewUrl, btn, songTitle) {
   if (currentAudio && currentPlayBtn && currentPlayBtn !== btn) {
     currentAudio.pause();
@@ -69,8 +68,6 @@ function togglePreview(previewUrl, btn, songTitle) {
 }
 
 // CARGA PRINCIPAL DEL ÁLBUM
-
-// Cargar información del álbum, canciones y datos de usuario
 async function loadAlbum() {
   const params = new URLSearchParams(window.location.search);
   currentAlbumId = params.get("id");
@@ -87,30 +84,38 @@ async function loadAlbum() {
   }
 
   try {
-    // Cargar información del álbum
-    const resAlbum = await fetch(`${API_URL_ALBUM}/${currentAlbumId}`);
-    const album = await resAlbum.json();
-    if (!resAlbum.ok)
-      throw new Error(album.error || "Error al cargar el álbum");
+    // Cargar álbum y canciones en paralelo
+    const [resAlbum, resSongs] = await Promise.all([
+      fetch(`${API_URL_ALBUM}/${currentAlbumId}`),
+      fetch(`${API_URL_SONGS}/${currentAlbumId}`),
+    ]);
 
+    const album = await resAlbum.json();
+    if (!resAlbum.ok) throw new Error(album.error || "Error al cargar el álbum");
+
+    const songsData = await resSongs.json();
+    albumSongs = songsData.songs || [];
+
+    // Renderizar info del álbum
     coverImg.src = album.cover_url?.trim() || "images/fallback.jpg";
     coverImg.alt = `Portada de ${album.title}`;
     titleEl.innerText = album.title || "Título no disponible";
     artistEl.innerHTML = album.artist
-  ? `<a href="/searchAlbums.html?artist=${encodeURIComponent(album.artist)}" class="artist-link">${album.artist}</a>`
-  : "Artista no disponible";
-    yearEl.innerText = album.release_year
-      ? `Año de lanzamiento: ${album.release_year}`
-      : "";
+      ? `<a href="/searchAlbums.html?artist=${encodeURIComponent(album.artist)}" class="artist-link">${album.artist}</a>`
+      : "Artista no disponible";
+    yearEl.innerText = album.release_year ? `Año de lanzamiento: ${album.release_year}` : "";
 
-    // Renderizar lista de canciones
-    const resSongs = await fetch(`${API_URL_SONGS}/${currentAlbumId}`);
-    const songsData = await resSongs.json();
-    albumSongs = songsData.songs || [];
-
+    // Obtener los previews de iTunes en paralelo
     songsContainer.innerHTML = "";
     if (albumSongs.length > 0) {
-      for (const song of albumSongs) {
+      const previewUrls = await Promise.all(
+        albumSongs.map(song => getItunesPreview(song.title, album.artist))
+      );
+
+      // Renderizar canciones con sus previews ya listos
+      albumSongs.forEach((song, index) => {
+        const previewUrl = previewUrls[index];
+
         const li = document.createElement("li");
         li.className = "song-item";
         li.dataset.songId = song.id;
@@ -121,7 +126,6 @@ async function loadAlbum() {
         songText.textContent = `${song.position}. ${song.title} (${formatDuration(song.length)})`;
         li.appendChild(songText);
 
-        const previewUrl = await getItunesPreview(song.title, album.artist);
         if (previewUrl) {
           const playBtn = document.createElement("button");
           playBtn.className = "preview-btn";
@@ -131,7 +135,6 @@ async function loadAlbum() {
             e.stopPropagation();
             togglePreview(previewUrl, playBtn, song.title);
           });
-          // Soporte teclado
           playBtn.addEventListener("keydown", (e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
@@ -157,17 +160,21 @@ async function loadAlbum() {
         }
 
         songsContainer.appendChild(li);
-      }
+      });
     } else {
       songsContainer.innerHTML = "<li>No hay canciones disponibles</li>";
     }
 
-    await loadCommunityData(currentAlbumId);
+    // Cargar datos de comunidad y usuario en paralelo
+    const communityPromise = loadCommunityData(currentAlbumId);
 
     if (isLoggedIn()) {
-      await loadUserFavorites(currentAlbumId);
-      await loadUserRating(currentAlbumId);
-      await loadFollowingData(currentAlbumId);
+      await Promise.all([
+        communityPromise,
+        loadUserFavorites(currentAlbumId),
+        loadUserRating(currentAlbumId),
+        loadFollowingData(currentAlbumId),
+      ]);
 
       document.getElementById("favorite-songs-section").classList.remove("hidden");
       document.getElementById("user-rating-section").classList.remove("hidden");
@@ -225,7 +232,10 @@ async function loadAlbum() {
           ratingMsg.style.color = "var(--red)";
         }
       });
+    } else {
+      await communityPromise;
     }
+
   } catch (error) {
     console.error("Error cargando álbum:", error);
     titleEl.innerText = "Error";
@@ -233,8 +243,6 @@ async function loadAlbum() {
 }
 
 // RATING DEL USUARIO
-
-// Cargar puntuación del usuario
 async function loadUserRating(albumId) {
   try {
     const res = await authFetch(`${API_URL_RATINGS}/${albumId}/my-rating`);
@@ -268,9 +276,7 @@ function updateAlbumStars(value) {
   });
 }
 
-// FAVORITOS DE CANCIONES
-
-// Cargar canciones favoritas del usuario
+//  CANCIONES FAVORITAS
 async function loadUserFavorites(albumId) {
   try {
     const res = await authFetch(`${API_URL_FAVORITES}/album/${albumId}`);
@@ -287,7 +293,6 @@ async function loadUserFavorites(albumId) {
   });
 }
 
-// Añadir/quitar canción de favoritos
 function toggleFavoriteSong(songId, element) {
   const favMsg = document.getElementById("favorites-message");
   if (selectedSongIds.includes(songId)) {
@@ -308,8 +313,6 @@ function toggleFavoriteSong(songId, element) {
 }
 
 // DATOS DE COMUNIDAD
-
-// Cargar estadísticas globales del álbum
 async function loadCommunityData(albumId) {
   try {
     const [avgRes, distRes, favsRes] = await Promise.all([
@@ -345,12 +348,9 @@ async function loadCommunityData(albumId) {
   }
 }
 
-
-// Renderizar gráfico de valoraciones
 function renderRatingChart(distribution, total) {
   const chart = document.getElementById("rating-chart");
   chart.innerHTML = "";
-
   if (!total) return;
 
   const labels = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
@@ -377,8 +377,6 @@ function renderRatingChart(distribution, total) {
 }
 
 // ACTIVIDAD DE USUARIOS SEGUIDOS
-
-// Cargar actividad de usuarios seguidos en este álbum
 async function loadFollowingData(albumId) {
   try {
     const [favsRes, ratingsRes] = await Promise.all([

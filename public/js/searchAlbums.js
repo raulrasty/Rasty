@@ -234,6 +234,7 @@ function renderPagination(page, totalPages) {
 // ====================== NAVEGACIÓN ======================
 
 async function goToPage(page) {
+    console.log('allFilteredReleaseGroups al paginar:', allFilteredReleaseGroups.length);
   currentPage = page;
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
   pagination.innerHTML = '';

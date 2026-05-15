@@ -15,12 +15,11 @@ const BAD_SECONDARY = [
 
 const LIMIT = 6;
 
-let currentArtistId = null;
 let currentArtistName = null;
 let currentTitle = null;
 let currentPage = 1;
-let allFilteredReleaseGroups = []; // todos los release groups filtrados
-let allSavedAlbums = [];           // todos los álbumes ya guardados en Supabase
+let allFilteredReleaseGroups = []; // todos los rgs filtrados
+let pageCache = {};                // caché de páginas ya procesadas { 1: [...], 2: [...] }
 
 // ====================== MUSICBRAINZ ======================
 
@@ -32,16 +31,24 @@ function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-async function fetchMB(url) {
-  const res = await fetch(url, { headers: MB_HEADERS });
-  if (res.status === 503) {
-    await sleep(2000);
-    const retry = await fetch(url, { headers: MB_HEADERS });
-    if (!retry.ok) throw new Error(`MusicBrainz error: ${retry.status}`);
-    return retry.json();
+async function fetchMB(url, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, { headers: MB_HEADERS });
+      if (res.status === 503) {
+        const wait = 1500 * (i + 1);
+        console.warn(`503, esperando ${wait}ms...`);
+        await sleep(wait);
+        continue;
+      }
+      if (!res.ok) throw new Error(`MusicBrainz error: ${res.status}`);
+      return res.json();
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await sleep(1000 * (i + 1));
+    }
   }
-  if (!res.ok) throw new Error(`MusicBrainz error: ${res.status}`);
-  return res.json();
+  throw new Error('MusicBrainz no disponible');
 }
 
 async function searchArtistMB(artistName) {
@@ -58,7 +65,7 @@ async function getReleaseGroupsMB(artistId) {
     all.push(...data['release-groups']);
     if (data['release-groups'].length < 100) break;
     offset += 100;
-    await sleep(300);
+    await sleep(500);
   }
   return all;
 }
@@ -97,8 +104,8 @@ async function getTracksMB(releaseId) {
   } catch { return []; }
 }
 
-// Procesar UN lote de release groups y guardarlos en Supabase
-async function processAndSave(rgs, artistName) {
+// Procesar solo los álbumes de UNA página y guardarlos en Supabase
+async function processPageRgs(rgs, artistName) {
   const albumsToSave = [];
 
   for (const rg of rgs) {
@@ -128,31 +135,41 @@ async function processAndSave(rgs, artistName) {
         tracks: [],
       });
     }
-    await sleep(500);
+    await sleep(800); // esperar entre álbumes
   }
 
-  // Mandar al backend para guardar
+  // Guardar en Supabase
   const res = await fetch(`${API_BASE}/albums/save-from-frontend`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ albums: albumsToSave }),
   });
 
-  if (!res.ok) throw new Error('Error guardando álbumes en el servidor');
+  if (!res.ok) throw new Error('Error guardando álbumes');
   return res.json(); // array de { album, tracks }
+}
+
+// Obtener o procesar una página (con caché)
+async function getPage(page) {
+  if (pageCache[page]) return pageCache[page]; // ya procesada
+
+  const total = allFilteredReleaseGroups.length;
+  const from = (page - 1) * LIMIT;
+  const rgsForPage = allFilteredReleaseGroups.slice(from, from + LIMIT);
+
+  if (rgsForPage.length === 0) return [];
+
+  const results = await processPageRgs(rgsForPage, currentArtistName);
+  pageCache[page] = results;
+  return results;
 }
 
 // ====================== RENDERIZADO ======================
 
-function renderPage(page) {
-  const total = allSavedAlbums.length;
+function renderAlbums(results, page) {
+  const total = allFilteredReleaseGroups.length;
   const totalPages = Math.ceil(total / LIMIT);
-  const from = (page - 1) * LIMIT;
-  const paginated = allSavedAlbums.slice(from, from + LIMIT);
-  renderAlbums(paginated, total, page, totalPages);
-}
 
-function renderAlbums(results, total, page, totalPages) {
   if (!Array.isArray(results) || results.length === 0) {
     albumsContainer.innerHTML = '<p class="state-msg">No se encontraron álbumes.</p>';
     pagination.innerHTML = '';
@@ -251,14 +268,16 @@ function renderPagination(page, totalPages) {
 async function goToPage(page) {
   currentPage = page;
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
+  pagination.innerHTML = '';
 
-  // Si ya tenemos todos los álbumes en memoria, solo paginar
-  if (allSavedAlbums.length > 0) {
-    renderPage(page);
-    return;
+  try {
+    const results = await getPage(page);
+    renderAlbums(results, page);
+  } catch (err) {
+    console.error(err);
+    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error cargando álbumes.</p>';
   }
-
-  albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error cargando álbumes.</p>';
 }
 
 function countryToFlag(countryCode) {
@@ -300,16 +319,17 @@ function renderCandidates(candidates, title) {
 }
 
 async function searchByArtistId(artistId, artistName, title) {
-  currentArtistId = artistId;
   currentArtistName = artistName;
   currentTitle = title;
   currentPage = 1;
-  allSavedAlbums = [];
+  allFilteredReleaseGroups = [];
+  pageCache = {};
 
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
   pagination.innerHTML = '';
 
   try {
+    // 1. Obtener todos los release groups (una sola llamada o pocas)
     const rgs = await getReleaseGroupsMB(artistId);
     const filtered = filterReleaseGroups(rgs, title);
     allFilteredReleaseGroups = filtered;
@@ -319,11 +339,9 @@ async function searchByArtistId(artistId, artistName, title) {
       return;
     }
 
-    // Procesar TODOS los álbumes de una vez y guardarlos en Supabase
-    allSavedAlbums = await processAndSave(filtered, artistName);
-
-    // Mostrar primera página
-    renderPage(1);
+    // 2. Procesar solo la página 1
+    const results = await getPage(1);
+    renderAlbums(results, 1);
   } catch (err) {
     console.error(err);
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';
@@ -339,10 +357,9 @@ form.addEventListener('submit', async (e) => {
 
   currentTitle = title;
   currentPage = 1;
-  currentArtistId = null;
   currentArtistName = artist;
   allFilteredReleaseGroups = [];
-  allSavedAlbums = [];
+  pageCache = {};
 
   if (!artist) {
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Introduce el nombre de un artista.</p>';

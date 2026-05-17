@@ -1,18 +1,18 @@
 require("dotenv").config();
 const supabase = require("../config/supabaseClient");
-
+//obtener todos los albumes
 async function getAllAlbums() {
   const { data, error } = await supabase.from("albums").select("*");
   if (error) throw new Error(error.message);
   return data;
 }
-
+//crear album
 async function createAlbum(albumData) {
   const { data, error } = await supabase.from("albums").insert([albumData]).select();
   if (error) throw new Error(error.message);
   return data[0];
 }
-
+//obtener las canciones 
 async function getTracksFromDB(albumId) {
   const { data, error } = await supabase
     .from("songs")
@@ -27,7 +27,7 @@ async function getTracksFromDB(albumId) {
 }
 
 // Recibir álbumes desde el frontend, guardarlos y devolverlos
-// Sin paginación — el frontend ya manda solo los álbumes de la página actual
+
 async function saveFromFrontend(albumsData) {
   const results = [];
 

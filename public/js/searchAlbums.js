@@ -21,7 +21,7 @@ let currentPage = 1;
 let allFilteredReleaseGroups = []; // todos los rgs filtrados
 let pageCache = {};                // caché de páginas ya procesadas { 1: [...], 2: [...] }
 
-// ====================== MUSICBRAINZ ======================
+// musicbrainz
 
 function normalizeStr(str) {
   return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, '').trim();
@@ -104,7 +104,7 @@ async function getTracksMB(releaseId) {
   } catch { return []; }
 }
 
-// Procesar solo los álbumes de UNA página y guardarlos en Supabase
+// Procesar solo los álbumes de una página y guardarlos en Supabase
 async function processPageRgs(rgs, artistName) {
   const albumsToSave = [];
 
@@ -135,7 +135,7 @@ async function processPageRgs(rgs, artistName) {
         tracks: [],
       });
     }
-    await sleep(800); // esperar entre álbumes
+    await sleep(800); // esperar entre álbumes para no limitar las llamadas
   }
 
   // Guardar en Supabase
@@ -164,7 +164,7 @@ async function getPage(page) {
   return results;
 }
 
-// ====================== RENDERIZADO ======================
+// renderizado
 
 function renderAlbums(results, page) {
   const total = allFilteredReleaseGroups.length;
@@ -263,7 +263,7 @@ function renderPagination(page, totalPages) {
   if (page < totalPages) pagination.appendChild(nextBtn);
 }
 
-// ====================== NAVEGACIÓN ======================
+// navegación
 
 async function goToPage(page) {
   currentPage = page;
@@ -329,7 +329,7 @@ async function searchByArtistId(artistId, artistName, title) {
   pagination.innerHTML = '';
 
   try {
-    // 1. Obtener todos los release groups (una sola llamada o pocas)
+    // Obtener todos los release groups 
     const rgs = await getReleaseGroupsMB(artistId);
     const filtered = filterReleaseGroups(rgs, title);
     allFilteredReleaseGroups = filtered;
@@ -348,7 +348,7 @@ async function searchByArtistId(artistId, artistName, title) {
   }
 }
 
-// ====================== FORMULARIO ======================
+// formulario
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -395,7 +395,7 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-// ====================== REDIRECCIÓN ======================
+// reedireccion 
 
 function viewAlbum(albumId) {
   window.location.href = `/albumInfo.html?id=${albumId}`;
@@ -405,7 +405,7 @@ function goCreateListen(albumId) {
   window.location.href = `/createListen.html?album_id=${albumId}`;
 }
 
-// ====================== INICIALIZACIÓN ======================
+// incialiazción
 
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);

@@ -183,14 +183,16 @@ main > h1 {
 }
 
 #candidates-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
-  max-width: 700px;
+  max-width: 100%;
   margin-bottom: 60px;
 }
 
 .candidate-btn {
+  width: 130px;
+  flex-shrink: 0;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -301,13 +303,27 @@ main > h1 {
     margin: 0 16px;
   }
 
-  #candidates-list {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  .candidate-btn {
+    width: 100px;
+  }
+
+  .candidate-avatar {
+    width: 60px;
+    height: 60px;
   }
 }
 
 @media (max-width: 400px) {
   .albums {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .candidate-btn {
+    width: 85px;
+  }
+
+  .candidate-avatar {
+    width: 50px;
+    height: 50px;
   }
 }

@@ -17,27 +17,27 @@
 
   <!-- Navegación de secciones -->
   <nav class="admin-nav" role="tablist">
-    <button class="admin-tab active" data-tab="stats" role="tab" aria-selected="true">📊 Estadísticas</button>
-    <button class="admin-tab" data-tab="users" role="tab" aria-selected="false">👥 Usuarios</button>
-    <button class="admin-tab" data-tab="albums" role="tab" aria-selected="false">💿 Álbumes</button>
-    <button class="admin-tab" data-tab="reviews" role="tab" aria-selected="false">📝 Reseñas</button>
+    <button class="admin-tab active" data-tab="stats" role="tab" aria-selected="true">Estadísticas</button>
+    <button class="admin-tab" data-tab="users" role="tab" aria-selected="false"> Usuarios</button>
+    <button class="admin-tab" data-tab="albums" role="tab" aria-selected="false">Álbumes</button>
+    <button class="admin-tab" data-tab="reviews" role="tab" aria-selected="false">Reseñas</button>
   </nav>
 
   <!-- ESTADÍSTICAS -->
   <section id="tab-stats" class="admin-section active" role="tabpanel">
     <div class="stats-grid">
       <div class="stat-card">
-        <span class="stat-icon">👥</span>
+        <span class="stat-icon"></span>
         <span class="stat-value" id="stat-users">—</span>
         <span class="stat-label">Usuarios</span>
       </div>
       <div class="stat-card">
-        <span class="stat-icon">🎧</span>
+        <span class="stat-icon"></span>
         <span class="stat-value" id="stat-listens">—</span>
         <span class="stat-label">Escuchas</span>
       </div>
       <div class="stat-card">
-        <span class="stat-icon">💿</span>
+        <span class="stat-icon"></span>
         <span class="stat-value" id="stat-albums">—</span>
         <span class="stat-label">Álbumes</span>
       </div>
@@ -45,15 +45,15 @@
 
     <div class="stats-bottom">
       <div class="admin-card">
-        <h2>🔥 Álbumes más escuchados</h2>
+        <h2>Álbumes más escuchados</h2>
         <ul id="top-albums-list" class="admin-list"></ul>
       </div>
       <div class="admin-card">
-        <h2>⭐ Usuarios más activos</h2>
+        <h2>Usuarios más activos</h2>
         <ul id="top-users-list" class="admin-list"></ul>
       </div>
       <div class="admin-card full-width">
-        <h2>📅 Escuchas esta semana</h2>
+        <h2>Escuchas esta semana</h2>
         <div id="weekly-chart" class="weekly-chart"></div>
       </div>
     </div>

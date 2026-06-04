@@ -27,21 +27,16 @@ async function searchAndSaveAlbums(req, res) {
   }
 }
 
-// Recibir álbumes procesados desde el frontend y guardarlos
-async function saveFromFrontend(req, res) {
-  const { albums } = req.body;
-
+// Proxy para obtener preview de Deezer evitando CORS
+async function getDeezerPreview(req, res) {
   try {
-    if (!albums || !Array.isArray(albums) || albums.length === 0) {
-      return res.status(400).json({ error: "No se proporcionaron álbumes" });
-    }
-    // Guardar y devolver los álbumes — sin paginación
-    const results = await albumsService.saveFromFrontend(albums);
-    res.json(results);
+    const { trackId } = req.params;
+    const response = await fetch(`https://api.deezer.com/track/${trackId}`);
+    const data = await response.json();
+    res.json({ preview: data.preview || null });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ preview: null });
   }
 }
 
-module.exports = { getAlbums, searchAndSaveAlbums, saveFromFrontend };
+module.exports = { getAlbums, searchAndSaveAlbums, getDeezerPreview };

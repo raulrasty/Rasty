@@ -3,173 +3,19 @@ const form = document.getElementById('search-form');
 const albumsContainer = document.getElementById('albums');
 const pagination = document.getElementById('albums-pagination');
 
-const MB_BASE = 'https://musicbrainz.org/ws/2';
-const MB_HEADERS = { 'User-Agent': 'RastyApp/1.0' };
 const PLACEHOLDER = 'https://placehold.co/200x200?text=Sin+portada';
-
-const TITLE_BLACKLIST = ['sampler', 'bootleg', 'promo', 'rehearsal', 'outtakes'];
-const BAD_SECONDARY = [
-  'Compilation', 'Live', 'Remix', 'Soundtrack',
-  'Interview', 'Spokenword', 'Audiobook', 'Audio drama', 'Mixtape/Street', 'Demo'
-];
-
 const LIMIT = 6;
 
+let currentArtistId = null;
 let currentArtistName = null;
 let currentTitle = null;
 let currentPage = 1;
-let allFilteredReleaseGroups = []; // todos los rgs filtrados
-let pageCache = {};                // caché de páginas ya procesadas { 1: [...], 2: [...] }
-
-// ====================== MUSICBRAINZ ======================
-
-function normalizeStr(str) {
-  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, '').trim();
-}
-
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
-
-async function fetchMB(url, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const res = await fetch(url, { headers: MB_HEADERS });
-      if (res.status === 503) {
-        const wait = 1500 * (i + 1);
-        console.warn(`503, esperando ${wait}ms...`);
-        await sleep(wait);
-        continue;
-      }
-      if (!res.ok) throw new Error(`MusicBrainz error: ${res.status}`);
-      return res.json();
-    } catch (err) {
-      if (i === retries - 1) throw err;
-      await sleep(1000 * (i + 1));
-    }
-  }
-  throw new Error('MusicBrainz no disponible');
-}
-
-async function searchArtistMB(artistName) {
-  const data = await fetchMB(`${MB_BASE}/artist/?query=artist:"${encodeURIComponent(artistName)}"&fmt=json&limit=5`);
-  return data.artists || [];
-}
-
-async function getReleaseGroupsMB(artistId) {
-  let all = [];
-  let offset = 0;
-  while (true) {
-    const data = await fetchMB(`${MB_BASE}/release-group?artist=${artistId}&type=album&fmt=json&limit=100&offset=${offset}`);
-    if (!data['release-groups']?.length) break;
-    all.push(...data['release-groups']);
-    if (data['release-groups'].length < 100) break;
-    offset += 100;
-    await sleep(500);
-  }
-  return all;
-}
-
-function filterReleaseGroups(rgs, title) {
-  return rgs.filter(rg => {
-    if (rg['primary-type'] !== 'Album') return false;
-    if (rg['secondary-types']?.some(t => BAD_SECONDARY.includes(t))) return false;
-    const rgTitle = rg.title.toLowerCase();
-    if (TITLE_BLACKLIST.some(w => new RegExp(`\\b${w}\\b`).test(rgTitle))) return false;
-    if (/^\[.*\]$/.test(rg.title.trim()) || /^\(.*\)$/.test(rg.title.trim())) return false;
-    if (title && !normalizeStr(rg.title).includes(normalizeStr(title))) return false;
-    return true;
-  }).sort((a, b) => {
-    const ya = a['first-release-date'] ? parseInt(a['first-release-date']) : 0;
-    const yb = b['first-release-date'] ? parseInt(b['first-release-date']) : 0;
-    return ya - yb;
-  });
-}
-
-async function getBestRelease(rgId) {
-  try {
-    const data = await fetchMB(`${MB_BASE}/release/?release-group=${rgId}&status=official&fmt=json&limit=5`);
-    return data.releases?.find(r => r.status === 'Official') || data.releases?.[0] || null;
-  } catch { return null; }
-}
-
-async function getTracksMB(releaseId) {
-  try {
-    const data = await fetchMB(`${MB_BASE}/release/${releaseId}?inc=recordings&fmt=json`);
-    return data.media?.flatMap(m => m.tracks.map(t => ({
-      position: t.position,
-      title: t.title,
-      length: t.length || null,
-    }))) || [];
-  } catch { return []; }
-}
-
-// Procesar solo los álbumes de UNA página y guardarlos en Supabase
-async function processPageRgs(rgs, artistName) {
-  const albumsToSave = [];
-
-  for (const rg of rgs) {
-    try {
-      const rgId = rg.id;
-      const releaseYear = rg['first-release-date'] ? parseInt(rg['first-release-date'].split('-')[0]) : null;
-      const artist = rg['artist-credit']?.map(ac => (ac.name || ac.artist?.name || '') + (ac.joinphrase || '')).join('') || artistName;
-
-      const bestRelease = await getBestRelease(rgId);
-      const releaseId = bestRelease?.id || null;
-      const releaseDate = bestRelease?.date?.match(/^\d{4}-\d{2}-\d{2}$/) ? bestRelease.date : null;
-      const coverUrl = `https://coverartarchive.org/release-group/${rgId}/front`;
-
-      let tracks = [];
-      if (releaseId) tracks = await getTracksMB(releaseId);
-
-      albumsToSave.push({ rgId, title: rg.title, artist, releaseYear, releaseDate, coverUrl, tracks });
-    } catch (err) {
-      console.warn(`Error procesando ${rg.title}:`, err.message);
-      albumsToSave.push({
-        rgId: rg.id,
-        title: rg.title,
-        artist: rg['artist-credit']?.map(ac => (ac.name || '') + (ac.joinphrase || '')).join('') || artistName,
-        releaseYear: rg['first-release-date'] ? parseInt(rg['first-release-date'].split('-')[0]) : null,
-        releaseDate: null,
-        coverUrl: `https://coverartarchive.org/release-group/${rg.id}/front`,
-        tracks: [],
-      });
-    }
-    await sleep(800); // esperar entre álbumes
-  }
-
-  // Guardar en Supabase
-  const res = await fetch(`${API_BASE}/albums/save-from-frontend`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ albums: albumsToSave }),
-  });
-
-  if (!res.ok) throw new Error('Error guardando álbumes');
-  return res.json(); // array de { album, tracks }
-}
-
-// Obtener o procesar una página (con caché)
-async function getPage(page) {
-  if (pageCache[page]) return pageCache[page]; // ya procesada
-
-  const total = allFilteredReleaseGroups.length;
-  const from = (page - 1) * LIMIT;
-  const rgsForPage = allFilteredReleaseGroups.slice(from, from + LIMIT);
-
-  if (rgsForPage.length === 0) return [];
-
-  const results = await processPageRgs(rgsForPage, currentArtistName);
-  pageCache[page] = results;
-  return results;
-}
+let currentTotal = 0;
+let currentTotalPages = 0;
 
 // ====================== RENDERIZADO ======================
 
-function renderAlbums(results, page) {
-  const total = allFilteredReleaseGroups.length;
-  const totalPages = Math.ceil(total / LIMIT);
-
+function renderAlbums(results, page, total, totalPages) {
   if (!Array.isArray(results) || results.length === 0) {
     albumsContainer.innerHTML = '<p class="state-msg">No se encontraron álbumes.</p>';
     pagination.innerHTML = '';
@@ -194,6 +40,10 @@ function renderAlbums(results, page) {
 
     const artist = document.createElement('p');
     artist.textContent = album.artist;
+
+    const year = document.createElement('p');
+    year.textContent = album.release_year || '';
+    year.className = 'album-year';
 
     const spacer = document.createElement('div');
     spacer.className = 'album-card-spacer';
@@ -228,6 +78,7 @@ function renderAlbums(results, page) {
     card.appendChild(img);
     card.appendChild(title);
     card.appendChild(artist);
+    card.appendChild(year);
     card.appendChild(spacer);
     card.appendChild(btnGroup);
     albumsContainer.appendChild(card);
@@ -263,29 +114,7 @@ function renderPagination(page, totalPages) {
   if (page < totalPages) pagination.appendChild(nextBtn);
 }
 
-// ====================== NAVEGACIÓN ======================
-
-async function goToPage(page) {
-  currentPage = page;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
-  pagination.innerHTML = '';
-
-  try {
-    const results = await getPage(page);
-    renderAlbums(results, page);
-  } catch (err) {
-    console.error(err);
-    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error cargando álbumes.</p>';
-  }
-}
-
-function countryToFlag(countryCode) {
-  if (!countryCode || countryCode.length !== 2) return '';
-  return countryCode.toUpperCase().split('').map(c => String.fromCodePoint(0x1F1A5 + c.charCodeAt(0))).join('');
-}
-
-function renderCandidates(candidates, title) {
+function renderCandidates(candidates) {
   albumsContainer.className = 'candidates-container';
   albumsContainer.innerHTML = `
     <p class="candidates-title">Se encontraron varios artistas con ese nombre. ¿Cuál buscas?</p>
@@ -298,50 +127,63 @@ function renderCandidates(candidates, title) {
     const btn = document.createElement('button');
     btn.className = 'candidate-btn';
     btn.setAttribute('role', 'listitem');
-    btn.setAttribute('aria-label', `${candidate.name}${candidate.disambiguation ? `, ${candidate.disambiguation}` : ''}${candidate.country ? `, ${candidate.country}` : ''}`);
-
-    const flag = candidate.country
-      ? `<img src="https://flagcdn.com/24x18/${candidate.country.toLowerCase()}.png" alt="Bandera de ${candidate.country}" class="candidate-flag-img">`
-      : '';
+    btn.setAttribute('aria-label', candidate.name);
 
     btn.innerHTML = `
-      ${flag}
-      <div>
-        <strong>${candidate.name}</strong>
-        ${candidate.disambiguation ? `<span> — ${candidate.disambiguation}</span>` : ''}
-        ${candidate.country ? `<span> (${candidate.country})</span>` : ''}
+      <div class="candidate-info">
+        ${candidate.picture ? `<img src="${candidate.picture}" alt="${candidate.name}" class="candidate-avatar">` : ''}
+        <div>
+          <strong>${candidate.name}</strong>
+          ${candidate.nb_fan ? `<span> — ${candidate.nb_fan.toLocaleString()} fans</span>` : ''}
+          ${candidate.nb_album ? `<span> — ${candidate.nb_album} álbumes</span>` : ''}
+        </div>
       </div>
     `;
 
-    btn.addEventListener('click', () => searchByArtistId(candidate.id, candidate.name, title));
+    btn.addEventListener('click', () => searchByArtistId(candidate.id, candidate.name));
     candidatesList.appendChild(btn);
   });
 }
 
-async function searchByArtistId(artistId, artistName, title) {
+// ====================== NAVEGACIÓN ======================
+
+async function goToPage(page) {
+  currentPage = page;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
+  pagination.innerHTML = '';
+
+  try {
+    const query = new URLSearchParams({ artist: currentArtistName, page, limit: LIMIT });
+    if (currentArtistId) query.append('artistId', currentArtistId);
+    if (currentTitle) query.append('title', currentTitle);
+
+    const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
+    const data = await res.json();
+
+    renderAlbums(data.results, data.page, data.total, data.totalPages);
+  } catch (err) {
+    console.error(err);
+    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error cargando álbumes.</p>';
+  }
+}
+
+async function searchByArtistId(artistId, artistName) {
+  currentArtistId = artistId;
   currentArtistName = artistName;
-  currentTitle = title;
   currentPage = 1;
-  allFilteredReleaseGroups = [];
-  pageCache = {};
 
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
   pagination.innerHTML = '';
 
   try {
-    // 1. Obtener todos los release groups (una sola llamada o pocas)
-    const rgs = await getReleaseGroupsMB(artistId);
-    const filtered = filterReleaseGroups(rgs, title);
-    allFilteredReleaseGroups = filtered;
+    const query = new URLSearchParams({ artistId, artist: artistName, page: 1, limit: LIMIT });
+    if (currentTitle) query.append('title', currentTitle);
 
-    if (filtered.length === 0) {
-      albumsContainer.innerHTML = '<p class="state-msg">No se encontraron álbumes.</p>';
-      return;
-    }
+    const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
+    const data = await res.json();
 
-    // 2. Procesar solo la página 1
-    const results = await getPage(1);
-    renderAlbums(results, 1);
+    renderAlbums(data.results, data.page, data.total, data.totalPages);
   } catch (err) {
     console.error(err);
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';
@@ -357,9 +199,8 @@ form.addEventListener('submit', async (e) => {
 
   currentTitle = title;
   currentPage = 1;
+  currentArtistId = null;
   currentArtistName = artist;
-  allFilteredReleaseGroups = [];
-  pageCache = {};
 
   if (!artist) {
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Introduce el nombre de un artista.</p>';
@@ -371,24 +212,24 @@ form.addEventListener('submit', async (e) => {
   pagination.innerHTML = '';
 
   try {
-    const artists = await searchArtistMB(artist);
-    if (!artists.length) {
-      albumsContainer.innerHTML = '<p class="state-msg">No se encontró el artista.</p>';
+    const query = new URLSearchParams({ artist, page: 1, limit: LIMIT });
+    if (title) query.append('title', title);
+
+    const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
+    const data = await res.json();
+
+    if (data.error) {
+      albumsContainer.innerHTML = `<p class="state-msg" role="alert">${data.error}</p>`;
       return;
     }
 
-    if (artists.length > 1) {
-      renderCandidates(artists.map(a => ({
-        id: a.id,
-        name: a.name,
-        disambiguation: a.disambiguation || '',
-        country: a.country || '',
-      })), title);
+    if (data.disambiguation) {
+      renderCandidates(data.candidates);
       return;
     }
 
-    await searchByArtistId(artists[0].id, artists[0].name, title);
-
+    currentArtistId = null;
+    renderAlbums(data.results, data.page, data.total, data.totalPages);
   } catch (err) {
     console.error(err);
     albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';

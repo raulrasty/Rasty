@@ -18,13 +18,12 @@ function formatDuration(ms) {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-// Obtener preview de canción desde iTunes API
-async function getItunesPreview(songTitle, artistName) {
+// Obtener preview a través del backend (evita CORS de Deezer)
+async function getDeezerPreview(deezerTrackId) {
   try {
-    const query = encodeURIComponent(`${songTitle} ${artistName}`);
-    const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
+    const res = await fetch(`${API_BASE}/albums/preview/${deezerTrackId}`);
     const data = await res.json();
-    return data.results?.[0]?.previewUrl || null;
+    return data.preview || null;
   } catch (_) {
     return null;
   }
@@ -67,6 +66,23 @@ function togglePreview(previewUrl, btn, songTitle) {
   });
 }
 
+// Manejar clic en botón de preview
+async function handlePreviewClick(deezerTrackId, btn, songTitle) {
+  btn.textContent = "⏳";
+  btn.disabled = true;
+
+  const previewUrl = await getDeezerPreview(deezerTrackId);
+
+  btn.disabled = false;
+
+  if (!previewUrl) {
+    btn.textContent = "▶";
+    return;
+  }
+
+  togglePreview(previewUrl, btn, songTitle);
+}
+
 // CARGA PRINCIPAL DEL ÁLBUM
 async function loadAlbum() {
   const params = new URLSearchParams(window.location.search);
@@ -84,7 +100,6 @@ async function loadAlbum() {
   }
 
   try {
-    // Cargar álbum y canciones en paralelo
     const [resAlbum, resSongs] = await Promise.all([
       fetch(`${API_URL_ALBUM}/${currentAlbumId}`),
       fetch(`${API_URL_SONGS}/${currentAlbumId}`),
@@ -96,7 +111,6 @@ async function loadAlbum() {
     const songsData = await resSongs.json();
     albumSongs = songsData.songs || [];
 
-    // Renderizar info del álbum
     coverImg.src = album.cover_url?.trim() || "images/fallback.jpg";
     coverImg.alt = `Portada de ${album.title}`;
     titleEl.innerText = album.title || "Título no disponible";
@@ -105,17 +119,9 @@ async function loadAlbum() {
       : "Artista no disponible";
     yearEl.innerText = album.release_year ? `Año de lanzamiento: ${album.release_year}` : "";
 
-    // Obtener los previews de iTunes en paralelo
     songsContainer.innerHTML = "";
     if (albumSongs.length > 0) {
-      const previewUrls = await Promise.all(
-        albumSongs.map(song => getItunesPreview(song.title, album.artist))
-      );
-
-      // Renderizar canciones con sus previews ya listos
-      albumSongs.forEach((song, index) => {
-        const previewUrl = previewUrls[index];
-
+      albumSongs.forEach((song) => {
         const li = document.createElement("li");
         li.className = "song-item";
         li.dataset.songId = song.id;
@@ -126,20 +132,20 @@ async function loadAlbum() {
         songText.textContent = `${song.position}. ${song.title} (${formatDuration(song.length)})`;
         li.appendChild(songText);
 
-        if (previewUrl) {
+        if (song.deezer_track_id) {
           const playBtn = document.createElement("button");
           playBtn.className = "preview-btn";
           playBtn.textContent = "▶";
           playBtn.setAttribute("aria-label", `Escuchar preview de ${song.title}`);
           playBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            togglePreview(previewUrl, playBtn, song.title);
+            handlePreviewClick(song.deezer_track_id, playBtn, song.title);
           });
           playBtn.addEventListener("keydown", (e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               e.stopPropagation();
-              togglePreview(previewUrl, playBtn, song.title);
+              handlePreviewClick(song.deezer_track_id, playBtn, song.title);
             }
           });
           li.appendChild(playBtn);
@@ -165,7 +171,6 @@ async function loadAlbum() {
       songsContainer.innerHTML = "<li>No hay canciones disponibles</li>";
     }
 
-    // Cargar datos de comunidad y usuario en paralelo
     const communityPromise = loadCommunityData(currentAlbumId);
 
     if (isLoggedIn()) {
@@ -276,7 +281,7 @@ function updateAlbumStars(value) {
   });
 }
 
-//  CANCIONES FAVORITAS
+// CANCIONES FAVORITAS
 async function loadUserFavorites(albumId) {
   try {
     const res = await authFetch(`${API_URL_FAVORITES}/album/${albumId}`);

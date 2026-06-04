@@ -5,10 +5,10 @@ const albumsController = require('../controllers/albumsController');
 // Obtener todos los álbumes
 router.get('/', albumsController.getAlbums);
 
-// Buscar álbumes (primero en DB, si no hay devuelve needsMusicBrainz: true)
+// Buscar álbumes en Deezer y guardar en Supabase
 router.get('/search-mb', albumsController.searchAndSaveAlbums);
 
-// Recibir álbumes desde el frontend y guardarlos en Supabase
-router.post('/save-from-frontend', albumsController.saveFromFrontend);
+// Proxy para obtener preview de una canción de Deezer (evita CORS)
+router.get('/preview/:trackId', albumsController.getDeezerPreview);
 
 module.exports = router;

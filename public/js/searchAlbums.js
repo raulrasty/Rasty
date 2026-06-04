@@ -10,108 +10,133 @@ let currentArtistId = null;
 let currentArtistName = null;
 let currentTitle = null;
 let currentPage = 1;
-let currentTotal = 0;
-let currentTotalPages = 0;
 
 // ====================== RENDERIZADO ======================
 
-function renderAlbums(results, page, total, totalPages) {
-  if (!Array.isArray(results) || results.length === 0) {
-    albumsContainer.innerHTML = '<p class="state-msg">No se encontraron álbumes.</p>';
-    pagination.innerHTML = '';
+function renderAlbumCard(album) {
+  const card = document.createElement('div');
+  card.className = 'album-card';
+  card.setAttribute('role', 'article');
+
+  const img = document.createElement('img');
+  img.src = album.cover_url || PLACEHOLDER;
+  img.alt = `Portada de ${album.title}`;
+  img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER; };
+
+  const title = document.createElement('h4');
+  title.textContent = album.title;
+
+  const artist = document.createElement('p');
+  artist.textContent = album.artist;
+
+  const year = document.createElement('p');
+  year.textContent = album.release_year || '';
+  year.className = 'album-year';
+
+  const spacer = document.createElement('div');
+  spacer.className = 'album-card-spacer';
+  spacer.setAttribute('aria-hidden', 'true');
+
+  const btnGroup = document.createElement('div');
+  btnGroup.className = 'album-card-buttons';
+
+  const btnVer = document.createElement('button');
+  btnVer.textContent = 'Ver álbum';
+  btnVer.className = 'btn-ver-album';
+  btnVer.setAttribute('aria-label', `Ver álbum ${album.title}`);
+  btnVer.addEventListener('click', () => viewAlbum(album.id));
+  btnGroup.appendChild(btnVer);
+
+  if (isLoggedIn()) {
+    const btnListen = document.createElement('button');
+    btnListen.textContent = 'Crear escucha';
+    btnListen.className = 'btn-crear-escucha';
+    btnListen.setAttribute('aria-label', `Crear escucha de ${album.title}`);
+    btnListen.addEventListener('click', () => goCreateListen(album.id));
+    btnGroup.appendChild(btnListen);
+
+    const favBtn = document.createElement('button');
+    favBtn.textContent = '⭐ Favorito';
+    favBtn.className = 'fav-album-btn';
+    favBtn.setAttribute('aria-label', `Añadir ${album.title} a favoritos`);
+    favBtn.addEventListener('click', () => openFavSlotSelector(album));
+    btnGroup.appendChild(favBtn);
+  }
+
+  card.appendChild(img);
+  card.appendChild(title);
+  card.appendChild(artist);
+  card.appendChild(year);
+  card.appendChild(spacer);
+  card.appendChild(btnGroup);
+  return card;
+}
+
+function renderSection(container, title, results, total, page, totalPages, type) {
+  if (!results || results.length === 0) return;
+
+  const section = document.createElement('div');
+  section.className = 'category-section';
+
+  const heading = document.createElement('h2');
+  heading.className = 'category-title';
+  heading.textContent = title;
+  section.appendChild(heading);
+
+  const grid = document.createElement('div');
+  grid.className = 'albums';
+  results.forEach(({ album }) => grid.appendChild(renderAlbumCard(album)));
+  section.appendChild(grid);
+
+  // Paginación de la categoría
+  if (totalPages > 1) {
+    const pag = document.createElement('div');
+    pag.className = 'pagination';
+
+    if (page > 1) {
+      const prev = document.createElement('button');
+      prev.className = 'pagination-btn';
+      prev.textContent = '←';
+      prev.setAttribute('aria-label', 'Página anterior');
+      prev.addEventListener('click', () => goToPage(page - 1, type));
+      pag.appendChild(prev);
+    }
+
+    const info = document.createElement('span');
+    info.className = 'pagination-info';
+    info.textContent = `${page} de ${totalPages}`;
+    pag.appendChild(info);
+
+    if (page < totalPages) {
+      const next = document.createElement('button');
+      next.className = 'pagination-btn';
+      next.textContent = '→';
+      next.setAttribute('aria-label', 'Página siguiente');
+      next.addEventListener('click', () => goToPage(page + 1, type));
+      pag.appendChild(next);
+    }
+
+    section.appendChild(pag);
+  }
+
+  container.appendChild(section);
+}
+
+function renderResults(data) {
+  albumsContainer.innerHTML = '';
+  albumsContainer.className = 'results-container';
+  pagination.innerHTML = '';
+
+  const hasAlbums = data.albums && data.albums.results && data.albums.results.length > 0;
+  const hasEps = data.eps && data.eps.results && data.eps.results.length > 0;
+
+  if (!hasAlbums && !hasEps) {
+    albumsContainer.innerHTML = '<p class="state-msg">No se encontraron lanzamientos.</p>';
     return;
   }
 
-  albumsContainer.innerHTML = '';
-  albumsContainer.className = 'albums';
-
-  results.forEach(({ album }) => {
-    const card = document.createElement('div');
-    card.className = 'album-card';
-    card.setAttribute('role', 'article');
-
-    const img = document.createElement('img');
-    img.src = album.cover_url || PLACEHOLDER;
-    img.alt = `Portada de ${album.title}`;
-    img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER; };
-
-    const title = document.createElement('h4');
-    title.textContent = album.title;
-
-    const artist = document.createElement('p');
-    artist.textContent = album.artist;
-
-    const year = document.createElement('p');
-    year.textContent = album.release_year || '';
-    year.className = 'album-year';
-
-    const spacer = document.createElement('div');
-    spacer.className = 'album-card-spacer';
-    spacer.setAttribute('aria-hidden', 'true');
-
-    const btnGroup = document.createElement('div');
-    btnGroup.className = 'album-card-buttons';
-
-    const btnVer = document.createElement('button');
-    btnVer.textContent = 'Ver álbum';
-    btnVer.className = 'btn-ver-album';
-    btnVer.setAttribute('aria-label', `Ver álbum ${album.title} de ${album.artist}`);
-    btnVer.addEventListener('click', () => viewAlbum(album.id));
-    btnGroup.appendChild(btnVer);
-
-    if (isLoggedIn()) {
-      const btnListen = document.createElement('button');
-      btnListen.textContent = 'Crear escucha';
-      btnListen.className = 'btn-crear-escucha';
-      btnListen.setAttribute('aria-label', `Crear escucha de ${album.title}`);
-      btnListen.addEventListener('click', () => goCreateListen(album.id));
-      btnGroup.appendChild(btnListen);
-
-      const favBtn = document.createElement('button');
-      favBtn.textContent = '⭐ Favorito';
-      favBtn.className = 'fav-album-btn';
-      favBtn.setAttribute('aria-label', `Añadir ${album.title} a favoritos`);
-      favBtn.addEventListener('click', () => openFavSlotSelector(album));
-      btnGroup.appendChild(favBtn);
-    }
-
-    card.appendChild(img);
-    card.appendChild(title);
-    card.appendChild(artist);
-    card.appendChild(year);
-    card.appendChild(spacer);
-    card.appendChild(btnGroup);
-    albumsContainer.appendChild(card);
-  });
-
-  renderPagination(page, totalPages);
-}
-
-function renderPagination(page, totalPages) {
-  pagination.innerHTML = '';
-  if (totalPages <= 1) return;
-
-  const prevBtn = document.createElement('button');
-  prevBtn.className = 'pagination-btn';
-  prevBtn.innerHTML = '←';
-  prevBtn.setAttribute('aria-label', 'Página anterior');
-  prevBtn.disabled = page === 1;
-  prevBtn.addEventListener('click', () => goToPage(page - 1));
-
-  const info = document.createElement('span');
-  info.className = 'pagination-info';
-  info.textContent = `${page} de ${totalPages}`;
-
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'pagination-btn';
-  nextBtn.innerHTML = '→';
-  nextBtn.setAttribute('aria-label', 'Página siguiente');
-  nextBtn.disabled = page === totalPages;
-  nextBtn.addEventListener('click', () => goToPage(page + 1));
-
-  if (page > 1) pagination.appendChild(prevBtn);
-  pagination.appendChild(info);
-  if (page < totalPages) pagination.appendChild(nextBtn);
+  renderSection(albumsContainer, '🎵 Álbumes', data.albums.results, data.albums.total, data.albums.page, data.albums.totalPages, 'albums');
+  renderSection(albumsContainer, '🎶 EPs', data.eps.results, data.eps.total, data.eps.page, data.eps.totalPages, 'eps');
 }
 
 function renderCandidates(candidates) {
@@ -130,14 +155,8 @@ function renderCandidates(candidates) {
     btn.setAttribute('aria-label', candidate.name);
 
     btn.innerHTML = `
-      <div class="candidate-info">
-        ${candidate.picture ? `<img src="${candidate.picture}" alt="${candidate.name}" class="candidate-avatar">` : ''}
-        <div>
-          <strong>${candidate.name}</strong>
-          ${candidate.nb_fan ? `<span> — ${candidate.nb_fan.toLocaleString()} fans</span>` : ''}
-          ${candidate.nb_album ? `<span> — ${candidate.nb_album} álbumes</span>` : ''}
-        </div>
-      </div>
+      ${candidate.picture ? `<img src="${candidate.picture}" alt="${candidate.name}" class="candidate-avatar">` : ''}
+      <strong>${candidate.name}</strong>
     `;
 
     btn.addEventListener('click', () => searchByArtistId(candidate.id, candidate.name));
@@ -147,11 +166,10 @@ function renderCandidates(candidates) {
 
 // ====================== NAVEGACIÓN ======================
 
-async function goToPage(page) {
+async function goToPage(page, type) {
   currentPage = page;
   window.scrollTo({ top: 0, behavior: 'smooth' });
   albumsContainer.innerHTML = '<p class="state-msg">Cargando resultados...</p>';
-  pagination.innerHTML = '';
 
   try {
     const query = new URLSearchParams({ artist: currentArtistName, page, limit: LIMIT });
@@ -160,11 +178,10 @@ async function goToPage(page) {
 
     const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
     const data = await res.json();
-
-    renderAlbums(data.results, data.page, data.total, data.totalPages);
+    renderResults(data);
   } catch (err) {
     console.error(err);
-    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error cargando álbumes.</p>';
+    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error cargando resultados.</p>';
   }
 }
 
@@ -182,11 +199,10 @@ async function searchByArtistId(artistId, artistName) {
 
     const res = await fetch(`${API_BASE}/albums/search-mb?${query}`);
     const data = await res.json();
-
-    renderAlbums(data.results, data.page, data.total, data.totalPages);
+    renderResults(data);
   } catch (err) {
     console.error(err);
-    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';
+    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando resultados.</p>';
   }
 }
 
@@ -228,11 +244,10 @@ form.addEventListener('submit', async (e) => {
       return;
     }
 
-    currentArtistId = null;
-    renderAlbums(data.results, data.page, data.total, data.totalPages);
+    renderResults(data);
   } catch (err) {
     console.error(err);
-    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando álbumes.</p>';
+    albumsContainer.innerHTML = '<p class="state-msg" role="alert">Error buscando resultados.</p>';
   }
 });
 

@@ -44,11 +44,36 @@ main > h1 {
 #search-form button:active { transform: scale(0.97); }
 #search-form button:focus  { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* Contenedor de resultados con categorías */
+.results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  margin: 0 32px;
+}
+
+/* Sección de categoría */
+.category-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.category-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Grid de álbumes */
 .albums {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
-  margin: 0 32px;
 }
 
 .album-card {
@@ -158,10 +183,10 @@ main > h1 {
 }
 
 #candidates-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 560px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  max-width: 700px;
   margin-bottom: 60px;
 }
 
@@ -169,15 +194,15 @@ main > h1 {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 20px;
-  text-align: left;
+  padding: 12px;
+  text-align: center;
   color: var(--text);
-  font-size: 0.9rem;
   cursor: pointer;
   transition: border-color var(--transition), background var(--transition);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .candidate-btn:hover {
@@ -190,56 +215,32 @@ main > h1 {
   outline-offset: 2px;
 }
 
-.candidate-btn strong {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.candidate-btn span {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-}
-
-.candidate-flag-img {
-  width: 24px;
-  height: 18px;
-  border-radius: 2px;
+.candidate-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
   flex-shrink: 0;
 }
 
-/* Responsive */
-@media (max-width: 700px) {
-  body > h1,
-  main > h1 {
-    margin: 24px 16px 16px;
-    font-size: 1.6rem;
-  }
-
-  #search-form {
-    margin: 0 16px 24px;
-  }
-
-  .albums {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    margin: 0 16px;
-    gap: 12px;
-  }
-
-  .candidates-container {
-    margin: 0 16px;
-  }
+.candidate-btn strong {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-
+/* Paginación */
 .pagination {
-  max-width: 760px;
-  margin: 16px auto 60px;
-  padding: 0 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  margin-top: 8px;
 }
 
 .pagination-btn {
@@ -272,6 +273,37 @@ main > h1 {
   font-size: 0.82rem;
   color: var(--text-muted);
   padding: 0 8px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  body > h1,
+  main > h1 {
+    margin: 24px 16px 16px;
+    font-size: 1.6rem;
+  }
+
+  #search-form {
+    margin: 0 16px 24px;
+  }
+
+  .results-container {
+    margin: 0 16px;
+    gap: 32px;
+  }
+
+  .albums {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .candidates-container {
+    margin: 0 16px;
+  }
+
+  #candidates-list {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
 }
 
 @media (max-width: 400px) {

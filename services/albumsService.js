@@ -16,7 +16,8 @@ async function searchArtistDeezer(artistName) {
   return data.data || [];
 }
 
-async function getAlbumsDeezer(artistId) {
+// Obtener todos los lanzamientos de un artista y separarlos por tipo
+async function getReleasesDeezer(artistId) {
   let all = [];
   let url = `${DEEZER_BASE}/artist/${artistId}/albums?limit=50`;
 
@@ -26,23 +27,25 @@ async function getAlbumsDeezer(artistId) {
     url = data.next || null;
   }
 
-  const seen = new Set();
-  return all.filter(album => {
-    if (album.record_type !== 'album') return false;
-    const key = album.title.toLowerCase().trim();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  }).sort((a, b) => {
-    const ya = a.release_date ? parseInt(a.release_date) : 0;
-    const yb = b.release_date ? parseInt(b.release_date) : 0;
-    return ya - yb;
-  });
-}
+  // Deduplicar por título dentro de cada tipo
+  const dedup = (releases) => {
+    const seen = new Set();
+    return releases.filter(r => {
+      const key = r.title.toLowerCase().trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).sort((a, b) => {
+      const ya = a.release_date ? parseInt(a.release_date) : 0;
+      const yb = b.release_date ? parseInt(b.release_date) : 0;
+      return ya - yb;
+    });
+  };
 
-async function getTracksDeezer(albumId) {
-  const data = await fetchDeezer(`${DEEZER_BASE}/album/${albumId}/tracks`);
-  return data.data || [];
+  return {
+    albums: dedup(all.filter(r => r.record_type === 'album')),
+    eps: dedup(all.filter(r => r.record_type === 'ep')),
+  };
 }
 
 async function getAllAlbums() {
@@ -65,6 +68,81 @@ async function getTracksFromDB(albumId) {
     .order("position", { ascending: true });
   if (error) return [];
   return data || [];
+}
+
+// Guardar y devolver un lote de releases de Deezer
+async function saveReleases(releases, artistName) {
+  const results = [];
+
+  for (const deezerAlbum of releases) {
+    const deezerId = String(deezerAlbum.id);
+    const releaseYear = deezerAlbum.release_date
+      ? parseInt(deezerAlbum.release_date.split('-')[0])
+      : null;
+
+    let { data: existing } = await supabase
+      .from("albums")
+      .select("*")
+      .eq("musicbrainz_id", `deezer_${deezerId}`);
+
+    if (!existing || existing.length === 0) {
+      const { data: byTitle } = await supabase
+        .from("albums")
+        .select("*")
+        .ilike("title", deezerAlbum.title)
+        .ilike("artist", artistName);
+      existing = byTitle;
+    }
+
+    let savedAlbum;
+
+    if (existing && existing.length > 0) {
+      savedAlbum = existing[0];
+    } else {
+      const { data: newAlbum, error: insertError } = await supabase
+        .from("albums")
+        .insert([{
+          musicbrainz_id: `deezer_${deezerId}`,
+          title: deezerAlbum.title,
+          artist: artistName,
+          release_year: releaseYear,
+          release_date: deezerAlbum.release_date || null,
+          cover_url: deezerAlbum.cover_big || deezerAlbum.cover_medium || deezerAlbum.cover,
+        }])
+        .select();
+
+      if (insertError) {
+        console.error("Error insertando:", insertError.message);
+        continue;
+      }
+      savedAlbum = newAlbum[0];
+    }
+
+    let tracks = await getTracksFromDB(savedAlbum.id);
+
+    if (tracks.length === 0) {
+      const tracksData = await fetchDeezer(`${DEEZER_BASE}/album/${deezerAlbum.id}/tracks`);
+      const deezerTracks = tracksData.data || [];
+
+      if (deezerTracks.length > 0) {
+        const tracksToInsert = deezerTracks.map(t => ({
+          album_id: savedAlbum.id,
+          position: t.track_position,
+          title: t.title,
+          length: t.duration ? t.duration * 1000 : null,
+          deezer_track_id: t.id,
+          created_at: new Date().toISOString(),
+        }));
+
+        const { error: tracksError } = await supabase.from("songs").insert(tracksToInsert);
+        if (!tracksError) tracks = tracksToInsert;
+      }
+    }
+
+    results.push({ album: savedAlbum, tracks });
+  }
+
+  return results;
 }
 
 async function searchAndSaveAlbums(title, artist, artistId = null, page = 1, limit = 6) {
@@ -94,90 +172,43 @@ async function searchAndSaveAlbums(title, artist, artistId = null, page = 1, lim
     deezerArtistName = artists[0].name;
   }
 
-  let albums = await getAlbumsDeezer(deezerArtistId);
+  // Obtener álbumes y EPs separados
+  const { albums, eps } = await getReleasesDeezer(deezerArtistId);
 
-  if (title) {
-    albums = albums.filter(a =>
-      a.title.toLowerCase().includes(title.toLowerCase())
-    );
+  // Filtrar por título si se proporcionó
+  const filterByTitle = (list) => title
+    ? list.filter(a => a.title.toLowerCase().includes(title.toLowerCase()))
+    : list;
+
+  const filteredAlbums = filterByTitle(albums);
+  const filteredEps = filterByTitle(eps);
+
+  if (!filteredAlbums.length && !filteredEps.length) {
+    throw new Error("No se encontraron lanzamientos");
   }
 
-  if (!albums.length) throw new Error("No se encontraron álbumes");
+  // Paginación para álbumes
+  const totalAlbums = filteredAlbums.length;
+  const totalPagesAlbums = Math.ceil(totalAlbums / limit);
+  const fromAlbums = (page - 1) * limit;
+  const paginatedAlbums = filteredAlbums.slice(fromAlbums, fromAlbums + limit);
 
-  const total = albums.length;
-  const totalPages = Math.ceil(total / limit);
-  const from = (page - 1) * limit;
-  const paginated = albums.slice(from, from + limit);
+  // Paginación para EPs
+  const totalEps = filteredEps.length;
+  const totalPagesEps = Math.ceil(totalEps / limit);
+  const fromEps = (page - 1) * limit;
+  const paginatedEps = filteredEps.slice(fromEps, fromEps + limit);
 
-  const results = [];
+  // Guardar y devolver
+  const [albumResults, epResults] = await Promise.all([
+    saveReleases(paginatedAlbums, deezerArtistName),
+    saveReleases(paginatedEps, deezerArtistName),
+  ]);
 
-  for (const deezerAlbum of paginated) {
-    const deezerId = String(deezerAlbum.id);
-    const releaseYear = deezerAlbum.release_date
-      ? parseInt(deezerAlbum.release_date.split('-')[0])
-      : null;
-
-    let { data: existing } = await supabase
-      .from("albums")
-      .select("*")
-      .eq("musicbrainz_id", `deezer_${deezerId}`);
-
-    if (!existing || existing.length === 0) {
-      const { data: byTitle } = await supabase
-        .from("albums")
-        .select("*")
-        .ilike("title", deezerAlbum.title)
-        .ilike("artist", deezerArtistName);
-      existing = byTitle;
-    }
-
-    let savedAlbum;
-
-    if (existing && existing.length > 0) {
-      savedAlbum = existing[0];
-    } else {
-      const { data: newAlbum, error: insertError } = await supabase
-        .from("albums")
-        .insert([{
-          musicbrainz_id: `deezer_${deezerId}`,
-          title: deezerAlbum.title,
-          artist: deezerArtistName,
-          release_year: releaseYear,
-          release_date: deezerAlbum.release_date || null,
-          cover_url: deezerAlbum.cover_big || deezerAlbum.cover_medium || deezerAlbum.cover,
-        }])
-        .select();
-
-      if (insertError) {
-        console.error("Error insertando álbum:", insertError.message);
-        continue;
-      }
-      savedAlbum = newAlbum[0];
-    }
-
-    let tracks = await getTracksFromDB(savedAlbum.id);
-
-    if (tracks.length === 0) {
-      const deezerTracks = await getTracksDeezer(deezerAlbum.id);
-      if (deezerTracks.length > 0) {
-        const tracksToInsert = deezerTracks.map(t => ({
-          album_id: savedAlbum.id,
-          position: t.track_position,
-          title: t.title,
-          length: t.duration ? t.duration * 1000 : null,
-          deezer_track_id: t.id, // guardar ID de Deezer para obtener preview después
-          created_at: new Date().toISOString(),
-        }));
-
-        const { error: tracksError } = await supabase.from("songs").insert(tracksToInsert);
-        if (!tracksError) tracks = tracksToInsert;
-      }
-    }
-
-    results.push({ album: savedAlbum, tracks });
-  }
-
-  return { results, total, page, totalPages };
+  return {
+    albums: { results: albumResults, total: totalAlbums, page, totalPages: totalPagesAlbums },
+    eps: { results: epResults, total: totalEps, page, totalPages: totalPagesEps },
+  };
 }
 
 module.exports = { getAllAlbums, createAlbum, searchAndSaveAlbums };

@@ -165,7 +165,7 @@ async function searchAndSaveAlbums(title, artist, artistId = null, page = 1, lim
           position: t.track_position,
           title: t.title,
           length: t.duration ? t.duration * 1000 : null,
-          deezer_track_id: t.id, // ✅ guardar ID de Deezer para obtener preview después
+          deezer_track_id: t.id, // guardar ID de Deezer para obtener preview después
           created_at: new Date().toISOString(),
         }));
 

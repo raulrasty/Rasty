@@ -1,4 +1,3 @@
-
 CREATE TABLE public.album_favorite_songs (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   album_id uuid NOT NULL,
@@ -10,6 +9,7 @@ CREATE TABLE public.album_favorite_songs (
   CONSTRAINT album_favorites_song_id_fkey FOREIGN KEY (song_id) REFERENCES public.songs(id),
   CONSTRAINT album_favorites_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+
 CREATE TABLE public.album_ratings (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   album_id uuid NOT NULL,
@@ -20,6 +20,7 @@ CREATE TABLE public.album_ratings (
   CONSTRAINT album_ratings_album_id_fkey FOREIGN KEY (album_id) REFERENCES public.albums(id),
   CONSTRAINT album_ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+
 CREATE TABLE public.albums (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   musicbrainz_id text UNIQUE,
@@ -30,6 +31,7 @@ CREATE TABLE public.albums (
   release_year integer,
   CONSTRAINT albums_pkey PRIMARY KEY (id)
 );
+
 CREATE TABLE public.favorite_albums (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -40,6 +42,7 @@ CREATE TABLE public.favorite_albums (
   CONSTRAINT favorite_albums_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT favorite_albums_album_id_fkey FOREIGN KEY (album_id) REFERENCES public.albums(id)
 );
+
 CREATE TABLE public.follows (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   follower_id uuid NOT NULL,
@@ -49,6 +52,7 @@ CREATE TABLE public.follows (
   CONSTRAINT follows_follower_id_fkey FOREIGN KEY (follower_id) REFERENCES public.users(id),
   CONSTRAINT follows_following_id_fkey FOREIGN KEY (following_id) REFERENCES public.users(id)
 );
+
 CREATE TABLE public.listen_favorite_songs (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   listen_id uuid NOT NULL,
@@ -60,6 +64,7 @@ CREATE TABLE public.listen_favorite_songs (
   CONSTRAINT listen_favorites_song_id_fkey FOREIGN KEY (song_id) REFERENCES public.songs(id),
   CONSTRAINT listen_favorites_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+
 CREATE TABLE public.listens (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
@@ -71,12 +76,14 @@ CREATE TABLE public.listens (
   CONSTRAINT listens_pkey PRIMARY KEY (id),
   CONSTRAINT listens_album_id_fkey FOREIGN KEY (album_id) REFERENCES public.albums(id)
 );
+
 CREATE TABLE public.p_activo (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   num numeric,
   CONSTRAINT p_activo_pkey PRIMARY KEY (id)
 );
+
 CREATE TABLE public.songs (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   album_id uuid,
@@ -84,9 +91,11 @@ CREATE TABLE public.songs (
   title text NOT NULL,
   length integer,
   created_at timestamp without time zone DEFAULT now(),
+  deezer_track_id bigint,
   CONSTRAINT songs_pkey PRIMARY KEY (id),
   CONSTRAINT songs_album_id_fkey FOREIGN KEY (album_id) REFERENCES public.albums(id)
 );
+
 CREATE TABLE public.users (
   id uuid NOT NULL,
   username text NOT NULL UNIQUE,

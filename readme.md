@@ -4,12 +4,21 @@ Rasty es una aplicación web de registro y seguimiento musical inspirada en Lett
 
 **Demo en producción:** [rasty.onrender.com](https://rasty.onrender.com)
 
+## Capturas de pantalla
+
+![Inicio](img/rasty_inicio.png)
+![Inicio 2](img/rasty_inicio2.png)
+![Buscador de álbumes](img/rasty_buscador.png)
+![Detalle de álbum](img/rasty_album.png)
+![Perfil de usuario](img/rasty_perfil.png)
+![Mis escuchas](img/rasty_registros.png)
+
 ## Características principales
 
 - Registro e inicio de sesión con autenticación segura mediante Supabase Auth
-- Búsqueda de álbumes por artista mediante la API de MusicBrainz
+- Búsqueda de álbumes por artista mediante la API de Deezer
 - Registro de escuchas con valoración (0.5–5 estrellas), reseña y canciones favoritas
-- Previews de audio de 30 segundos mediante la iTunes Search API
+- Previews de audio de 30 segundos mediante la Deezer API
 - Perfil de usuario con estadísticas, álbumes favoritos y últimas escuchas
 - Sistema social: seguir usuarios, feed de actividad y estadísticas de comunidad
 - Sistema de roles: usuarios normales y administradores
@@ -22,7 +31,7 @@ Rasty es una aplicación web de registro y seguimiento musical inspirada en Lett
 - **Backend:** Node.js + Express
 - **Base de datos y autenticación:** Supabase (PostgreSQL)
 - **Despliegue:** Render
-- **APIs externas:** MusicBrainz, Cover Art Archive, iTunes Search API, UI Avatars
+- **APIs externas:** Deezer API, UI Avatars
 
 ## Requisitos previos
 
@@ -49,7 +58,6 @@ Crea un archivo .env en la raíz del proyecto:
     SUPABASE_URL=https://tu-proyecto.supabase.co
     SUPABASE_KEY=tu-service-role-key
     SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
-    MUSICBRAINZ_USER_AGENT=RastyApp/1.0 (tu-email@ejemplo.com)
     JWT_SECRET=tu-clave-secreta
     PORT=3000
 
@@ -71,9 +79,10 @@ Para desarrollo con recarga automática usa npm run dev
 
 1. Conecta el repositorio de GitHub en render
 2. Crea un nuevo Web Service — Render detecta Node.js automáticamente y ejecuta npm start
-3. Añade las variables de entorno en la pestaña Variables
-4. Render genera un dominio público automáticamente
-5. Cada push a main desencadena un redespliegue automático
+3. Selecciona la instancia gratuita (Free)
+4. Añade las variables de entorno en la pestaña Environment
+5. Render genera un dominio público automáticamente
+6. Cada push a main desencadena un redespliegue automático
 
 ## Estructura del proyecto
 
@@ -92,6 +101,7 @@ Para desarrollo con recarga automática usa npm run dev
     │   └── *.html
     ├── components/
     │   └── header.html
+    ├── img/
     ├── database.sql
     ├── .env
     ├── .gitignore
@@ -110,7 +120,8 @@ Para desarrollo con recarga automática usa npm run dev
 | DELETE | /users/me | Eliminar cuenta propia |
 | DELETE | /users/:id | Eliminar cuenta (solo admin) |
 | GET | /albums | Obtener todos los álbumes |
-| GET | /albums/search-mb | Buscar álbumes en MusicBrainz |
+| GET | /albums/search-mb | Buscar álbumes en Deezer |
+| GET | /albums/preview/:trackId | Obtener preview de canción de Deezer |
 | GET | /albumInfo/:id | Obtener info de un álbum |
 | GET | /songs/:album_id | Obtener canciones de un álbum |
 | GET | /listens/:user_id | Escuchas de un usuario |
@@ -152,7 +163,6 @@ Para desarrollo con recarga automática usa npm run dev
 |         SUPABASE_URL      | URL de tu proyecto Supabase             |
 |         SUPABASE_KEY      | Service role key de Supabase            |
 | SUPABASE_SERVICE_ROLE_KEY | Service role key (admin)                |
-|    MUSICBRAINZ_USER_AGENT | Identificador para la API de MusicBrainz|
 |        JWT_SECRET         | Clave secreta para tokens JWT           |
 |            PORT           | Puerto del servidor (por defecto 3000)  |
 

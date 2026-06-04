@@ -36,6 +36,8 @@ const userRatingRoutes = require('./routes/userRatingRoutes');
 app.use('/user-ratings', userRatingRoutes);
 const communityRoutes = require('./routes/communityRoutes');
 app.use('/community', communityRoutes);
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/admin', adminRoutes);
 
 
 app.get('/', (req, res) => {

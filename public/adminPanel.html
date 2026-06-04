@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración – Rasty</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/adminPanel.css">
+</head>
+<body>
+
+<div id="header-placeholder"></div>
+
+<main class="admin-main">
+  <h1 class="admin-heading">Panel de Administración</h1>
+
+  <!-- Navegación de secciones -->
+  <nav class="admin-nav" role="tablist">
+    <button class="admin-tab active" data-tab="stats" role="tab" aria-selected="true">📊 Estadísticas</button>
+    <button class="admin-tab" data-tab="users" role="tab" aria-selected="false">👥 Usuarios</button>
+    <button class="admin-tab" data-tab="albums" role="tab" aria-selected="false">💿 Álbumes</button>
+    <button class="admin-tab" data-tab="reviews" role="tab" aria-selected="false">📝 Reseñas</button>
+  </nav>
+
+  <!-- ESTADÍSTICAS -->
+  <section id="tab-stats" class="admin-section active" role="tabpanel">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <span class="stat-value" id="stat-users">—</span>
+        <span class="stat-label">Usuarios</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🎧</span>
+        <span class="stat-value" id="stat-listens">—</span>
+        <span class="stat-label">Escuchas</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">💿</span>
+        <span class="stat-value" id="stat-albums">—</span>
+        <span class="stat-label">Álbumes</span>
+      </div>
+    </div>
+
+    <div class="stats-bottom">
+      <div class="admin-card">
+        <h2>🔥 Álbumes más escuchados</h2>
+        <ul id="top-albums-list" class="admin-list"></ul>
+      </div>
+      <div class="admin-card">
+        <h2>⭐ Usuarios más activos</h2>
+        <ul id="top-users-list" class="admin-list"></ul>
+      </div>
+      <div class="admin-card full-width">
+        <h2>📅 Escuchas esta semana</h2>
+        <div id="weekly-chart" class="weekly-chart"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- USUARIOS -->
+  <section id="tab-users" class="admin-section" role="tabpanel">
+    <div class="admin-toolbar">
+      <input type="text" id="user-search" placeholder="Buscar por username..." class="admin-search">
+      <button id="user-search-btn" class="admin-btn">Buscar</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table" id="users-table">
+        <thead>
+          <tr>
+            <th>Avatar</th>
+            <th>Username</th>
+            <th>Rol</th>
+            <th>Ubicación</th>
+            <th>Registro</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+    <div class="admin-pagination" id="users-pagination"></div>
+  </section>
+
+  <!-- ÁLBUMES -->
+  <section id="tab-albums" class="admin-section" role="tabpanel">
+    <div class="admin-toolbar">
+      <input type="text" id="album-search" placeholder="Buscar por título o artista..." class="admin-search">
+      <button id="album-search-btn" class="admin-btn">Buscar</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table" id="albums-table">
+        <thead>
+          <tr>
+            <th>Portada</th>
+            <th>Título</th>
+            <th>Artista</th>
+            <th>Año</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="albums-tbody"></tbody>
+      </table>
+    </div>
+    <div class="admin-pagination" id="albums-pagination"></div>
+  </section>
+
+  <!-- RESEÑAS -->
+  <section id="tab-reviews" class="admin-section" role="tabpanel">
+    <div id="reviews-list" class="reviews-list"></div>
+    <div class="admin-pagination" id="reviews-pagination"></div>
+  </section>
+</main>
+
+<!-- Modal de confirmación -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <p id="modal-text">¿Estás seguro?</p>
+    <div class="modal-buttons">
+      <button id="modal-confirm" class="admin-btn admin-btn-danger">Confirmar</button>
+      <button id="modal-cancel" class="admin-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/loader.js"></script>
+<script src="js/header.js"></script>
+<script src="js/adminPanel.js"></script>
+</body>
+</html>

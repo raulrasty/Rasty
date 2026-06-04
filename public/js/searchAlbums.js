@@ -4,7 +4,7 @@ const albumsContainer = document.getElementById('albums');
 const pagination = document.getElementById('albums-pagination');
 
 const PLACEHOLDER = 'https://placehold.co/200x200?text=Sin+portada';
-const LIMIT = 4;
+const LIMIT = 2;
 
 let currentArtistId = null;
 let currentArtistName = null;

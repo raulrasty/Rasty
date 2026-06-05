@@ -16,12 +16,13 @@ Rasty es una aplicación web de registro y seguimiento musical inspirada en Lett
 ## Características principales
 
 - Registro e inicio de sesión con autenticación segura mediante Supabase Auth
-- Búsqueda de álbumes por artista mediante la API de Deezer
+- Búsqueda de álbumes por artista mediante la API de Deezer, con resultados agrupados por Álbumes y EPs
 - Registro de escuchas con valoración (0.5–5 estrellas), reseña y canciones favoritas
 - Previews de audio de 30 segundos mediante la Deezer API
 - Perfil de usuario con estadísticas, álbumes favoritos y últimas escuchas
 - Sistema social: seguir usuarios, feed de actividad y estadísticas de comunidad
 - Sistema de roles: usuarios normales y administradores
+- Panel de administración con estadísticas globales, gestión de usuarios, álbumes y reseñas
 - Diseño responsive y accesible (WCAG)
 - Page loader animado en todas las páginas
 
@@ -56,7 +57,7 @@ Rasty es una aplicación web de registro y seguimiento musical inspirada en Lett
 Crea un archivo .env en la raíz del proyecto:
 
     SUPABASE_URL=https://tu-proyecto.supabase.co
-    SUPABASE_KEY=tu-service-role-key
+    SUPABASE_KEY=tu-anon-key
     SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
     JWT_SECRET=tu-clave-secreta
     PORT=3000
@@ -77,7 +78,7 @@ Para desarrollo con recarga automática usa npm run dev
 
 ## Despliegue en Render
 
-1. Conecta el repositorio de GitHub en render
+1. Conecta el repositorio de GitHub en Render
 2. Crea un nuevo Web Service — Render detecta Node.js automáticamente y ejecuta npm start
 3. Selecciona la instancia gratuita (Free)
 4. Añade las variables de entorno en la pestaña Environment
@@ -90,10 +91,14 @@ Para desarrollo con recarga automática usa npm run dev
     ├── config/
     │   └── supabaseClient.js
     ├── controllers/
+    │   └── adminController.js
     ├── middleware/
-    │   └── requireAuth.js
+    │   ├── requireAuth.js
+    │   └── requireAdmin.js
     ├── routes/
+    │   └── adminRoutes.js
     ├── services/
+    │   └── adminService.js
     ├── public/
     │   ├── css/
     │   ├── js/
@@ -155,14 +160,22 @@ Para desarrollo con recarga automática usa npm run dev
 | GET | /community/following-top-week | Top semanal de seguidos |
 | GET | /community/following-top-rated | Mejor valorados por seguidos |
 | GET | /community/own-activity | Actividad propia |
+| GET | /admin/stats | Estadísticas globales (solo admin) |
+| GET | /admin/users | Listado de usuarios paginado (solo admin) |
+| PUT | /admin/users/:id/role | Cambiar rol de usuario (solo admin) |
+| DELETE | /admin/users/:id | Eliminar usuario (solo admin) |
+| GET | /admin/albums | Listado de álbumes paginado (solo admin) |
+| DELETE | /admin/albums/:id | Eliminar álbum (solo admin) |
+| GET | /admin/reviews | Listado de reseñas (solo admin) |
+| DELETE | /admin/reviews/:id | Eliminar reseña (solo admin) |
 
 ## Variables de entorno
 
 |          Variable         |     Descripción                         |
 |---------------------------|-----------------------------------------|
 |         SUPABASE_URL      | URL de tu proyecto Supabase             |
-|         SUPABASE_KEY      | Service role key de Supabase            |
-| SUPABASE_SERVICE_ROLE_KEY | Service role key (admin)                |
+|         SUPABASE_KEY      | Anon key de Supabase                    |
+| SUPABASE_SERVICE_ROLE_KEY | Service role key (bypasea RLS)          |
 |        JWT_SECRET         | Clave secreta para tokens JWT           |
 |            PORT           | Puerto del servidor (por defecto 3000)  |
 
@@ -171,6 +184,8 @@ Para desarrollo con recarga automática usa npm run dev
 Rasty tiene dos roles: user (por defecto) y admin. Para dar permisos de administrador ejecuta en el SQL Editor de Supabase:
 
     UPDATE users SET role = 'admin' WHERE username = 'tu-username';
+
+Los usuarios admin tienen acceso al panel de administración en /adminPanel.html, visible en el header solo para admins.
 
 ## Autor
 

@@ -145,16 +145,39 @@ async function adminDeleteAlbumService(albumId) {
 // ====================== RESEÑAS ======================
 
 async function getReviewsService(page = 1, limit = 10) {
+  
   const { data, error, count } = await supabase
     .from('listens')
-    .select('id, review, rating, listen_date, user_id, album_id, users(username, avatar_url), albums(title, artist)', { count: 'exact' })
+    .select('id, review, rating, listen_date, user_id, album_id', { count: 'exact' })
     .not('review', 'is', null)
-    .neq('review', '')
+    .like('review', '_%')
     .order('listen_date', { ascending: false })
     .range((page - 1) * limit, page * limit - 1);
 
+  console.log('Reviews data:', JSON.stringify(data));
+  console.log('Reviews error:', error);
+  console.log('Reviews count:', count);
+
   if (error) throw new Error(error.message);
-  return { reviews: data, total: count, page, totalPages: Math.ceil(count / limit) };
+
+  const userIds = [...new Set((data || []).map(r => r.user_id).filter(Boolean))];
+  const albumIds = [...new Set((data || []).map(r => r.album_id).filter(Boolean))];
+
+  const [usersRes, albumsRes] = await Promise.all([
+    userIds.length ? supabase.from('users').select('id, username, avatar_url').in('id', userIds) : { data: [] },
+    albumIds.length ? supabase.from('albums').select('id, title, artist').in('id', albumIds) : { data: [] },
+  ]);
+
+  const usersMap = Object.fromEntries((usersRes.data || []).map(u => [u.id, u]));
+  const albumsMap = Object.fromEntries((albumsRes.data || []).map(a => [a.id, a]));
+
+  const reviews = (data || []).map(r => ({
+    ...r,
+    users: usersMap[r.user_id] || null,
+    albums: albumsMap[r.album_id] || null,
+  }));
+
+  return { reviews, total: count, page, totalPages: Math.ceil(count / limit) };
 }
 
 async function adminDeleteReviewService(listenId) {

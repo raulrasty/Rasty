@@ -1,6 +1,7 @@
 const supabase = require('../config/supabaseClient');
 
 async function requireAdmin(req, res, next) {
+  console.log('requireAdmin llamado', req.path);
   const authHeader = req.headers['authorization'];
   if (!authHeader) return res.status(401).json({ error: 'No autorizado' });
 

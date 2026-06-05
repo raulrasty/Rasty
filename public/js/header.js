@@ -1,6 +1,13 @@
 // CARGA E INYECCIÓN DEL COMPONENTE HEADER
 document.addEventListener("DOMContentLoaded", async () => {
 
+  // Redirigir si página protegida y no hay sesión
+  const protectedPages = ['/adminPanel.html'];
+  if (protectedPages.includes(window.location.pathname) && !isLoggedIn()) {
+    window.location.href = '/index.html';
+    return;
+  }
+
   const headerContainer = document.getElementById("header-container");
 
   try {
@@ -13,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loginForm = document.getElementById("loginForm");
 
 
-    // LÓGICA DE RENDERIZADO DINÁMICO DE ENLACES SEGÚN ESTADO D ELA SESIÓN
+    // LÓGICA DE RENDERIZADO DINÁMICO DE ENLACES SEGÚN ESTADO DE LA SESIÓN
     const renderHeaderLinks = async () => {
       const { userId } = getSession();
 
@@ -35,6 +42,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       const cachedAvatar = cachedUser.avatar_url ||
         `https://ui-avatars.com/api/?name=${encodeURIComponent(cachedUsername || 'U')}&background=1db954&color=000&size=32`;
 
+      // Enlace admin solo para usuarios con rol admin
+      if (isLoggedIn() && cachedUser.role === 'admin') {
+        centerHTML += `<a href="/adminPanel.html" style="color: var(--accent)">Admin</a>`;
+      }
+
       if (isLoggedIn()) {
         rightHTML += `
           <a href="/userProfile.html?user_id=${userId}" class="header-user">
@@ -48,8 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         rightHTML += `<a href="/register.html">Crear cuenta</a>`;
       }
 
-
-      // CONFIGURACIÓN DE MENÚS PARA DISPOSITIVOS MÓVILES 
+      // CONFIGURACIÓN DE MENÚS PARA DISPOSITIVOS MÓVILES
       // MÓVIL — links hamburguesa izquierdo
       let mobileNavLinks = '';
       if (isLoggedIn()) {
@@ -58,6 +69,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       mobileNavLinks += `<a href="/searchAlbums.html" class="mobile-nav-link">Albums</a>`;
       mobileNavLinks += `<a href="/searchUsers.html" class="mobile-nav-link">Usuarios</a>`;
+
+      // Enlace admin en menú móvil
+      if (isLoggedIn() && cachedUser.role === 'admin') {
+        mobileNavLinks += `<a href="/adminPanel.html" class="mobile-nav-link" style="color: var(--accent)">Admin</a>`;
+      }
 
       // MÓVIL — links desplegable derecho
       let mobileUserLinks = '';
@@ -130,6 +146,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // Guardar en localStorage para la próxima vez
             localStorage.setItem('sessionUser', JSON.stringify(user));
+
+            // Actualizar enlace admin si el rol cambió
+            const adminLink = document.querySelector('a[href="/adminPanel.html"]');
+            if (user.role === 'admin' && !adminLink) {
+              const headerCenter = document.getElementById('headerCenter');
+              if (headerCenter) {
+                const a = document.createElement('a');
+                a.href = '/adminPanel.html';
+                a.textContent = 'Admin';
+                a.style.color = 'var(--accent)';
+                headerCenter.appendChild(a);
+              }
+            }
           })
           .catch(() => {});
       }
@@ -138,7 +167,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     await renderHeaderLinks();
 
     // --- GESTIÓN DE EVENTOS DEL MENÚ MÓVIL
-    // Hamburguesa izquierda
     const mobileHamburger = document.getElementById("mobileHamburger");
     const mobileNavDropdown = document.getElementById("mobileNavDropdown");
     const mobileUserDropdown = document.getElementById("mobileUserDropdown");
@@ -154,7 +182,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
 
-    // Botón derecho usuario
     if (mobileUserBtn) {
       mobileUserBtn.addEventListener("click", () => {
         const isOpen = mobileUserDropdown?.classList.contains("open");

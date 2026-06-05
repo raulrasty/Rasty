@@ -70,11 +70,13 @@ async function deleteAlbum(req, res) {
 }
 
 async function getReviews(req, res) {
+  console.log('getReviews llamado');
   try {
     const { page = 1, limit = 10 } = req.query;
     const data = await getReviewsService(parseInt(page), parseInt(limit));
     res.json(data);
   } catch (err) {
+    console.error('Error reviews:', err);
     res.status(500).json({ error: err.message });
   }
 }

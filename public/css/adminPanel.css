@@ -249,7 +249,6 @@
 }
 
 .admin-table tr:last-child td { border-bottom: none; }
-
 .admin-table tr:hover td { background: var(--bg-hover); }
 
 .admin-avatar {
@@ -357,7 +356,7 @@
   margin-top: 20px;
 }
 
-/* Modal */
+/* Modal de confirmación — renombrado a admin-modal para evitar colisión con header */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -370,7 +369,7 @@
 
 .modal-overlay.active { display: flex; }
 
-.modal {
+.admin-modal {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -388,7 +387,7 @@
   font-weight: 600;
 }
 
-.modal-buttons {
+.admin-modal-buttons {
   display: flex;
   gap: 10px;
   justify-content: center;
